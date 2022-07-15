@@ -1,10 +1,6 @@
-library(dplyr)
-library(tidyr)
-library(ggplot2)
 library(ggfortify)
-library(survival)
-library(sanon)
 
+`%>%` <- dplyr::`%>%`
 
 # Function that scale data to a range
 rangeab <- function(x, a, b) { (b - a)*(x - min(x))/(max(x) - min(x)) + a }
@@ -16,7 +12,7 @@ rangeab <- function(x, a, b) { (b - a)*(x - min(x))/(max(x) - min(x)) + a }
 ### Read in the data ###
 HCE <- read.csv("tests/fixtures/HCE scenario A.csv")
 
-
+vars <- dplyr::vars
 
 # Input parameters
 ep.order <- c("Outcome I", "Outcome II", "Outcome III", "Outcome IV", "Continuous outcome")  # Order of the endpoints. The continuous endpoint should always be last.
@@ -24,9 +20,9 @@ treatments <- c("Active", "Control")
 fixed.follow.up.days <- 3*365
 
 # Remove unwanted endpoints and treatments
-HCE <- HCE %>% filter(GROUP %in% ep.order) %>%
-  mutate_at(vars(GROUP), factor, levels=ep.order) %>%
-  mutate_at(vars(TRTP), factor, levels=treatments)
+HCE <- HCE %>% dplyr::filter(GROUP %in% ep.order) %>%
+  dplyr::mutate_at(vars(GROUP), factor, levels=ep.order) %>%
+  dplyr::mutate_at(vars(TRTP), factor, levels=treatments)
 
 
 
@@ -50,8 +46,8 @@ HCE <- HCE %>% filter(GROUP %in% ep.order) %>%
 # wo.result <- calcWinOdds(data = HCE, ordinalVal = "AVAL", group = "TRTP", reference = "Control")
 
 
-
-fit <- sanon(AVAL ~ grp(TRTP, ref = "Control"), data = HCE)
+grp <- sanon::grp
+fit <- sanon::sanon(AVAL ~ grp(TRTP, ref = "Control"), data = HCE)
 CI0 <- confint(fit)$ci
 CI <- CI0/(1-CI0)
 p <- fit$p
@@ -72,15 +68,16 @@ names(wo.result) <- c("estimate", "lower", "upper", "p-value")
 
 ### Calculate meta information from the entire HCE dataset needed for plotting ###
 ##################################################################################
+  n <- dplyr::n
 
-  meta1 <- HCE %>% group_by(GROUP) %>%
-    summarise(n = n(), proportion = n/dim(HCE)[1]*100, maxday = max(AVAL0)) %>%
-    mutate(fixed.followup = fixed.follow.up.days, startx = c(0, cumsum(head(proportion, -1))), endx = cumsum(proportion), starty = 0, n.groups = length(unique(GROUP)))
+  meta1 <- HCE %>% dplyr::group_by(GROUP) %>%
+    dplyr::summarise(n = n(), proportion = n/dim(HCE)[1]*100, maxday = max(AVAL0)) %>%
+    dplyr::mutate(fixed.followup = fixed.follow.up.days, startx = c(0, cumsum(head(proportion, -1))), endx = cumsum(proportion), starty = 0, n.groups = length(unique(GROUP)))
 
-  meta2 <- HCE %>% group_by(GROUP, TRTP) %>% summarise(n = n(), proportion = n/dim(HCE)[1]*100) %>% pivot_wider(names_from = TRTP, values_from = c(n, proportion))
+  meta2 <- HCE %>% dplyr::group_by(GROUP, TRTP) %>% dplyr::summarise(n = n(), proportion = n/dim(HCE)[1]*100) %>% tidyr::pivot_wider(names_from = TRTP, values_from = c(n, proportion))
 
 
-  meta <- left_join(meta1, meta2, "GROUP")
+  meta <- dplyr::left_join(meta1, meta2, "GROUP")
 
 
 
@@ -93,13 +90,14 @@ names(wo.result) <- c("estimate", "lower", "upper", "p-value")
 
   HCE[HCE$GROUP %in% head(ep.order, -1),]$kmday <- HCE[HCE$GROUP %in% head(ep.order, -1),]$AVAL0
 
+  Surv <- survival::Surv
   # Create survival model dataset
-  survmod.data <- cbind(fortify( with(HCE, survfit(Surv(time = kmday, event = GROUP == ep.order[1]) ~ TRTP))), GROUP = ep.order[1])   # Kolla TRTP vs treatments !!
+  survmod.data <- cbind(ggplot2::fortify( with(HCE, survival::survfit(Surv(time = kmday, event = GROUP == ep.order[1]) ~ TRTP))), GROUP = ep.order[1])   # Kolla TRTP vs treatments !!
   for(i in 2:length(ep.order)-1) {
-    survmod.data <- rbind(survmod.data, cbind(fortify( with(HCE, survfit(Surv(time = kmday, event = GROUP == ep.order[i]) ~ TRTP)) ), GROUP = ep.order[i] ))
+    survmod.data <- rbind(survmod.data, cbind(ggplot2::fortify( with(HCE, survival::survfit(Surv(time = kmday, event = GROUP == ep.order[i]) ~ TRTP)) ), GROUP = ep.order[i] ))
   }
 
-  survmod.data <- survmod.data %>% mutate_at(vars(GROUP), factor, levels=ep.order) %>% mutate_at(vars(strata), factor, levels=treatments)
+  survmod.data <- survmod.data %>% dplyr::mutate_at(vars(GROUP), factor, levels=ep.order) %>% dplyr::mutate_at(vars(strata), factor, levels=treatments)
 
   survmod.data$adjusted.time <- 0
   for(i in head(ep.order, -1)) {
@@ -108,14 +106,14 @@ names(wo.result) <- c("estimate", "lower", "upper", "p-value")
 
 #  { (b - a)*(x - min(x))/(max(x) - min(x)) + a } Could use this for the adjustment of time? !!
 
-  survmod.data <- survmod.data %>% mutate(km.y = 1-surv)
+  survmod.data <- survmod.data %>% dplyr::mutate(km.y = 1-surv)
 
-  survmod.meta <- survmod.data %>% group_by(strata, GROUP) %>%
-    summarise(max = 100*max(1-surv), sum.event = sum(n.event)) %>%
-    mutate(km.start = c(0, cumsum(head(max, -1))), km.end = cumsum(max))
+  survmod.meta <- survmod.data %>% dplyr::group_by(strata, GROUP) %>%
+    dplyr::summarise(max = 100*max(1-surv), sum.event = sum(n.event)) %>%
+    dplyr::mutate(km.start = c(0, cumsum(head(max, -1))), km.end = cumsum(max))
 
 
-  survmod.data <- survmod.data %>% left_join(survmod.meta, by = c("strata", "GROUP") )
+  survmod.data <- survmod.data %>% dplyr::left_join(survmod.meta, by = c("strata", "GROUP") )
 
 
 
@@ -132,7 +130,7 @@ names(wo.result) <- c("estimate", "lower", "upper", "p-value")
   slopedata$x = to.rangeab(slopedata$AVAL0)
 
 
-  slope.meta <- slopedata %>% group_by(TRTP) %>% summarise(n = n(), median = median(x), average = mean(x))
+  slope.meta <- slopedata %>% dplyr::group_by(TRTP) %>% dplyr::summarise(n = n(), median = median(x), average = mean(x))
 
 
   slopedata$violinx <- 0
@@ -165,35 +163,35 @@ names(wo.result) <- c("estimate", "lower", "upper", "p-value")
   minorGrid <- seq(sign(min(slopedata$AVAL0))*floor(abs(min(slopedata$AVAL0))/10)*10, sign(max(slopedata$AVAL0))*floor(abs(max(slopedata$AVAL0))/10)*10, by=10)
 
   # Plot the information in the Maraca plot
-  ggplot(survmod.data, aes(colour = TRTP)) +
-    geom_vline(xintercept = cumsum(c(0, meta$proportion)), color = "grey80") +
-    geom_vline(xintercept = zeroposition, color="white", size=1) +
-    geom_vline(xintercept = slope.meta$median, color=c("#F8766D", "#00BFC4"), linetype = "dashed", size=0.3) +
-    geom_line(data = slopedata, aes(x = violinx, y = violiny, color=TRTP)) +
+  ggplot2::ggplot(survmod.data, aes(colour = TRTP)) +
+    ggplot2::geom_vline(xintercept = cumsum(c(0, meta$proportion)), color = "grey80") +
+    ggplot2::geom_vline(xintercept = zeroposition, color="white", size=1) +
+    ggplot2::geom_vline(xintercept = slope.meta$median, color=c("#F8766D", "#00BFC4"), linetype = "dashed", size=0.3) +
+    ggplot2::geom_line(data = slopedata, aes(x = violinx, y = violiny, color=TRTP)) +
 
-    geom_line(data = survmod.data, aes(x=adjusted.time, y=km.start+km.y*100, color = strata), ) +
+    ggplot2::geom_line(data = survmod.data, aes(x=adjusted.time, y=km.start+km.y*100, color = strata), ) +
 
-    geom_violin(data = slopedata, aes(x = x, y = violiny, fill = factor(violiny)), alpha = 0.5) +
-    geom_boxplot(data = slopedata, aes(x = x, y = violiny, fill = factor(violiny)), alpha = 0.5, width = 2) +
+    ggplot2::geom_violin(data = slopedata, aes(x = x, y = violiny, fill = factor(violiny)), alpha = 0.5) +
+    ggplot2::geom_boxplot(data = slopedata, aes(x = x, y = violiny, fill = factor(violiny)), alpha = 0.5, width = 2) +
 
-    xlab("Type of endpoint") + ylab("Cumulative proportion") +
-    scale_x_continuous(limits = c(0,100),
+    ggplot2::xlab("Type of endpoint") + ggplot2::ylab("Cumulative proportion") +
+    ggplot2::scale_x_continuous(limits = c(0,100),
                        breaks = c(meta$proportion/2 + meta$startx),
                        labels = ep.order,
                        minor_breaks = to.rangeab(minorGrid)
                        ) +
-    annotate(geom = "text", x=to.rangeab(minorGrid), y=0, label = minorGrid, color = "grey60") +
-    annotate(geom = "label", x=0, y=Inf,
+    ggplot2::annotate(geom = "text", x=to.rangeab(minorGrid), y=0, label = minorGrid, color = "grey60") +
+    ggplot2::annotate(geom = "label", x=0, y=Inf,
              label = paste("Win odds (95% CI): ", round(wo.result[1], 2), " (", round(wo.result[2], 2), ", ", round(wo.result[3], 2), ")", "\n", "p-value: ", format.pval(wo.result[4], digits = 3, eps = 0.001), sep=""),
                          hjust = 0, vjust = 1.4, size = 3) +
-    theme(axis.text.x.bottom = element_text(angle=c(rep(90, length(ep.order)-1), 0),
+    ggplot2::theme(axis.text.x.bottom = element_text(angle=c(rep(90, length(ep.order)-1), 0),
                                             vjust = c(rep(0.5, length(ep.order)-1), 0),
                                             hjust=c(rep(1, length(ep.order)-1), 0.5)),
           axis.ticks.x.bottom = element_blank(),
           panel.grid.major.x = element_blank(),
           axis.title.x.bottom =  element_blank()
           ) +
-    guides(fill = FALSE)
+    ggplot2::guides(fill = FALSE)
 
 
 ###########################################################################################################################
