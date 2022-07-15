@@ -1,0 +1,620 @@
+[[source]]
+name = "CRAN"
+url = "https://cloud.r-project.org/"
+
+[[entry]]
+categories = []
+dependencies = [ "dplyr", "ggfortify", "ggplot2", "sanon", "survival", "tidyr",]
+type = "root"
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "grDevices", "graphics", "methods", "stats", "utils",]
+name = "MASS"
+version = "7.3-58"
+source = "CRAN"
+r_constraint = ">=3.3.0"
+type = "source"
+[[entry.files]]
+name = "MASS_7.3-58.tar.gz"
+hash = "sha256:5c1414f714b6855adf4b580a23b6db55a2d4b4c19bead302408d0312fda480c2"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "graphics", "grid", "lattice", "methods", "stats", "utils",]
+name = "Matrix"
+version = "1.4-1"
+source = "CRAN"
+r_constraint = ">=3.5.0"
+type = "source"
+[[entry.files]]
+name = "Matrix_1.4-1.tar.gz"
+hash = "sha256:42b24f1d1e94482b0ff0ef1292e2df29f69694bdbee47b3d6bfeec46fafb2f7e"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = []
+name = "R6"
+version = "2.5.1"
+source = "CRAN"
+r_constraint = ">=3.0"
+type = "source"
+[[entry.files]]
+name = "R6_2.5.1.tar.gz"
+hash = "sha256:8d92bd29c2ed7bf15f2778618ffe4a95556193d21d8431a7f75e7e5fc102bf48"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = []
+name = "RColorBrewer"
+version = "1.1-3"
+source = "CRAN"
+r_constraint = ">=2.0.0"
+type = "source"
+[[entry.files]]
+name = "RColorBrewer_1.1-3.tar.gz"
+hash = "sha256:4f42f5423c45688b39f492c7892d93f37b4541831c8ffb140364d2bd89031ac0"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "glue", "utils",]
+name = "cli"
+version = "3.3.0"
+source = "CRAN"
+r_constraint = ">=3.4"
+type = "source"
+[[entry.files]]
+name = "cli_3.3.0.tar.gz"
+hash = "sha256:c3a9ebbcb9017fb9aeda4f7df5ca981e42b169cbd7ce13e592cda2cd74250d63"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "grDevices", "graphics", "methods", "stats",]
+name = "colorspace"
+version = "2.0-3"
+source = "CRAN"
+r_constraint = ">=3.0.0"
+type = "source"
+[[entry.files]]
+name = "colorspace_2.0-3.tar.gz"
+hash = "sha256:e75681cc4dd6e4b70303fd96a6d4597065dc6bffcaa4ae4244b73ff19016857f"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = []
+name = "cpp11"
+version = "0.4.2"
+source = "CRAN"
+r_constraint = "*"
+type = "source"
+[[entry.files]]
+name = "cpp11_0.4.2.tar.gz"
+hash = "sha256:403ce0bf82358d237176053b0fb1e958cb6bfa4d0fb3555bf5801db6a6939b99"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "grDevices", "methods", "utils",]
+name = "crayon"
+version = "1.5.1"
+source = "CRAN"
+r_constraint = "*"
+type = "source"
+[[entry.files]]
+name = "crayon_1.5.1.tar.gz"
+hash = "sha256:c025c73b78a8e88e8e4363c8e1a941da5089a7baea39e59ea5342ab9ebe45df9"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "utils",]
+name = "digest"
+version = "0.6.29"
+source = "CRAN"
+r_constraint = ">=3.3.0"
+type = "source"
+[[entry.files]]
+name = "digest_0.6.29.tar.gz"
+hash = "sha256:792c1f14a4c8047745152f5e45ce7351978af8d770c29d2ea39c7acd5d619cd9"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "R6", "generics", "glue", "lifecycle", "magrittr", "methods", "pillar", "rlang", "tibble", "tidyselect", "utils", "vctrs",]
+name = "dplyr"
+version = "1.0.9"
+source = "CRAN"
+r_constraint = ">=3.4.0"
+type = "source"
+[[entry.files]]
+name = "dplyr_1.0.9.tar.gz"
+hash = "sha256:e2e1f7312618b4e32ada9a1da79cef32eaec12acd408c973a6b069c6be4fb46b"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "rlang",]
+name = "ellipsis"
+version = "0.3.2"
+source = "CRAN"
+r_constraint = ">=3.2"
+type = "source"
+[[entry.files]]
+name = "ellipsis_0.3.2.tar.gz"
+hash = "sha256:a90266e5eb59c7f419774d5c6d6bd5e09701a26c9218c5933c9bce6765aa1558"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "grDevices", "utils",]
+name = "fansi"
+version = "1.0.3"
+source = "CRAN"
+r_constraint = ">=3.1.0"
+type = "source"
+[[entry.files]]
+name = "fansi_1.0.3.tar.gz"
+hash = "sha256:86a7b83d8c9d28baebbde310cd0b459d0950a9c7ff1a6276ce5858f6a89bc06a"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = []
+name = "farver"
+version = "2.1.1"
+source = "CRAN"
+r_constraint = "*"
+type = "source"
+[[entry.files]]
+name = "farver_2.1.1.tar.gz"
+hash = "sha256:0dcfda6ca743f465372790bcff1bcbc6a7145fdac1c682b021f654e8c6c996ce"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "methods",]
+name = "generics"
+version = "0.1.3"
+source = "CRAN"
+r_constraint = ">=3.2"
+type = "source"
+[[entry.files]]
+name = "generics_0.1.3.tar.gz"
+hash = "sha256:75046163bfa8b8a4f4214c1b689e796207f6447182f2e5062cf570302387d053"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "dplyr", "ggplot2", "grid", "gridExtra", "methods", "scales", "stringr", "tibble", "tidyr",]
+name = "ggfortify"
+version = "0.4.14"
+source = "CRAN"
+r_constraint = "*"
+type = "source"
+[[entry.files]]
+name = "ggfortify_0.4.14.tar.gz"
+hash = "sha256:5c5ad3d94ee43c39635419d1ae622a7906ba3a37d187ae924183f8fb1539150d"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "MASS", "digest", "glue", "grDevices", "grid", "gtable", "isoband", "mgcv", "rlang", "scales", "stats", "tibble", "withr",]
+name = "ggplot2"
+version = "3.3.6"
+source = "CRAN"
+r_constraint = ">=3.3"
+type = "source"
+[[entry.files]]
+name = "ggplot2_3.3.6.tar.gz"
+hash = "sha256:bfcb4eb92a0fcd3fab713aca4bb25e916e05914f2540271a45522ad7e43943a9"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "methods",]
+name = "glue"
+version = "1.6.2"
+source = "CRAN"
+r_constraint = ">=3.4"
+type = "source"
+[[entry.files]]
+name = "glue_1.6.2.tar.gz"
+hash = "sha256:9da518f12be584c90e75fe8e07f711ee3f6fc0d03d817f72c25dc0f66499fdbf"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = []
+name = "grDevices"
+type = "core"
+
+[[entry]]
+categories = [ "main",]
+dependencies = []
+name = "graphics"
+type = "core"
+
+[[entry]]
+categories = [ "main",]
+dependencies = []
+name = "grid"
+type = "core"
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "grDevices", "graphics", "grid", "gtable", "utils",]
+name = "gridExtra"
+version = "2.3"
+source = "CRAN"
+r_constraint = "*"
+type = "source"
+[[entry.files]]
+name = "gridExtra_2.3.tar.gz"
+hash = "sha256:81b60ce6f237ec308555471ae0119158b115463df696d2eca9b177ded8988e3b"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "grid",]
+name = "gtable"
+version = "0.3.0"
+source = "CRAN"
+r_constraint = ">=3.0"
+type = "source"
+[[entry.files]]
+name = "gtable_0.3.0.tar.gz"
+hash = "sha256:fd386cc4610b1cc7627dac34dba8367f7efe114b968503027fb2e1265c67d6d3"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "grid", "utils",]
+name = "isoband"
+version = "0.2.5"
+source = "CRAN"
+r_constraint = "*"
+type = "source"
+[[entry.files]]
+name = "isoband_0.2.5.tar.gz"
+hash = "sha256:46f53fa066f0966f02cb2bf050190c0d5e950dab2cdf565feb63fc092c886ba5"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "graphics", "stats",]
+name = "labeling"
+version = "0.4.2"
+source = "CRAN"
+r_constraint = "*"
+type = "source"
+[[entry.files]]
+name = "labeling_0.4.2.tar.gz"
+hash = "sha256:e022d79276173e0d62bf9e37d7574db65ab439eb2ae1833e460b1cff529bd165"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "grDevices", "graphics", "grid", "stats", "utils",]
+name = "lattice"
+version = "0.20-45"
+source = "CRAN"
+r_constraint = ">=3.0.0"
+type = "source"
+[[entry.files]]
+name = "lattice_0.20-45.tar.gz"
+hash = "sha256:22388d92bdb7d3959da84d7308d9026dd8226ef07580783729e8ad2f7d7507ad"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "glue", "rlang",]
+name = "lifecycle"
+version = "1.0.1"
+source = "CRAN"
+r_constraint = ">=3.3"
+type = "source"
+[[entry.files]]
+name = "lifecycle_1.0.1.tar.gz"
+hash = "sha256:1da76e1c00f1be96ca34e122ae611259430bf99d6a1b999fdef70c00c30f7ba0"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = []
+name = "magrittr"
+version = "2.0.3"
+source = "CRAN"
+r_constraint = ">=3.4.0"
+type = "source"
+[[entry.files]]
+name = "magrittr_2.0.3.tar.gz"
+hash = "sha256:a2bff83f792a1acb801bfe6330bb62724c74d5308832f2cb6a6178336ace55d2"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = []
+name = "methods"
+type = "core"
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "Matrix", "graphics", "methods", "nlme", "splines", "stats", "utils",]
+name = "mgcv"
+version = "1.8-40"
+source = "CRAN"
+r_constraint = ">=3.6.0"
+type = "source"
+[[entry.files]]
+name = "mgcv_1.8-40.tar.gz"
+hash = "sha256:dbe627266c3b339232e2d4228d5370ba88c86540319e6891d161242efba7e4a5"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "colorspace", "methods",]
+name = "munsell"
+version = "0.5.0"
+source = "CRAN"
+r_constraint = "*"
+type = "source"
+[[entry.files]]
+name = "munsell_0.5.0.tar.gz"
+hash = "sha256:d0f3a9fb30e2b5d411fa61db56d4be5733a2621c0edf017d090bdfa5e377e199"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "graphics", "lattice", "stats", "utils",]
+name = "nlme"
+version = "3.1-158"
+source = "CRAN"
+r_constraint = ">=3.5.0"
+type = "source"
+[[entry.files]]
+name = "nlme_3.1-158.tar.gz"
+hash = "sha256:a55bb401c2ba2706763d1f40283780699eb812b0d090b3d1903fae8aa956bf23"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "cli", "crayon", "ellipsis", "fansi", "glue", "lifecycle", "rlang", "utf8", "utils", "vctrs",]
+name = "pillar"
+version = "1.7.0"
+source = "CRAN"
+r_constraint = "*"
+type = "source"
+[[entry.files]]
+name = "pillar_1.7.0.tar.gz"
+hash = "sha256:7841f89658cc8935568c0ff24dc480b4481bac896de2f6447050abc4360a13bb"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "utils",]
+name = "pkgconfig"
+version = "2.0.3"
+source = "CRAN"
+r_constraint = "*"
+type = "source"
+[[entry.files]]
+name = "pkgconfig_2.0.3.tar.gz"
+hash = "sha256:330fef440ffeb842a7dcfffc8303743f1feae83e8d6131078b5a44ff11bc3850"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "magrittr", "rlang",]
+name = "purrr"
+version = "0.3.4"
+source = "CRAN"
+r_constraint = ">=3.2"
+type = "source"
+[[entry.files]]
+name = "purrr_0.3.4.tar.gz"
+hash = "sha256:23ebc93bc9aed9e7575e8eb9683ff4acc0270ef7d6436cc2ef4236a9734840b2"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "utils",]
+name = "rlang"
+version = "1.0.4"
+source = "CRAN"
+r_constraint = ">=3.4.0"
+type = "source"
+[[entry.files]]
+name = "rlang_1.0.4.tar.gz"
+hash = "sha256:1fb789d46c6a855ce37eba63c353b85aa600c4a2a7ca6075f2632540b42a8696"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = []
+name = "sanon"
+version = "1.6"
+source = "CRAN"
+r_constraint = ">=3.5"
+type = "source"
+[[entry.files]]
+name = "sanon_1.6.tar.gz"
+hash = "sha256:bf206a32de6e5982762250682fc7f1f0b6f8327fec9ef7f758bbb5f97e0b7440"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "R6", "RColorBrewer", "farver", "labeling", "lifecycle", "munsell", "rlang", "viridisLite",]
+name = "scales"
+version = "1.2.0"
+source = "CRAN"
+r_constraint = ">=3.2"
+type = "source"
+[[entry.files]]
+name = "scales_1.2.0.tar.gz"
+hash = "sha256:185d50240e6b3e84d36ec7fbca6aef7a85db7c8c1b0dde51d4af28d363ce02df"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = []
+name = "splines"
+type = "core"
+
+[[entry]]
+categories = [ "main",]
+dependencies = []
+name = "stats"
+type = "core"
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "stats", "tools", "utils",]
+name = "stringi"
+version = "1.7.8"
+source = "CRAN"
+r_constraint = ">=3.1"
+type = "source"
+[[entry.files]]
+name = "stringi_1.7.8.tar.gz"
+hash = "sha256:538918b1cd6ed1d8a2dd5ab146ba800a088e99f93c52dcd82615b6e127478b1c"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "glue", "magrittr", "stringi",]
+name = "stringr"
+version = "1.4.0"
+source = "CRAN"
+r_constraint = ">=3.1"
+type = "source"
+[[entry.files]]
+name = "stringr_1.4.0.tar.gz"
+hash = "sha256:87604d2d3a9ad8fd68444ce0865b59e2ffbdb548a38d6634796bbd83eeb931dd"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "Matrix", "graphics", "methods", "splines", "stats", "utils",]
+name = "survival"
+version = "3.3-1"
+source = "CRAN"
+r_constraint = ">=3.5.0"
+type = "source"
+[[entry.files]]
+name = "survival_3.3-1.tar.gz"
+hash = "sha256:14878705cd0c7edcfead79011444aa84f680759293bde8634721c49f37cb4dc7"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "ellipsis", "fansi", "lifecycle", "magrittr", "methods", "pillar", "pkgconfig", "rlang", "utils", "vctrs",]
+name = "tibble"
+version = "3.1.7"
+source = "CRAN"
+r_constraint = ">=3.1.0"
+type = "source"
+[[entry.files]]
+name = "tibble_3.1.7.tar.gz"
+hash = "sha256:e1a50891f476803526960b4c4d736a72e7d9c3d366946744a02d6347f591c872"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "cpp11", "dplyr", "ellipsis", "glue", "lifecycle", "magrittr", "purrr", "rlang", "tibble", "tidyselect", "utils", "vctrs",]
+name = "tidyr"
+version = "1.2.0"
+source = "CRAN"
+r_constraint = ">=3.1"
+type = "source"
+[[entry.files]]
+name = "tidyr_1.2.0.tar.gz"
+hash = "sha256:8cd01da9e97827521d01ea50b9225f2705c46b7538bbf74bec6249a04c1213a8"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "ellipsis", "glue", "purrr", "rlang", "vctrs",]
+name = "tidyselect"
+version = "1.1.2"
+source = "CRAN"
+r_constraint = ">=3.2"
+type = "source"
+[[entry.files]]
+name = "tidyselect_1.1.2.tar.gz"
+hash = "sha256:0389a3b15417954a30d6d692f6ebdd3d0f318cb94a5c9b05365df2f4ea1d8270"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = []
+name = "tools"
+type = "core"
+
+[[entry]]
+categories = [ "main",]
+dependencies = []
+name = "utf8"
+version = "1.2.2"
+source = "CRAN"
+r_constraint = ">=2.10"
+type = "source"
+[[entry.files]]
+name = "utf8_1.2.2.tar.gz"
+hash = "sha256:a71aee87d43a9bcf29249c7a5a2e9ca1d2a836e8d5ee3a264d3062f25378d8f4"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = []
+name = "utils"
+type = "core"
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "cli", "glue", "rlang",]
+name = "vctrs"
+version = "0.4.1"
+source = "CRAN"
+r_constraint = ">=3.3"
+type = "source"
+[[entry.files]]
+name = "vctrs_0.4.1.tar.gz"
+hash = "sha256:9676881e009aa1217818f326338e8b35dd9a9438918f8b1ac249f4c8afe460dd"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = []
+name = "viridisLite"
+version = "0.4.0"
+source = "CRAN"
+r_constraint = ">=2.10"
+type = "source"
+[[entry.files]]
+name = "viridisLite_0.4.0.tar.gz"
+hash = "sha256:849955dc8ad9bc52bdc50ed4867fd92a510696fc8294e6971efa018437c83c6a"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "grDevices", "graphics", "stats",]
+name = "withr"
+version = "2.5.0"
+source = "CRAN"
+r_constraint = ">=3.2.0"
+type = "source"
+[[entry.files]]
+name = "withr_2.5.0.tar.gz"
+hash = "sha256:37317b3ed790a08407072993a05ab255f6305f95a12a16e0e28aa6aa80fc8bc0"
+
+
+[metadata]
+version = 2
+content_hash = "252c8dc4a95b4732246337f4f6101eab5d4e9502eda2543eb04c63e5355aafb7"
+conservative = false

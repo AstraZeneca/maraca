@@ -1,0 +1,15 @@
+[tool.roo]
+name = "maraca"
+version = "0.1.0"
+
+[[tool.roo.source]]
+name = "CRAN"
+url = "https://cloud.r-project.org/"
+
+[tool.roo.dependencies]
+dplyr = "^1.0"
+tidyr = "^1.2"
+ggplot2 = "^3.3"
+ggfortify = "^0.4"
+survival = "^3.3"
+sanon = "^1.6"
