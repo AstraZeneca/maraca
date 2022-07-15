@@ -3,7 +3,9 @@ library(ggfortify)
 `%>%` <- dplyr::`%>%`
 
 # Function that scale data to a range
-rangeab <- function(x, a, b) { (b - a)*(x - min(x))/(max(x) - min(x)) + a }
+rangeab <- function(x, a, b) {
+  (b - a) * (x - min(x)) / (max(x) - min(x)) + a
+}
 
 ##########################
 # Create the HCE dataset #
@@ -162,37 +164,84 @@ names(wo.result) <- c("estimate", "lower", "upper", "p-value")
   # Calculate the gridlines for the continuous outcome scale to be the best fit for a separation of 10 units (could be an input to the function)
   minorGrid <- seq(sign(min(slopedata$AVAL0))*floor(abs(min(slopedata$AVAL0))/10)*10, sign(max(slopedata$AVAL0))*floor(abs(max(slopedata$AVAL0))/10)*10, by=10)
 
+
+`plot.maraca::maraca` <- function(obj) {
+  survmod.data
+  TRTP
+  meta
+  zeroposition
+  slope.meta
+  aes <- ggplot2::aes
+  slopedata
+  ep.order
+  minorGrid
+
   # Plot the information in the Maraca plot
   ggplot2::ggplot(survmod.data, aes(colour = TRTP)) +
-    ggplot2::geom_vline(xintercept = cumsum(c(0, meta$proportion)), color = "grey80") +
-    ggplot2::geom_vline(xintercept = zeroposition, color="white", size=1) +
-    ggplot2::geom_vline(xintercept = slope.meta$median, color=c("#F8766D", "#00BFC4"), linetype = "dashed", size=0.3) +
-    ggplot2::geom_line(data = slopedata, aes(x = violinx, y = violiny, color=TRTP)) +
-
-    ggplot2::geom_line(data = survmod.data, aes(x=adjusted.time, y=km.start+km.y*100, color = strata), ) +
-
-    ggplot2::geom_violin(data = slopedata, aes(x = x, y = violiny, fill = factor(violiny)), alpha = 0.5) +
-    ggplot2::geom_boxplot(data = slopedata, aes(x = x, y = violiny, fill = factor(violiny)), alpha = 0.5, width = 2) +
-
-    ggplot2::xlab("Type of endpoint") + ggplot2::ylab("Cumulative proportion") +
-    ggplot2::scale_x_continuous(limits = c(0,100),
-                       breaks = c(meta$proportion/2 + meta$startx),
-                       labels = ep.order,
-                       minor_breaks = to.rangeab(minorGrid)
-                       ) +
-    ggplot2::annotate(geom = "text", x=to.rangeab(minorGrid), y=0, label = minorGrid, color = "grey60") +
-    ggplot2::annotate(geom = "label", x=0, y=Inf,
-             label = paste("Win odds (95% CI): ", round(wo.result[1], 2), " (", round(wo.result[2], 2), ", ", round(wo.result[3], 2), ")", "\n", "p-value: ", format.pval(wo.result[4], digits = 3, eps = 0.001), sep=""),
-                         hjust = 0, vjust = 1.4, size = 3) +
-    ggplot2::theme(axis.text.x.bottom = element_text(angle=c(rep(90, length(ep.order)-1), 0),
-                                            vjust = c(rep(0.5, length(ep.order)-1), 0),
-                                            hjust=c(rep(1, length(ep.order)-1), 0.5)),
-          axis.ticks.x.bottom = element_blank(),
-          panel.grid.major.x = element_blank(),
-          axis.title.x.bottom =  element_blank()
-          ) +
+    ggplot2::geom_vline(
+      xintercept = cumsum(c(0, meta$proportion)), color = "grey80"
+    ) +
+    ggplot2::geom_vline(
+      xintercept = zeroposition, color = "white", size = 1
+    ) +
+    ggplot2::geom_vline(
+      xintercept = slope.meta$median, color = c("#F8766D", "#00BFC4"),
+      linetype = "dashed", size = 0.3
+    ) +
+    ggplot2::geom_line(
+      data = slopedata,
+      aes(x = violinx, y = violiny, color = TRTP)
+    ) +
+    ggplot2::geom_line(
+      data = survmod.data,
+      aes(x = adjusted.time, y = km.start + km.y * 100, color = strata)
+    ) +
+    ggplot2::geom_violin(
+      data = slopedata,
+      aes(x = x, y = violiny, fill = factor(violiny)), alpha = 0.5
+    ) +
+    ggplot2::geom_boxplot(
+      data = slopedata,
+      aes(x = x, y = violiny, fill = factor(violiny)), alpha = 0.5, width = 2
+    ) +
+    ggplot2::xlab("Type of endpoint") +
+    ggplot2::ylab("Cumulative proportion") +
+    ggplot2::scale_x_continuous(
+      limits = c(0, 100),
+      breaks = c(meta$proportion / 2 + meta$startx),
+      labels = ep.order,
+      minor_breaks = to.rangeab(minorGrid)
+    ) +
+    ggplot2::annotate(
+      geom = "text",
+      x = to.rangeab(minorGrid),
+      y = 0,
+      label = minorGrid, color = "grey60"
+    ) +
+    ggplot2::annotate(
+      geom = "label",
+      x = 0,
+      y = Inf,
+      label = paste(
+        "Win odds (95% CI): ", round(wo.result[1], 2),
+        " (", round(wo.result[2], 2), ", ", round(wo.result[3], 2), ")", "\n",
+        "p-value: ", format.pval(wo.result[4], digits = 3, eps = 0.001), sep=""
+      ),
+      hjust = 0, vjust = 1.4, size = 3
+    ) +
+    ggplot2::theme(
+      axis.text.x.bottom = ggplot2::element_text(
+        angle = c(rep(90, length(ep.order)-1), 0),
+        vjust = c(rep(0.5, length(ep.order)-1), 0),
+        hjust = c(rep(1, length(ep.order)-1), 0.5)
+      ),
+      axis.ticks.x.bottom = ggplot2::element_blank(),
+      panel.grid.major.x = ggplot2::element_blank(),
+      axis.title.x.bottom =  ggplot2::element_blank()
+    ) +
     ggplot2::guides(fill = FALSE)
 
+}
 
 ###########################################################################################################################
 ###########################################################################################################################
