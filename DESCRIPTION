@@ -14,12 +14,12 @@ LazyData: true
 Depends:
     R (>= 3.5)
 Imports:
-    dplyr = "^1.0"
-    tidyr = "^1.2"
-    ggplot2 = "^3.3"
-    ggfortify = "^0.4"
-    survival = "^3.3"
-    sanon = "^1.6"
+    dplyr (>= 1.0),
+    tidyr (>= 1.2),
+    ggplot2 (>= 3.3),
+    ggfortify (>= 0.4),
+    survival (>= 3.3),
+    sanon (>= 1.6)
 RoxygenNote: 7.1.2
 Suggests:
 VignetteBuilder: knitr
