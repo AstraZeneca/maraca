@@ -1,0 +1,20 @@
+Package: maraca
+Version: 0.0.0.9000
+Type: Package
+Title: Maracas plots
+License: Apache License (= 2.0)
+Authors@R: c(
+    person("Martin Karpefors, "", email = "unknown@example.com", role = "aut"),
+    person("Stefano Borini", "", email = "unknown@example.com", role = c("ctb", "cre")),
+Description: Provides maraca plots
+URL: https://github.com/AstraZeneca/maraca
+BugReports: https://github.com/AstraZeneca/maraca/issues
+Encoding: UTF-8
+LazyData: true
+Depends:
+    R (>= 3.5)
+Imports:
+RoxygenNote: 6.1.1
+Suggests:
+VignetteBuilder: knitr
+NeedsCompilation: no
