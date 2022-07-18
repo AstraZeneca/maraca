@@ -1,5 +1,18 @@
 library(ggfortify)
 
+.win_odds <- function(data, ordinal_val, treatments, reference) {
+  grp <- sanon::grp
+  fit <- sanon::sanon(ordinal_val ~ grp(treatments, ref = reference), data = data)
+  CI0 <- confint(fit)$ci
+  CI <- CI0/(1-CI0)
+  p <- fit$p
+
+  wo.result <- c(CI, p)
+  names(wo.result) <- c("estimate", "lower", "upper", "p-value")
+
+  return(wo.result)
+}
+
 maraca <- function() {
 
   `%>%` <- dplyr::`%>%`
@@ -35,18 +48,6 @@ maraca <- function() {
   ##############################################
   # Function to calculate the Win-Odds results #
   ##############################################
-  # calcWinOdds <- function(data, ordinalVal, treatments, reference)
-  # {
-  #   fit <- sanon(ordinalVal ~ grp(treatments, ref = reference), data = HCE)
-  #   CI0 <- confint(fit)$ci
-  #   CI <- CI0/(1-CI0)
-  #   p <- fit$p
-  #
-  #   wo.result <- c(CI, p)
-  #   names(wo.result) <- c("estimate", "lower", "upper", "p-value")
-  #
-  #   return(wo.result)
-  # }
   #
   # wo.result <- calcWinOdds(data = HCE, ordinalVal = "AVAL", group = "TRTP", reference = "Control")
 
@@ -168,7 +169,7 @@ maraca <- function() {
     return(
       structure(
         list(
-          slope_meta = slope_meta
+          slope_meta = slope_meta,
           slope_data = slope_data
         ),
         class = c("maraca::maraca")
