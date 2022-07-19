@@ -2,7 +2,9 @@ library(ggfortify)
 
 .win_odds <- function(data, ordinal_val, treatments, reference) {
   grp <- sanon::grp
-  fit <- sanon::sanon(ordinal_val ~ grp(treatments, ref = reference), data = data)
+  fit <- sanon::sanon(
+    ordinal_val ~ grp(treatments, ref = reference), data = data
+  )
   CI0 <- confint(fit)$ci
   CI <- CI0/(1-CI0)
   p <- fit$p
@@ -34,13 +36,13 @@ maraca <- function(filename) {
   # Input parameters
   ep.order <- c("Outcome I", "Outcome II", "Outcome III", "Outcome IV", "Continuous outcome")  # Order of the endpoints. The continuous endpoint should always be last.
   treatments <- c("Active", "Control")
-  fixed.follow.up.days <- 3*365
+  fixed.follow.up.days <- 3 * 365
 
   # Remove unwanted endpoints and treatments
   HCE <- HCE %>%
     dplyr::filter(GROUP %in% ep.order) %>%
-    dplyr::mutate_at(vars(GROUP), factor, levels=ep.order) %>%
-    dplyr::mutate_at(vars(TRTP), factor, levels=treatments)
+    dplyr::mutate_at(vars(GROUP), factor, levels = ep.order) %>%
+    dplyr::mutate_at(vars(TRTP), factor, levels = treatments)
 
 
 
@@ -78,7 +80,8 @@ maraca <- function(filename) {
 
     meta1 <- HCE %>%
       dplyr::group_by(GROUP) %>%
-      dplyr::summarise(n = n(), proportion = n/dim(HCE)[1]*100, maxday = max(AVAL0)) %>%
+      dplyr::summarise(
+        n = n(), proportion = n / dim(HCE)[1] * 100, maxday = max(AVAL0)) %>%
       dplyr::mutate(
         fixed.followup = fixed.follow.up.days,
         startx = c(0, cumsum(head(proportion, -1))),
@@ -89,7 +92,7 @@ maraca <- function(filename) {
 
     meta2 <- HCE %>%
       dplyr::group_by(GROUP, TRTP) %>%
-      dplyr::summarise(n = n(), proportion = n/dim(HCE)[1]*100) %>%
+      dplyr::summarise(n = n(), proportion = n / dim(HCE)[1] * 100) %>%
       tidyr::pivot_wider(names_from = TRTP, values_from = c(n, proportion))
 
     meta <- dplyr::left_join(meta1, meta2, "GROUP")
@@ -100,15 +103,20 @@ maraca <- function(filename) {
   ### Prepare data and calculate meta information about the time-to-event data ###
   ################################################################################
 
-    HCE$kmday <- max(meta[meta$GROUP %in% head(ep.order, -1),]$maxday)     # Use the largest value across the hard endpoints if fixed.follow.up.days is not specified
-    HCE$kmday <- meta$fixed.followup[1]                                    # Use the specified length of the fixed-follow-up trial if specified
+    # Use the largest value across the hard endpoints if fixed.follow.up.days is not specified
+    HCE$kmday <- max(meta[meta$GROUP %in% head(ep.order, -1),]$maxday)
+    # Use the specified length of the fixed-follow-up trial if specified
+    HCE$kmday <- meta$fixed.followup[1]
 
     HCE[HCE$GROUP %in% head(ep.order, -1),]$kmday <- HCE[HCE$GROUP %in% head(ep.order, -1),]$AVAL0
 
     Surv <- survival::Surv
     # Create survival model dataset
     survmod.data <- cbind(
-      ggplot2::fortify( with(HCE, survival::survfit(Surv(time = kmday, event = GROUP == ep.order[1]) ~ TRTP))), GROUP = ep.order[1])
+      ggplot2::fortify( with(HCE,
+        survival::survfit(
+          Surv(time = kmday, event = GROUP == ep.order[1]) ~ TRTP))
+      ), GROUP = ep.order[1])
 
     for(i in 2:length(ep.order)-1) {
       survmod.data <- rbind(

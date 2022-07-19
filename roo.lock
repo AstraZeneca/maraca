@@ -4,7 +4,7 @@ url = "https://cloud.r-project.org/"
 
 [[entry]]
 categories = []
-dependencies = [ "dplyr", "ggfortify", "ggplot2", "here", "sanon", "survival", "tidyr",]
+dependencies = [ "dplyr", "ggfortify", "ggplot2", "here", "lintr", "sanon", "survival", "tidyr",]
 type = "root"
 
 [[entry]]
@@ -34,7 +34,7 @@ hash = "sha256:42b24f1d1e94482b0ff0ef1292e2df29f69694bdbee47b3d6bfeec46fafb2f7e"
 
 
 [[entry]]
-categories = [ "main",]
+categories = [ "dev", "main",]
 dependencies = []
 name = "R6"
 version = "2.5.1"
@@ -60,7 +60,33 @@ hash = "sha256:4f42f5423c45688b39f492c7892d93f37b4541831c8ffb140364d2bd89031ac0"
 
 
 [[entry]]
-categories = [ "main",]
+categories = [ "dev",]
+dependencies = []
+name = "backports"
+version = "1.4.1"
+source = "CRAN"
+r_constraint = ">=3.0.0"
+type = "source"
+[[entry.files]]
+name = "backports_1.4.1.tar.gz"
+hash = "sha256:845c3c59fbb05e5a892c4231b955a0afdd331d82b7cc815bcff0672023242474"
+
+
+[[entry]]
+categories = [ "dev",]
+dependencies = [ "R6", "processx", "utils",]
+name = "callr"
+version = "3.7.1"
+source = "CRAN"
+r_constraint = ">=3.4"
+type = "source"
+[[entry.files]]
+name = "callr_3.7.1.tar.gz"
+hash = "sha256:37e3a57b3a5b3050fe55439394a9191c938f461b38174ecbaadc86539a4189ed"
+
+
+[[entry]]
+categories = [ "dev", "main",]
 dependencies = [ "glue", "utils",]
 name = "cli"
 version = "3.3.0"
@@ -70,6 +96,19 @@ type = "source"
 [[entry.files]]
 name = "cli_3.3.0.tar.gz"
 hash = "sha256:c3a9ebbcb9017fb9aeda4f7df5ca981e42b169cbd7ce13e592cda2cd74250d63"
+
+
+[[entry]]
+categories = [ "dev",]
+dependencies = []
+name = "codetools"
+version = "0.2-18"
+source = "CRAN"
+r_constraint = ">=2.1"
+type = "source"
+[[entry.files]]
+name = "codetools_0.2-18.tar.gz"
+hash = "sha256:1a9ea6b9792dbd1688078455929385acc3a5e4bef945c77bec1261fa4a084c28"
 
 
 [[entry]]
@@ -99,7 +138,46 @@ hash = "sha256:403ce0bf82358d237176053b0fb1e958cb6bfa4d0fb3555bf5801db6a6939b99"
 
 
 [[entry]]
-categories = [ "main",]
+categories = [ "dev",]
+dependencies = [ "grDevices", "methods", "utils",]
+name = "crayon"
+version = "1.5.1"
+source = "CRAN"
+r_constraint = "*"
+type = "source"
+[[entry.files]]
+name = "crayon_1.5.1.tar.gz"
+hash = "sha256:c025c73b78a8e88e8e4363c8e1a941da5089a7baea39e59ea5342ab9ebe45df9"
+
+
+[[entry]]
+categories = [ "dev",]
+dependencies = [ "callr", "crayon", "desc", "remotes", "withr",]
+name = "cyclocomp"
+version = "1.1.0"
+source = "CRAN"
+r_constraint = "*"
+type = "source"
+[[entry.files]]
+name = "cyclocomp_1.1.0.tar.gz"
+hash = "sha256:cdbf65f87bccac53c1527a2f1269ec7840820c18503a7bb854910b30b71e7e3e"
+
+
+[[entry]]
+categories = [ "dev",]
+dependencies = [ "R6", "cli", "rprojroot", "utils",]
+name = "desc"
+version = "1.4.1"
+source = "CRAN"
+r_constraint = ">=3.4"
+type = "source"
+[[entry.files]]
+name = "desc_1.4.1.tar.gz"
+hash = "sha256:8f9ebb51eccf925b2e76bc65ecf495e8f3882b8c0053023f396622f0402d6f54"
+
+
+[[entry]]
+categories = [ "dev", "main",]
 dependencies = [ "utils",]
 name = "digest"
 version = "0.6.29"
@@ -135,6 +213,19 @@ type = "source"
 [[entry.files]]
 name = "ellipsis_0.3.2.tar.gz"
 hash = "sha256:a90266e5eb59c7f419774d5c6d6bd5e09701a26c9218c5933c9bce6765aa1558"
+
+
+[[entry]]
+categories = [ "dev",]
+dependencies = [ "methods",]
+name = "evaluate"
+version = "0.15"
+source = "CRAN"
+r_constraint = ">=3.0.2"
+type = "source"
+[[entry.files]]
+name = "evaluate_0.15.tar.gz"
+hash = "sha256:885aee530a8b6aa7fd3acaa1ecd94ab58b71038c879ca37405f948e105907c5d"
 
 
 [[entry]]
@@ -203,7 +294,7 @@ hash = "sha256:bfcb4eb92a0fcd3fab713aca4bb25e916e05914f2540271a45522ad7e43943a9"
 
 
 [[entry]]
-categories = [ "main",]
+categories = [ "dev", "main",]
 dependencies = [ "methods",]
 name = "glue"
 version = "1.6.2"
@@ -216,13 +307,13 @@ hash = "sha256:9da518f12be584c90e75fe8e07f711ee3f6fc0d03d817f72c25dc0f66499fdbf"
 
 
 [[entry]]
-categories = [ "main",]
+categories = [ "dev", "main",]
 dependencies = []
 name = "grDevices"
 type = "core"
 
 [[entry]]
-categories = [ "main",]
+categories = [ "dev", "main",]
 dependencies = []
 name = "graphics"
 type = "core"
@@ -273,6 +364,19 @@ hash = "sha256:08ed908033420d3d665c87248b3a14d1b6e2b37844bf736be620578c20ca346b"
 
 
 [[entry]]
+categories = [ "dev",]
+dependencies = [ "xfun",]
+name = "highr"
+version = "0.9"
+source = "CRAN"
+r_constraint = ">=3.2.3"
+type = "source"
+[[entry.files]]
+name = "highr_0.9.tar.gz"
+hash = "sha256:beff11390d936c90fdcc00e7ed0eb72220f3de403a51b56659e3d3e0b6d8ed4d"
+
+
+[[entry]]
 categories = [ "main",]
 dependencies = [ "grid", "utils",]
 name = "isoband"
@@ -283,6 +387,32 @@ type = "source"
 [[entry.files]]
 name = "isoband_0.2.5.tar.gz"
 hash = "sha256:46f53fa066f0966f02cb2bf050190c0d5e950dab2cdf565feb63fc092c886ba5"
+
+
+[[entry]]
+categories = [ "dev",]
+dependencies = [ "methods",]
+name = "jsonlite"
+version = "1.8.0"
+source = "CRAN"
+r_constraint = "*"
+type = "source"
+[[entry.files]]
+name = "jsonlite_1.8.0.tar.gz"
+hash = "sha256:7b1892efebcb4cf4628f716000accd4b43bbf82b3e6ba90b9529d4fa0e55cd4c"
+
+
+[[entry]]
+categories = [ "dev",]
+dependencies = [ "evaluate", "highr", "methods", "stringr", "tools", "xfun", "yaml",]
+name = "knitr"
+version = "1.39"
+source = "CRAN"
+r_constraint = ">=3.3.0"
+type = "source"
+[[entry.files]]
+name = "knitr_1.39.tar.gz"
+hash = "sha256:c91a65edebdca779af7f7480fa6636667497c9291ad55d6efd982db0bb91ac72"
 
 
 [[entry]]
@@ -312,6 +442,19 @@ hash = "sha256:22388d92bdb7d3959da84d7308d9026dd8226ef07580783729e8ad2f7d7507ad"
 
 
 [[entry]]
+categories = [ "dev",]
+dependencies = []
+name = "lazyeval"
+version = "0.2.2"
+source = "CRAN"
+r_constraint = ">=3.1.0"
+type = "source"
+[[entry.files]]
+name = "lazyeval_0.2.2.tar.gz"
+hash = "sha256:d6904112a21056222cfcd5eb8175a78aa063afe648a562d9c42c6b960a8820d4"
+
+
+[[entry]]
 categories = [ "main",]
 dependencies = [ "glue", "rlang",]
 name = "lifecycle"
@@ -325,7 +468,20 @@ hash = "sha256:1da76e1c00f1be96ca34e122ae611259430bf99d6a1b999fdef70c00c30f7ba0"
 
 
 [[entry]]
-categories = [ "main",]
+categories = [ "dev",]
+dependencies = [ "backports", "codetools", "crayon", "cyclocomp", "digest", "glue", "jsonlite", "knitr", "rex", "stats", "utils", "xml2", "xmlparsedata",]
+name = "lintr"
+version = "3.0.0"
+source = "CRAN"
+r_constraint = ">=3.2"
+type = "source"
+[[entry.files]]
+name = "lintr_3.0.0.tar.gz"
+hash = "sha256:eeb1d428748311727b0453c6e6b0df2dbf5c15e35c6db1bef7f8d6ac94b177b4"
+
+
+[[entry]]
+categories = [ "dev", "main",]
 dependencies = []
 name = "magrittr"
 version = "2.0.3"
@@ -338,7 +494,7 @@ hash = "sha256:a2bff83f792a1acb801bfe6330bb62724c74d5308832f2cb6a6178336ace55d2"
 
 
 [[entry]]
-categories = [ "main",]
+categories = [ "dev", "main",]
 dependencies = []
 name = "methods"
 type = "core"
@@ -409,6 +565,32 @@ hash = "sha256:330fef440ffeb842a7dcfffc8303743f1feae83e8d6131078b5a44ff11bc3850"
 
 
 [[entry]]
+categories = [ "dev",]
+dependencies = [ "R6", "ps", "utils",]
+name = "processx"
+version = "3.7.0"
+source = "CRAN"
+r_constraint = ">=3.4.0"
+type = "source"
+[[entry.files]]
+name = "processx_3.7.0.tar.gz"
+hash = "sha256:de6a8d4135fc53ec35043fbaf6b000dc9597719345595d8479662a39dad55ed3"
+
+
+[[entry]]
+categories = [ "dev",]
+dependencies = [ "utils",]
+name = "ps"
+version = "1.7.1"
+source = "CRAN"
+r_constraint = ">=3.4"
+type = "source"
+[[entry.files]]
+name = "ps_1.7.1.tar.gz"
+hash = "sha256:9c458a377d47cc972d3cd0b2a17d0b7ad3cf3b62226410803072089a57a55ef1"
+
+
+[[entry]]
 categories = [ "main",]
 dependencies = [ "magrittr", "rlang",]
 name = "purrr"
@@ -419,6 +601,32 @@ type = "source"
 [[entry.files]]
 name = "purrr_0.3.4.tar.gz"
 hash = "sha256:23ebc93bc9aed9e7575e8eb9683ff4acc0270ef7d6436cc2ef4236a9734840b2"
+
+
+[[entry]]
+categories = [ "dev",]
+dependencies = [ "methods", "stats", "tools", "utils",]
+name = "remotes"
+version = "2.4.2"
+source = "CRAN"
+r_constraint = ">=3.0.0"
+type = "source"
+[[entry.files]]
+name = "remotes_2.4.2.tar.gz"
+hash = "sha256:f2ef875f24a485bf4f55a8c830f87cdd5db868f9a8cdb624dc452d0bf66ba516"
+
+
+[[entry]]
+categories = [ "dev",]
+dependencies = [ "lazyeval",]
+name = "rex"
+version = "1.2.1"
+source = "CRAN"
+r_constraint = "*"
+type = "source"
+[[entry.files]]
+name = "rex_1.2.1.tar.gz"
+hash = "sha256:af42e649c06e4bbdba94d5a1870a7e8347903571c90cd5e5ca40f52307a3bfd6"
 
 
 [[entry]]
@@ -480,13 +688,13 @@ name = "splines"
 type = "core"
 
 [[entry]]
-categories = [ "main",]
+categories = [ "dev", "main",]
 dependencies = []
 name = "stats"
 type = "core"
 
 [[entry]]
-categories = [ "main",]
+categories = [ "dev", "main",]
 dependencies = [ "stats", "tools", "utils",]
 name = "stringi"
 version = "1.7.8"
@@ -499,7 +707,7 @@ hash = "sha256:538918b1cd6ed1d8a2dd5ab146ba800a088e99f93c52dcd82615b6e127478b1c"
 
 
 [[entry]]
-categories = [ "main",]
+categories = [ "dev", "main",]
 dependencies = [ "glue", "magrittr", "stringi",]
 name = "stringr"
 version = "1.4.0"
@@ -564,7 +772,7 @@ hash = "sha256:0389a3b15417954a30d6d692f6ebdd3d0f318cb94a5c9b05365df2f4ea1d8270"
 
 
 [[entry]]
-categories = [ "main",]
+categories = [ "dev", "main",]
 dependencies = []
 name = "tools"
 type = "core"
@@ -583,7 +791,7 @@ hash = "sha256:a71aee87d43a9bcf29249c7a5a2e9ca1d2a836e8d5ee3a264d3062f25378d8f4"
 
 
 [[entry]]
-categories = [ "main",]
+categories = [ "dev", "main",]
 dependencies = []
 name = "utils"
 type = "core"
@@ -615,7 +823,7 @@ hash = "sha256:849955dc8ad9bc52bdc50ed4867fd92a510696fc8294e6971efa018437c83c6a"
 
 
 [[entry]]
-categories = [ "main",]
+categories = [ "dev", "main",]
 dependencies = [ "grDevices", "graphics", "stats",]
 name = "withr"
 version = "2.5.0"
@@ -627,7 +835,59 @@ name = "withr_2.5.0.tar.gz"
 hash = "sha256:37317b3ed790a08407072993a05ab255f6305f95a12a16e0e28aa6aa80fc8bc0"
 
 
+[[entry]]
+categories = [ "dev",]
+dependencies = [ "stats", "tools",]
+name = "xfun"
+version = "0.31"
+source = "CRAN"
+r_constraint = "*"
+type = "source"
+[[entry.files]]
+name = "xfun_0.31.tar.gz"
+hash = "sha256:d169f3e682dab0c3f2ca381f2dba9b7014a5e2ca3d6863dbae3d1bca699ef235"
+
+
+[[entry]]
+categories = [ "dev",]
+dependencies = [ "methods",]
+name = "xml2"
+version = "1.3.3"
+source = "CRAN"
+r_constraint = ">=3.1.0"
+type = "source"
+[[entry.files]]
+name = "xml2_1.3.3.tar.gz"
+hash = "sha256:cb4e9c0d31618ed67d2bfa4c7b5e52680e11612ed356a8164b541d44163c1c8d"
+
+
+[[entry]]
+categories = [ "dev",]
+dependencies = []
+name = "xmlparsedata"
+version = "1.0.5"
+source = "CRAN"
+r_constraint = ">=3.0.0"
+type = "source"
+[[entry.files]]
+name = "xmlparsedata_1.0.5.tar.gz"
+hash = "sha256:766034ab5e9728609bd240c9954d23ca0cdb881a98a31b9d3e1c8767c7b7cbb0"
+
+
+[[entry]]
+categories = [ "dev",]
+dependencies = []
+name = "yaml"
+version = "2.3.5"
+source = "CRAN"
+r_constraint = "*"
+type = "source"
+[[entry.files]]
+name = "yaml_2.3.5.tar.gz"
+hash = "sha256:3edf6c0554a0e184a25e8bec5721a2e66b4ab0dceb3737428e22705e52eb5140"
+
+
 [metadata]
 version = 2
-content_hash = "c385fd58ccb65d028993d522265e3beed4e014bfaea33d5b514002215fc6d941"
+content_hash = "4dd6d1d4b34c48766eec5225ef962f51228c3a62ffa357fcb9ca189bc0867b00"
 conservative = false
