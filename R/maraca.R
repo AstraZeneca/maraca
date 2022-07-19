@@ -13,7 +13,7 @@ library(ggfortify)
   return(wo.result)
 }
 
-maraca <- function() {
+maraca <- function(filename) {
 
   `%>%` <- dplyr::`%>%`
 
@@ -27,7 +27,7 @@ maraca <- function() {
   ##########################
 
   ### Read in the data ###
-  HCE <- read.csv("tests/fixtures/HCE scenario A.csv")
+  HCE <- read.csv(filename)
 
   vars <- dplyr::vars
 

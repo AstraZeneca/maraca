@@ -13,3 +13,6 @@ ggplot2 = "^3.3"
 ggfortify = "^0.4"
 survival = "^3.3"
 sanon = "^1.6"
+
+[tool.roo.dev-dependencies]
+here = "^1.0"
