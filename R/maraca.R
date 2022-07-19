@@ -6,7 +6,7 @@ library(ggfortify)
     ordinal_val ~ grp(treatments, ref = reference), data = data
   )
   CI0 <- confint(fit)$ci
-  CI <- CI0/(1-CI0)
+  CI <- CI0 / (1 - CI0)
   p <- fit$p
 
   wo.result <- c(CI, p)
@@ -34,7 +34,10 @@ maraca <- function(filename) {
   vars <- dplyr::vars
 
   # Input parameters
-  ep.order <- c("Outcome I", "Outcome II", "Outcome III", "Outcome IV", "Continuous outcome")  # Order of the endpoints. The continuous endpoint should always be last.
+  # Order of the endpoints. The continuous endpoint should always be last.
+  ep.order <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV",
+    "Continuous outcome")
   treatments <- c("Active", "Control")
   fixed.follow.up.days <- 3 * 365
 
@@ -51,13 +54,14 @@ maraca <- function(filename) {
   # Function to calculate the Win-Odds results #
   ##############################################
   #
-  # wo.result <- calcWinOdds(data = HCE, ordinalVal = "AVAL", group = "TRTP", reference = "Control")
+  # wo.result <- calcWinOdds(
+    # data = HCE, ordinalVal = "AVAL", group = "TRTP", reference = "Control")
 
 
   grp <- sanon::grp
   fit <- sanon::sanon(AVAL ~ grp(TRTP, ref = "Control"), data = HCE)
   CI0 <- confint(fit)$ci
-  CI <- CI0/(1-CI0)
+  CI <- CI0 / (1 - CI0)
   p <- fit$p
 
   wo.result <- c(CI, p)
@@ -74,8 +78,7 @@ maraca <- function(filename) {
   # Maraca <- function(data, ep.order, treatments) {
 
 
-  ### Calculate meta information from the entire HCE dataset needed for plotting ###
-  ##################################################################################
+  # Calculate meta information from the entire HCE dataset needed for plotting
     n <- dplyr::n
 
     meta1 <- HCE %>%
@@ -100,79 +103,96 @@ maraca <- function(filename) {
 
 
 
-  ### Prepare data and calculate meta information about the time-to-event data ###
-  ################################################################################
+  # Prepare data and calculate meta information about the time-to-event data
 
-    # Use the largest value across the hard endpoints if fixed.follow.up.days is not specified
-    HCE$kmday <- max(meta[meta$GROUP %in% head(ep.order, -1),]$maxday)
+    # Use the largest value across the hard endpoints if i
+    # fixed.follow.up.days is not specified
+    HCE$kmday <- max(meta[meta$GROUP %in% head(ep.order, -1), ]$maxday)
     # Use the specified length of the fixed-follow-up trial if specified
     HCE$kmday <- meta$fixed.followup[1]
 
-    HCE[HCE$GROUP %in% head(ep.order, -1),]$kmday <- HCE[HCE$GROUP %in% head(ep.order, -1),]$AVAL0
+    HCE[HCE$GROUP %in% head(ep.order, -1), ]$kmday <- HCE[
+      HCE$GROUP %in% head(ep.order, -1), ]$AVAL0
 
     Surv <- survival::Surv
     # Create survival model dataset
     survmod.data <- cbind(
-      ggplot2::fortify( with(HCE,
+      ggplot2::fortify(with(HCE,
         survival::survfit(
           Surv(time = kmday, event = GROUP == ep.order[1]) ~ TRTP))
       ), GROUP = ep.order[1])
 
-    for(i in 2:length(ep.order)-1) {
+    for (i in 2:length(ep.order) - 1) {
       survmod.data <- rbind(
         survmod.data,
         cbind(
-          ggplot2::fortify( with(HCE, survival::survfit(Surv(time = kmday, event = GROUP == ep.order[i]) ~ TRTP)) ), GROUP = ep.order[i] ))
+          ggplot2::fortify(with(HCE,
+            survival::survfit(
+              Surv(time = kmday, event = GROUP == ep.order[i]) ~ TRTP))
+              ), GROUP = ep.order[i]))
     }
 
     survmod.data <- survmod.data %>%
-      dplyr::mutate_at(vars(GROUP), factor, levels=ep.order) %>%
-      dplyr::mutate_at(vars(strata), factor, levels=treatments)
+      dplyr::mutate_at(vars(GROUP), factor, levels = ep.order) %>%
+      dplyr::mutate_at(vars(strata), factor, levels = treatments)
 
     survmod.data$adjusted.time <- 0
-    for(i in head(ep.order, -1)) {
-      survmod.data[survmod.data$GROUP == i,]$adjusted.time <- meta[meta$GROUP == i,]$startx + survmod.data[survmod.data$GROUP == i,]$time/max(survmod.data[survmod.data$GROUP == i,]$time)*meta[meta$GROUP == i,]$proportion
+    for (i in head(ep.order, -1)) {
+      survmod.data[survmod.data$GROUP == i, ]$adjusted.time <- meta[
+        meta$GROUP == i, ]$startx +
+        survmod.data[survmod.data$GROUP == i, ]$time /
+        max(survmod.data[survmod.data$GROUP == i, ]$time) *
+        meta[meta$GROUP == i, ]$proportion
     }
 
-  #  { (b - a)*(x - min(x))/(max(x) - min(x)) + a } Could use this for the adjustment of time? !!
-
-    survmod.data <- survmod.data %>% dplyr::mutate(km.y = 1-surv)
+    survmod.data <- survmod.data %>% dplyr::mutate(km.y = 1 - surv)
 
     survmod.meta <- survmod.data %>%
       dplyr::group_by(strata, GROUP) %>%
-      dplyr::summarise(max = 100*max(1-surv), sum.event = sum(n.event)) %>%
-      dplyr::mutate(km.start = c(0, cumsum(head(max, -1))), km.end = cumsum(max))
+      dplyr::summarise(max = 100 * max(1 - surv), sum.event = sum(n.event)) %>%
+      dplyr::mutate(km.start = c(0, cumsum(head(max, -1))),
+        km.end = cumsum(max))
 
-    survmod.data <- survmod.data %>% dplyr::left_join(survmod.meta, by = c("strata", "GROUP") )
+    survmod.data <- survmod.data %>% dplyr::left_join(
+      survmod.meta, by = c("strata", "GROUP")
+    )
 
 
 
-  ### Calculate meta information from the continuous dataset needed for plotting ###
-  ##################################################################################
-    slope_data <- HCE[HCE$GROUP == tail(ep.order, 1),]
+  # Calculate meta information from the continuous dataset needed for plotting
+    slope_data <- HCE[HCE$GROUP == tail(ep.order, 1), ]
 
-    start.cont.ep <- meta[meta$GROUP == tail(ep.order, 1),]$startx
+    start.cont.ep <- meta[meta$GROUP == tail(ep.order, 1), ]$startx
 
-    to.rangeab <- function(x) { (100 - start.cont.ep)*(x - min(slope_data$AVAL0))/(max(slope_data$AVAL0) - min(slope_data$AVAL0)) + start.cont.ep }
-    from.rangeab <- function(y) {(y - start.cont.ep)/(100 - start.cont.ep)*(max(slope_data$AVAL0) - min(slope_data$AVAL0)) + min(slope_data$AVAL0)}
+    to.rangeab <- function(x) {
+      (100 - start.cont.ep) * (x - min(slope_data$AVAL0)) /
+      (max(slope_data$AVAL0) - min(slope_data$AVAL0)) + start.cont.ep
+    }
+    from.rangeab <- function(y) {
+      (y - start.cont.ep) / (100 - start.cont.ep) * (max(slope_data$AVAL0) -
+      min(slope_data$AVAL0)) + min(slope_data$AVAL0)
+    }
 
     zeroposition <- to.rangeab(0)
-    slope_data$x = to.rangeab(slope_data$AVAL0)
+    slope_data$x <- to.rangeab(slope_data$AVAL0)
 
     slope_meta <- slope_data %>%
       dplyr::group_by(TRTP) %>%
       dplyr::summarise(n = n(), median = median(x), average = mean(x))
 
     slope_data$violinx <- 0
-    slope_data[slope_data$TRTP == treatments[1],]$violinx <- seq(from = start.cont.ep, to = 100, length.out = slope_meta$n[1])
-    slope_data[slope_data$TRTP == treatments[2],]$violinx <- seq(from = start.cont.ep, to = 100, length.out = slope_meta$n[2])
-    slope_data$violiny <- survmod.meta[survmod.meta$strata == treatments[1] & survmod.meta$GROUP == ep.order[length(ep.order)-1],]$km.end
-    slope_data[slope_data$TRTP == treatments[2], ]$violiny <- survmod.meta[survmod.meta$strata == treatments[2] & survmod.meta$GROUP == ep.order[length(ep.order)-1],]$km.end
-
-
-  # ggplot(slope_data) + geom_violin(aes(x = x, y = violiny, color = TRTP))
-
-    # Calculate the gridlines for the continuous outcome scale to be the best fit for a separation of 10 units (could be an input to the function)
+    slope_data[slope_data$TRTP == treatments[1], ]$violinx <- seq(
+      from = start.cont.ep, to = 100, length.out = slope_meta$n[1])
+    slope_data[slope_data$TRTP == treatments[2], ]$violinx <- seq(
+      from = start.cont.ep, to = 100, length.out = slope_meta$n[2])
+    slope_data$violiny <- survmod.meta[
+      survmod.meta$strata == treatments[1] &
+      survmod.meta$GROUP == ep.order[length(ep.order) - 1],
+      ]$km.end
+    slope_data[slope_data$TRTP == treatments[2], ]$violiny <- survmod.meta[
+      survmod.meta$strata == treatments[2] &
+      survmod.meta$GROUP == ep.order[length(ep.order) - 1],
+      ]$km.end
 
     return(
       structure(
@@ -194,7 +214,10 @@ plot_maraca <- function(obj) {
   slope_data
   ep.order
 
-  minorGrid <- seq(sign(min(slope_data$AVAL0))*floor(abs(min(slope_data$AVAL0))/10)*10, sign(max(slope_data$AVAL0))*floor(abs(max(slope_data$AVAL0))/10)*10, by=10)
+  minorGrid <- seq(
+    sign(min(slope_data$AVAL0)) * floor(abs(min(slope_data$AVAL0)) / 10) * 10,
+    sign(max(slope_data$AVAL0)) * floor(abs(max(slope_data$AVAL0)) / 10) * 10,
+    by = 10)
 
   # Plot the information in the Maraca plot
   ggplot2::ggplot(survmod.data, aes(colour = TRTP)) +
@@ -245,15 +268,16 @@ plot_maraca <- function(obj) {
       label = paste(
         "Win odds (95% CI): ", round(wo.result[1], 2),
         " (", round(wo.result[2], 2), ", ", round(wo.result[3], 2), ")", "\n",
-        "p-value: ", format.pval(wo.result[4], digits = 3, eps = 0.001), sep=""
+        "p-value: ", format.pval(wo.result[4], digits = 3, eps = 0.001),
+        sep = ""
       ),
       hjust = 0, vjust = 1.4, size = 3
     ) +
     ggplot2::theme(
       axis.text.x.bottom = ggplot2::element_text(
-        angle = c(rep(90, length(ep.order)-1), 0),
-        vjust = c(rep(0.5, length(ep.order)-1), 0),
-        hjust = c(rep(1, length(ep.order)-1), 0.5)
+        angle = c(rep(90, length(ep.order) - 1), 0),
+        vjust = c(rep(0.5, length(ep.order) - 1), 0),
+        hjust = c(rep(1, length(ep.order) - 1), 0.5)
       ),
       axis.ticks.x.bottom = ggplot2::element_blank(),
       panel.grid.major.x = ggplot2::element_blank(),
@@ -273,7 +297,3 @@ plot_tte_trellis <- function(obj) {
 `plot.maraca::maraca` <- function(obj) {
   plot_maraca(obj)
 }
-
-###########################################################################################################################
-###########################################################################################################################
-
