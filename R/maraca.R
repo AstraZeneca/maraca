@@ -3,7 +3,6 @@ library(ggfortify)
 
 
 maraca <- function(filename) {
-
   `%>%` <- dplyr::`%>%`
 
   ##########################
@@ -29,27 +28,7 @@ maraca <- function(filename) {
     dplyr::mutate_at(vars(GROUP), factor, levels = endpoints) %>%
     dplyr::mutate_at(vars(TRTP), factor, levels = treatments)
 
-
-
-  ##############################################
-  # Function to calculate the Win-Odds results #
-  ##############################################
-  #
-  # wo.result <- calcWinOdds(
-    # data = HCE, ordinalVal = "AVAL", group = "TRTP", reference = "Control")
-
-
-  grp <- sanon::grp
-  fit <- sanon::sanon(AVAL ~ grp(TRTP, ref = "Control"), data = HCE)
-  CI0 <- confint(fit)$ci
-  CI <- CI0 / (1 - CI0)
-  p <- fit$p
-
-  win_odds <- c(CI, p)
-  names(win_odds) <- c("estimate", "lower", "upper", "p-value")
-
-
-
+  win_odds <- .compute_win_odds(HCE)
 
   ##############################################
   ### Calculations that support the ploting  ###
@@ -191,20 +170,19 @@ plot_tte_trellis <- function(obj) {
   print(plot_maraca(obj))
 }
 
-# Private
-.win_odds <- function(data, ordinal_val, treatments, reference) {
-  grp <- sanon::grp
-  fit <- sanon::sanon(
-    ordinal_val ~ grp(treatments, ref = reference), data = data
-  )
+# Private functions
+
+.compute_win_odds <- function(HCE) {
+  grp <- sanon::grp # nolint
+  fit <- sanon::sanon(AVAL ~ grp(TRTP, ref = "Control"), data = HCE)
   CI0 <- confint(fit)$ci
   CI <- CI0 / (1 - CI0)
   p <- fit$p
 
-  wo.result <- c(CI, p)
-  names(wo.result) <- c("estimate", "lower", "upper", "p-value")
+  win_odds <- c(CI, p)
+  names(win_odds) <- c("estimate", "lower", "upper", "p-value")
 
-  return(wo.result)
+  return(win_odds)
 }
 
 .compute_metainfo <- function(HCE, fixed_followup_days) {
@@ -242,7 +220,8 @@ plot_tte_trellis <- function(obj) {
   HCE[HCE$GROUP %in% head(endpoints, -1), ]$kmday <- HCE[
     HCE$GROUP %in% head(endpoints, -1), ]$AVAL0
 
-  Surv <- survival::Surv
+  Surv <- survival::Surv # nolint
+
   # Create survival model dataset
   survmod_data <- cbind(
     ggplot2::fortify(with(HCE,
