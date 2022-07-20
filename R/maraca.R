@@ -193,8 +193,8 @@ maraca <- function(filename) {
   CI <- CI0 / (1 - CI0)
   p <- fit$p
 
-  wo.result <- c(CI, p)
-  names(wo.result) <- c("estimate", "lower", "upper", "p-value")
+  win_odds <- c(CI, p)
+  names(win_odds) <- c("estimate", "lower", "upper", "p-value")
 
 
 
@@ -216,7 +216,8 @@ maraca <- function(filename) {
         meta = meta,
         slope = slope,
         survmod = survmod,
-        endpoints = endpoints
+        endpoints = endpoints,
+        win_odds = win_odds
       ),
       class = c("maraca::maraca")
     )
@@ -230,6 +231,8 @@ plot_maraca <- function(obj) {
   slope <- obj$slope
   survmod <- obj$survmod
   endpoints <- obj$endpoints
+  win_odds <- obj$win_odds
+  start_continuous_endpoint <- meta[meta$GROUP == tail(endpoints, 1), ]$startx
 
   minor_grid <- seq(
     sign(min(slope$data$AVAL0)) * floor(abs(min(slope$data$AVAL0)) / 10) * 10,
@@ -243,7 +246,7 @@ plot_maraca <- function(obj) {
     max(slope$data$AVAL0)
   )
   # Plot the information in the Maraca plot
-  ggplot2::ggplot(survmod$data, aes(colour = TRTP)) +
+  plot <- ggplot2::ggplot(survmod$data, aes(colour = TRTP)) +
     ggplot2::geom_vline(
       xintercept = cumsum(c(0, meta$proportion)),
       color = "grey80"
@@ -302,35 +305,36 @@ plot_maraca <- function(obj) {
       x = 0,
       y = Inf,
       label = paste(
-        "Win odds (95% CI): ", round(wo.result[1], 2),
-        " (", round(wo.result[2], 2), ", ", round(wo.result[3], 2), ")", "\n",
-        "p-value: ", format.pval(wo.result[4], digits = 3, eps = 0.001),
+        "Win odds (95% CI): ", round(win_odds[1], 2),
+        " (", round(win_odds[2], 2), ", ", round(win_odds[3], 2), ")", "\n",
+        "p-value: ", format.pval(win_odds[4], digits = 3, eps = 0.001),
         sep = ""
       ),
       hjust = 0, vjust = 1.4, size = 3
     ) +
     ggplot2::theme(
       axis.text.x.bottom = ggplot2::element_text(
-        angle = c(rep(90, length(endpoints) - 1), 0),
-        vjust = c(rep(0.5, length(endpoints) - 1), 0),
-        hjust = c(rep(1, length(endpoints) - 1), 0.5)
+        angle = 90,
+        vjust = 0.5,
+        hjust = 1
       ),
       axis.ticks.x.bottom = ggplot2::element_blank(),
       panel.grid.major.x = ggplot2::element_blank(),
       axis.title.x.bottom =  ggplot2::element_blank()
     ) +
-    ggplot2::guides(fill = FALSE)
+    ggplot2::guides(fill = "none")
 
-
+  return(plot)
 }
 
 plot_tte_trellis <- function(obj) {
   survmod <- obj$survmod
-  ggplot2::ggplot(survmod$data) +
+  plot <- ggplot2::ggplot(survmod$data) +
     ggplot2::geom_line(aes(x = time, y = km.y * 100, color = strata)) +
     ggplot2::facet_grid(cols = vars(GROUP))
+  return(plot)
 }
 
 `plot.maraca::maraca` <- function(obj) {
-  plot_maraca(obj)
+  print(plot_maraca(obj))
 }
