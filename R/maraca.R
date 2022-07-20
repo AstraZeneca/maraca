@@ -1,4 +1,4 @@
-#' Creates the maraca analysis object
+#' Creates the maraca analysis object as an S3 object of class 'maraca::maraca'
 #'
 #' @export
 maraca <- function(filename) {
@@ -29,11 +29,6 @@ maraca <- function(filename) {
 
   win_odds <- .compute_win_odds(HCE)
 
-  ##############################################
-  ### Calculations that support the ploting  ###
-  ##############################################
-
-
   # Calculate meta information from the entire HCE dataset needed for plotting
 
   meta <- .compute_metainfo(HCE, fixed_followup_days)
@@ -59,6 +54,8 @@ maraca <- function(filename) {
 #' Renders and returns a ggplot2 object of the maraca data. This function
 #' will not render the plot immediately. You have to print() the returned
 #' object for it to be displayed.
+#'
+#' @param obj an object of S3 class 'maraca::maraca'
 #'
 #' @export
 plot_maraca <- function(obj) {
@@ -170,6 +167,8 @@ plot_maraca <- function(obj) {
 #' will not render the plot immediately. You have to print() the returned
 #' object for it to be displayed.
 #'
+#' @param obj an object of S3 class 'maraca::maraca'
+#'
 #' @export
 plot_tte_trellis <- function(obj) {
   aes <- ggplot2::aes
@@ -185,6 +184,8 @@ plot_tte_trellis <- function(obj) {
 #' Generic function to plot the maraca object using plot().
 #'
 #' This will produce the plot_maraca plot.
+#'
+#' @param obj an object of S3 class 'maraca::maraca'
 #'
 #' @export
 `plot.maraca::maraca` <- function(obj) {
