@@ -15,7 +15,7 @@ library(ggfortify)
   return(wo.result)
 }
 
-.compute_metainfo <- function(HCE) {
+.compute_metainfo <- function(HCE, fixed_followup_days) {
   n <- dplyr::n
 
   meta1 <- HCE %>%
@@ -23,7 +23,7 @@ library(ggfortify)
     dplyr::summarise(
       n = n(), proportion = n / dim(HCE)[1] * 100, maxday = max(AVAL0)) %>%
     dplyr::mutate(
-      fixed.followup = fixed.follow.up.days,
+      fixed.followup = fixed_followup_days,
       startx = c(0, cumsum(head(proportion, -1))),
       endx = cumsum(proportion),
       starty = 0,
@@ -40,62 +40,62 @@ library(ggfortify)
   return(meta)
 }
 
-.compute_survmod_data <- function() {
-    # Use the largest value across the hard endpoints if i
-    # fixed.follow.up.days is not specified
-    HCE$kmday <- max(meta[meta$GROUP %in% head(ep.order, -1), ]$maxday)
-    # Use the specified length of the fixed-follow-up trial if specified
-    HCE$kmday <- meta$fixed.followup[1]
+.compute_survmod <- function(HCE, meta, endpoints, treatments) {
+  # Use the largest value across the hard endpoints if i
+  # fixed.follow.up.days is not specified
+  HCE$kmday <- max(meta[meta$GROUP %in% head(endpoints, -1), ]$maxday)
+  # Use the specified length of the fixed-follow-up trial if specified
+  HCE$kmday <- meta$fixed.followup[1]
 
-    HCE[HCE$GROUP %in% head(ep.order, -1), ]$kmday <- HCE[
-      HCE$GROUP %in% head(ep.order, -1), ]$AVAL0
+  HCE[HCE$GROUP %in% head(endpoints, -1), ]$kmday <- HCE[
+    HCE$GROUP %in% head(endpoints, -1), ]$AVAL0
 
-    Surv <- survival::Surv
-    # Create survival model dataset
-    survmod.data <- cbind(
-      ggplot2::fortify(with(HCE,
-        survival::survfit(
-          Surv(time = kmday, event = GROUP == ep.order[1]) ~ TRTP))
-      ), GROUP = ep.order[1])
+  Surv <- survival::Surv
+  # Create survival model dataset
+  survmod_data <- cbind(
+    ggplot2::fortify(with(HCE,
+      survival::survfit(
+        Surv(time = kmday, event = GROUP == endpoints[1]) ~ TRTP))
+    ), GROUP = endpoints[1])
 
-    for (i in 2:length(ep.order) - 1) {
-      survmod.data <- rbind(
-        survmod.data,
-        cbind(
-          ggplot2::fortify(with(HCE,
-            survival::survfit(
-              Surv(time = kmday, event = GROUP == ep.order[i]) ~ TRTP))
-              ), GROUP = ep.order[i]))
-    }
+  for (i in 2:length(endpoints) - 1) {
+    survmod_data <- rbind(
+      survmod_data,
+      cbind(
+        ggplot2::fortify(with(HCE,
+          survival::survfit(
+            Surv(time = kmday, event = GROUP == endpoints[i]) ~ TRTP))
+            ), GROUP = endpoints[i]))
+  }
 
-    survmod.data <- survmod.data %>%
-      dplyr::mutate_at(vars(GROUP), factor, levels = ep.order) %>%
-      dplyr::mutate_at(vars(strata), factor, levels = treatments)
+  survmod_data <- survmod_data %>%
+    dplyr::mutate_at(vars(GROUP), factor, levels = endpoints) %>%
+    dplyr::mutate_at(vars(strata), factor, levels = treatments)
 
-    survmod.data$adjusted.time <- 0
-    for (i in head(ep.order, -1)) {
-      survmod.data[survmod.data$GROUP == i, ]$adjusted.time <- meta[
-        meta$GROUP == i, ]$startx +
-        survmod.data[survmod.data$GROUP == i, ]$time /
-        max(survmod.data[survmod.data$GROUP == i, ]$time) *
-        meta[meta$GROUP == i, ]$proportion
-    }
+  survmod_data$adjusted.time <- 0
+  for (i in head(endpoints, -1)) {
+    survmod_data[survmod_data$GROUP == i, ]$adjusted.time <- meta[
+      meta$GROUP == i, ]$startx +
+      survmod_data[survmod_data$GROUP == i, ]$time /
+      max(survmod_data[survmod_data$GROUP == i, ]$time) *
+      meta[meta$GROUP == i, ]$proportion
+  }
 
-    survmod.data <- survmod.data %>% dplyr::mutate(km.y = 1 - surv)
+  survmod_data <- survmod_data %>% dplyr::mutate(km.y = 1 - surv)
 
-    survmod.meta <- survmod.data %>%
-      dplyr::group_by(strata, GROUP) %>%
-      dplyr::summarise(max = 100 * max(1 - surv), sum.event = sum(n.event)) %>%
-      dplyr::mutate(km.start = c(0, cumsum(head(max, -1))),
-        km.end = cumsum(max))
+  survmod_meta <- survmod_data %>%
+    dplyr::group_by(strata, GROUP) %>%
+    dplyr::summarise(max = 100 * max(1 - surv), sum.event = sum(n.event)) %>%
+    dplyr::mutate(km.start = c(0, cumsum(head(max, -1))),
+      km.end = cumsum(max))
 
-    survmod.data <- survmod.data %>% dplyr::left_join(
-      survmod.meta, by = c("strata", "GROUP")
-    )
+  survmod_data <- survmod_data %>% dplyr::left_join(
+    survmod_meta, by = c("strata", "GROUP")
+  )
 
   return(list(
-    data = survmod.data,
-    meta = survmod.meta
+    data = survmod_data,
+    meta = survmod_meta
   ))
 }
 
@@ -104,9 +104,10 @@ to_rangeab <- function(x, start_continuous_endpoint, minval, maxval) {
     (maxval - minval) + start_continuous_endpoint
 }
 
-.compute_slope <- function(survmod, endpoints) {
-  slope_data <- HCE[HCE$GROUP == tail(endpoins, 1), ]
+.compute_slope <- function(HCE, meta, survmod, endpoints, treatments) {
+  n <- dplyr::n
 
+  slope_data <- HCE[HCE$GROUP == tail(endpoints, 1), ]
   start_continuous_endpoint <- meta[meta$GROUP == tail(endpoints, 1), ]$startx
 
   slope_data$x <- to_rangeab(
@@ -168,14 +169,13 @@ maraca <- function(filename) {
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV",
     "Continuous outcome")
   treatments <- c("Active", "Control")
-  fixed.follow.up.days <- 3 * 365
+  fixed_followup_days <- 3 * 365
 
   # Remove unwanted endpoints and treatments
   HCE <- HCE %>%
-    dplyr::filter(GROUP %in% ep.order) %>%
+    dplyr::filter(GROUP %in% endpoints) %>%
     dplyr::mutate_at(vars(GROUP), factor, levels = endpoints) %>%
     dplyr::mutate_at(vars(TRTP), factor, levels = treatments)
-
 
 
 
@@ -206,20 +206,21 @@ maraca <- function(filename) {
 
   # Calculate meta information from the entire HCE dataset needed for plotting
 
-  meta <- .compute_metainfo()
-  survmod <- .compute_survmod()
-  slope <- .compute_slope(survmod, endpoints)
+  meta <- .compute_metainfo(HCE, fixed_followup_days)
+  survmod <- .compute_survmod(HCE, meta, endpoints, treatments)
+  slope <- .compute_slope(HCE, meta, survmod, endpoints, treatments)
 
-    return(
-      structure(
-        list(
-          meta = meta,
-          slope = slope
-          survmod = survmod
-        ),
-        class = c("maraca::maraca")
-      )
+  return(
+    structure(
+      list(
+        meta = meta,
+        slope = slope,
+        survmod = survmod,
+        endpoints = endpoints
+      ),
+      class = c("maraca::maraca")
     )
+  )
 }
 
 plot_maraca <- function(obj) {
@@ -228,13 +229,15 @@ plot_maraca <- function(obj) {
   meta <- obj$meta
   slope <- obj$slope
   survmod <- obj$survmod
+  endpoints <- obj$endpoints
 
   minor_grid <- seq(
     sign(min(slope$data$AVAL0)) * floor(abs(min(slope$data$AVAL0)) / 10) * 10,
     sign(max(slope$data$AVAL0)) * floor(abs(max(slope$data$AVAL0)) / 10) * 10,
-    by = 10)
+    by = 10
+  )
 
-  zeroposition <- to_rangeab(0
+  zeroposition <- to_rangeab(0,
     start_continuous_endpoint,
     min(slope$data$AVAL0),
     max(slope$data$AVAL0)
@@ -275,7 +278,7 @@ plot_maraca <- function(obj) {
     ggplot2::scale_x_continuous(
       limits = c(0, 100),
       breaks = c(meta$proportion / 2 + meta$startx),
-      labels = ep.order,
+      labels = endpoints,
       minor_breaks = to_rangeab(
         minor_grid,
         start_continuous_endpoint,
@@ -308,9 +311,9 @@ plot_maraca <- function(obj) {
     ) +
     ggplot2::theme(
       axis.text.x.bottom = ggplot2::element_text(
-        angle = c(rep(90, length(ep.order) - 1), 0),
-        vjust = c(rep(0.5, length(ep.order) - 1), 0),
-        hjust = c(rep(1, length(ep.order) - 1), 0.5)
+        angle = c(rep(90, length(endpoints) - 1), 0),
+        vjust = c(rep(0.5, length(endpoints) - 1), 0),
+        hjust = c(rep(1, length(endpoints) - 1), 0.5)
       ),
       axis.ticks.x.bottom = ggplot2::element_blank(),
       panel.grid.major.x = ggplot2::element_blank(),
