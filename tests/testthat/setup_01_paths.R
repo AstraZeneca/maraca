@@ -14,4 +14,16 @@ artifacts_path <- function(...) {
   file.path(root_path(), "tests", "artifacts", ...)
 }
 
-pdf(file = artifacts_path("test_plots.pdf"))
+
+pdf_device <- NULL
+if (generates_plots) {
+  pdf(file = artifacts_path("test_plots.pdf"))
+  pdf_device <- dev.cur()
+}
+
+cleanup <- function() {
+  if (!is.null(pdf_device)) {
+    dev.off(pdf_device)
+  }
+}
+withr::defer(cleanup(), teardown_env())
