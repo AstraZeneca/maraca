@@ -22,5 +22,6 @@ Imports:
     sanon (>= 1.6)
 RoxygenNote: 7.1.2
 Suggests:
+    knitr (>= 1.39)
 VignetteBuilder: knitr
 NeedsCompilation: no

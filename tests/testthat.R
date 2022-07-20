@@ -1,4 +1,4 @@
 library(testthat)
-library(maracas)
+library(maraca)
 
-test_check("maracas")
+test_check("maraca")
