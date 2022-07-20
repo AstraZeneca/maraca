@@ -1,3 +1,4 @@
+.PHONY: help test unittest build document namespace
 help:
 	@echo "make (env|test|unittest|build)"
 
@@ -9,6 +10,12 @@ test:
 unittest:
 	Rscript -e "devtools::test()"
 
-build:
+document:
 	Rscript -e "devtools::document()"
+
+build: document namespace
 	Rscript -e "devtools::build('.')"
+
+namespace: 
+	rm NAMESPACE
+	Rscript -e "devtools::document('.', roclets=c('namespace'))"

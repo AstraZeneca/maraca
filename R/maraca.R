@@ -1,7 +1,6 @@
-library(ggfortify)
-
-
-
+#' Creates the maraca analysis object
+#'
+#' @export
 maraca <- function(filename) {
   `%>%` <- dplyr::`%>%`
 
@@ -55,6 +54,13 @@ maraca <- function(filename) {
   )
 }
 
+#' Creates and returns the plot of the maraca data.
+#'
+#' Renders and returns a ggplot2 object of the maraca data. This function
+#' will not render the plot immediately. You have to print() the returned
+#' object for it to be displayed.
+#'
+#' @export
 plot_maraca <- function(obj) {
   aes <- ggplot2::aes
 
@@ -158,7 +164,17 @@ plot_maraca <- function(obj) {
   return(plot)
 }
 
+#' Creates and returns the tte trellis plot of the maraca data.
+#'
+#' Renders and returns a ggplot2 object of the data. This function
+#' will not render the plot immediately. You have to print() the returned
+#' object for it to be displayed.
+#'
+#' @export
 plot_tte_trellis <- function(obj) {
+  aes <- ggplot2::aes
+  vars <- dplyr::vars
+
   survmod <- obj$survmod
   plot <- ggplot2::ggplot(survmod$data) +
     ggplot2::geom_line(aes(x = time, y = km.y * 100, color = strata)) +
@@ -166,6 +182,11 @@ plot_tte_trellis <- function(obj) {
   return(plot)
 }
 
+#' Generic function to plot the maraca object using plot().
+#'
+#' This will produce the plot_maraca plot.
+#'
+#' @export
 `plot.maraca::maraca` <- function(obj) {
   print(plot_maraca(obj))
 }
@@ -213,6 +234,8 @@ plot_tte_trellis <- function(obj) {
 .compute_survmod <- function(HCE, meta, endpoints, treatments) {
   # Use the largest value across the hard endpoints if i
   # fixed.follow.up.days is not specified
+  vars <- dplyr::vars
+
   HCE$kmday <- max(meta[meta$GROUP %in% head(endpoints, -1), ]$maxday)
   # Use the specified length of the fixed-follow-up trial if specified
   HCE$kmday <- meta$fixed.followup[1]
