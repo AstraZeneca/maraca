@@ -1,1 +1,11 @@
 ^LICENSE\.md$
+AUTHORS.md
+CONTRIBUTING.md
+Makefile
+Rplots.pdf
+foo.pdf
+roo.lock
+rproject.toml
+.envs
+.lintr
+.keepdir
