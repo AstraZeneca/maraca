@@ -19,3 +19,6 @@ build: document namespace
 namespace: 
 	rm NAMESPACE
 	Rscript -e "devtools::document('.', roclets=c('namespace'))"
+
+check: build
+	R CMD check --as-cran maraca_*.tar.gz 
