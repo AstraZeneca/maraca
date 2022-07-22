@@ -13,12 +13,16 @@ unittest:
 document:
 	Rscript -e "devtools::document()"
 
-build: document namespace
-	Rscript -e "devtools::build('.')"
+build: clean document namespace
+	-mkdir dist
+	Rscript -e "devtools::build('.', path='dist/')"
 
-namespace: 
+namespace:
 	rm NAMESPACE
 	Rscript -e "devtools::document('.', roclets=c('namespace'))"
 
 check: build
-	R CMD check --as-cran maraca_*.tar.gz 
+	R CMD check --as-cran dist/maraca_*.tar.gz
+
+clean:
+	-rm -rf dist

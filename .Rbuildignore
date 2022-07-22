@@ -1,3 +1,6 @@
+..Rcheck
+maraca.Rcheck
+dist
 ^LICENSE\.md$
 AUTHORS.md
 CONTRIBUTING.md

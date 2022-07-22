@@ -1,7 +1,7 @@
 Package: maraca
 Version: 0.0.0.9000
 Type: Package
-Title: Maracas plots
+Title: Maracas Plots
 License: Apache License (>= 2)
 Authors@R: c(
     person("Martin Karpefors", "", email = "unknown@example.com", role = "aut"),
@@ -23,6 +23,9 @@ Imports:
 RoxygenNote: 7.1.2
 Suggests:
     knitr (>= 1.39),
+    here (>= 1.0.1),
+    lintr (>= 3.0.0),
+    withr (>= 2.5.0),
     testthat
 VignetteBuilder: knitr
 NeedsCompilation: no

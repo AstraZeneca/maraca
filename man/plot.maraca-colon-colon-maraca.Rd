@@ -4,9 +4,11 @@
 \alias{plot.maraca::maraca}
 \title{Generic function to plot the maraca object using plot().}
 \usage{
-\method{plot}{`maraca::maraca`}(obj)
+\method{plot}{`maraca::maraca`}(x, ...)
 }
 \arguments{
+\item{...}{not used}
+
 \item{obj}{an object of S3 class 'maraca::maraca'}
 }
 \description{

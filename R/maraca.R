@@ -65,7 +65,7 @@ plot_maraca <- function(obj) {
   survmod <- obj$survmod
   endpoints <- obj$endpoints
   win_odds <- obj$win_odds
-  start_continuous_endpoint <- meta[meta$GROUP == tail(endpoints, 1), ]$startx
+  start_continuous_endpoint <- meta[meta$GROUP == utils::tail(endpoints, 1), ]$startx
 
   minor_grid <- seq(
     sign(min(slope$data$AVAL0)) * floor(abs(min(slope$data$AVAL0)) / 10) * 10,
@@ -184,11 +184,12 @@ plot_tte_trellis <- function(obj) {
 #'
 #' This will produce the plot_maraca plot.
 #'
-#' @param obj an object of S3 class 'maraca::maraca'
+#' @param x an object of S3 class 'maraca::maraca'
+#' @param ... not used
 #'
 #' @export
-`plot.maraca::maraca` <- function(obj) {
-  print(plot_maraca(obj))
+`plot.maraca::maraca` <- function(x, ...) {
+  print(plot_maraca(x))
 }
 
 # Private functions
@@ -196,7 +197,7 @@ plot_tte_trellis <- function(obj) {
 .compute_win_odds <- function(HCE) {
   grp <- sanon::grp # nolint
   fit <- sanon::sanon(AVAL ~ grp(TRTP, ref = "Control"), data = HCE)
-  CI0 <- confint(fit)$ci
+  CI0 <- stats::confint(fit)$ci
   CI <- CI0 / (1 - CI0)
   p <- fit$p
 
@@ -208,6 +209,7 @@ plot_tte_trellis <- function(obj) {
 
 .compute_metainfo <- function(HCE, fixed_followup_days) {
   n <- dplyr::n
+  `%>%` <- dplyr::`%>%`
 
   meta1 <- HCE %>%
     dplyr::group_by(GROUP) %>%
@@ -235,13 +237,14 @@ plot_tte_trellis <- function(obj) {
   # Use the largest value across the hard endpoints if i
   # fixed.follow.up.days is not specified
   vars <- dplyr::vars
+  `%>%` <- dplyr::`%>%`
 
-  HCE$kmday <- max(meta[meta$GROUP %in% head(endpoints, -1), ]$maxday)
+  HCE$kmday <- max(meta[meta$GROUP %in% utils::head(endpoints, -1), ]$maxday)
   # Use the specified length of the fixed-follow-up trial if specified
   HCE$kmday <- meta$fixed.followup[1]
 
-  HCE[HCE$GROUP %in% head(endpoints, -1), ]$kmday <- HCE[
-    HCE$GROUP %in% head(endpoints, -1), ]$AVAL0
+  HCE[HCE$GROUP %in% utils::head(endpoints, -1), ]$kmday <- HCE[
+    HCE$GROUP %in% utils::head(endpoints, -1), ]$AVAL0
 
   Surv <- survival::Surv # nolint
 
@@ -299,10 +302,11 @@ plot_tte_trellis <- function(obj) {
 }
 
 .compute_slope <- function(HCE, meta, survmod, endpoints, treatments) {
+  `%>%` <- dplyr::`%>%`
   n <- dplyr::n
 
-  slope_data <- HCE[HCE$GROUP == tail(endpoints, 1), ]
-  start_continuous_endpoint <- meta[meta$GROUP == tail(endpoints, 1), ]$startx
+  slope_data <- HCE[HCE$GROUP == utils::tail(endpoints, 1), ]
+  start_continuous_endpoint <- meta[meta$GROUP == utils::tail(endpoints, 1), ]$startx
 
   slope_data$x <- .to_rangeab(
     slope_data$AVAL0,
@@ -313,7 +317,7 @@ plot_tte_trellis <- function(obj) {
 
   slope_meta <- slope_data %>%
     dplyr::group_by(TRTP) %>%
-    dplyr::summarise(n = n(), median = median(x), average = mean(x))
+    dplyr::summarise(n = n(), median = stats::median(x), average = base::mean(x))
 
   slope_data$violinx <- 0
   slope_data[slope_data$TRTP == treatments[1], ]$violinx <- seq(

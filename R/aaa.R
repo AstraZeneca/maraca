@@ -1,4 +1,5 @@
 # Ignored NSE variables in devtools::check
+utils::globalVariables("time")
 utils::globalVariables("TRTP")
 utils::globalVariables("n.event")
 utils::globalVariables("x")
