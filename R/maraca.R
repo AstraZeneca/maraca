@@ -1,3 +1,4 @@
+library(ggfortify)
 #' Creates the maraca analysis object as an S3 object of class 'maraca::maraca'
 #'
 #' @export
@@ -26,7 +27,6 @@ maraca <- function(filename) {
     dplyr::filter(GROUP %in% endpoints) %>%
     dplyr::mutate_at(vars(GROUP), factor, levels = endpoints) %>%
     dplyr::mutate_at(vars(TRTP), factor, levels = treatments)
-
   win_odds <- .compute_win_odds(HCE)
   # Calculate meta information from the entire HCE dataset needed for plotting
 
@@ -271,7 +271,7 @@ plot_tte_trellis <- function(obj) {
     dplyr::mutate_at(vars(strata), factor, levels = treatments)
 
   survmod_data$adjusted.time <- 0
-  for (i in head(endpoints, -1)) {
+  for (i in utils::head(endpoints, -1)) {
     survmod_data[survmod_data$GROUP == i, ]$adjusted.time <- meta[
       meta$GROUP == i, ]$startx +
       survmod_data[survmod_data$GROUP == i, ]$time /
@@ -284,7 +284,7 @@ plot_tte_trellis <- function(obj) {
   survmod_meta <- survmod_data %>%
     dplyr::group_by(strata, GROUP) %>%
     dplyr::summarise(max = 100 * max(1 - surv), sum.event = sum(n.event)) %>%
-    dplyr::mutate(km.start = c(0, cumsum(head(max, -1))),
+    dplyr::mutate(km.start = c(0, cumsum(utils::head(max, -1))),
       km.end = cumsum(max))
 
   survmod_data <- survmod_data %>% dplyr::left_join(
