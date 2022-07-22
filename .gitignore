@@ -3,3 +3,7 @@
 .Rprofile
 Rplots.pdf
 test_plots.pdf
+..Rcheck/
+dist/
+foo.pdf
+maraca.Rcheck/
