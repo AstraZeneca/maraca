@@ -2,11 +2,11 @@ Package: maraca
 Version: 0.0.0.9000
 Type: Package
 Title: Maracas plots
-License: Apache License (= 2.0)
+License: Apache License (>= 2)
 Authors@R: c(
     person("Martin Karpefors", "", email = "unknown@example.com", role = "aut"),
     person("Stefano Borini", "", email = "unknown@example.com", role = c("ctb", "cre")))
-Description: Provides maraca plots
+Description: Provides functions to generate and plot maraca plots.
 URL: https://github.com/AstraZeneca/maraca
 BugReports: https://github.com/AstraZeneca/maraca/issues
 Encoding: UTF-8
@@ -22,6 +22,7 @@ Imports:
     sanon (>= 1.6)
 RoxygenNote: 7.1.2
 Suggests:
-    knitr (>= 1.39)
+    knitr (>= 1.39),
+    testthat
 VignetteBuilder: knitr
 NeedsCompilation: no
