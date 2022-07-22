@@ -1,5 +1,5 @@
 test_that("Maraca initialisation", {
-  file <- fixture_path("HCE scenario A.csv")
+  file <- fixture_path("hce_scenario_a.csv")
   mar <- maraca(file)
   expect_s3_class(mar, "maraca::maraca")
   plot(mar)

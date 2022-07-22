@@ -65,7 +65,8 @@ plot_maraca <- function(obj) {
   survmod <- obj$survmod
   endpoints <- obj$endpoints
   win_odds <- obj$win_odds
-  start_continuous_endpoint <- meta[meta$GROUP == utils::tail(endpoints, 1), ]$startx
+  start_continuous_endpoint <- meta[meta$GROUP == utils::tail(
+    endpoints, 1), ]$startx
 
   minor_grid <- seq(
     sign(min(slope$data$AVAL0)) * floor(abs(min(slope$data$AVAL0)) / 10) * 10,
@@ -306,7 +307,8 @@ plot_tte_trellis <- function(obj) {
   n <- dplyr::n
 
   slope_data <- HCE[HCE$GROUP == utils::tail(endpoints, 1), ]
-  start_continuous_endpoint <- meta[meta$GROUP == utils::tail(endpoints, 1), ]$startx
+  start_continuous_endpoint <- meta[meta$GROUP == utils::tail(
+    endpoints, 1), ]$startx
 
   slope_data$x <- .to_rangeab(
     slope_data$AVAL0,
@@ -317,7 +319,8 @@ plot_tte_trellis <- function(obj) {
 
   slope_meta <- slope_data %>%
     dplyr::group_by(TRTP) %>%
-    dplyr::summarise(n = n(), median = stats::median(x), average = base::mean(x))
+    dplyr::summarise(n = n(), median = stats::median(x),
+      average = base::mean(x))
 
   slope_data$violinx <- 0
   slope_data[slope_data$TRTP == treatments[1], ]$violinx <- seq(
