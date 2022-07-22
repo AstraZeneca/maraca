@@ -6,6 +6,9 @@
 \usage{
 plot_maraca(obj)
 }
+\arguments{
+\item{obj}{an object of S3 class 'maraca::maraca'}
+}
 \description{
 Renders and returns a ggplot2 object of the maraca data. This function
 will not render the plot immediately. You have to print() the returned

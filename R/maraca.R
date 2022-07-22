@@ -28,7 +28,6 @@ maraca <- function(filename) {
     dplyr::mutate_at(vars(TRTP), factor, levels = treatments)
 
   win_odds <- .compute_win_odds(HCE)
-
   # Calculate meta information from the entire HCE dataset needed for plotting
 
   meta <- .compute_metainfo(HCE, fixed_followup_days)
@@ -216,7 +215,7 @@ plot_tte_trellis <- function(obj) {
       n = n(), proportion = n / dim(HCE)[1] * 100, maxday = max(AVAL0)) %>%
     dplyr::mutate(
       fixed.followup = fixed_followup_days,
-      startx = c(0, cumsum(head(proportion, -1))),
+      startx = c(0, cumsum(utils::head(proportion, -1))),
       endx = cumsum(proportion),
       starty = 0,
       n.groups = length(unique(GROUP))

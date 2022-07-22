@@ -2,10 +2,10 @@
 % Please edit documentation in R/maraca.R
 \name{maraca}
 \alias{maraca}
-\title{Creates the maraca analysis object}
+\title{Creates the maraca analysis object as an S3 object of class 'maraca::maraca'}
 \usage{
 maraca(filename)
 }
 \description{
-Creates the maraca analysis object
+Creates the maraca analysis object as an S3 object of class 'maraca::maraca'
 }

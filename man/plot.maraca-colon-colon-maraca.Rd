@@ -6,6 +6,9 @@
 \usage{
 \method{plot}{`maraca::maraca`}(obj)
 }
+\arguments{
+\item{obj}{an object of S3 class 'maraca::maraca'}
+}
 \description{
 This will produce the plot_maraca plot.
 }
