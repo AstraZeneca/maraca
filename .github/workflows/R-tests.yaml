@@ -24,7 +24,8 @@ jobs:
       - name: "Create devenv"
         run: |
           pip install roo
-          roo install 
+          roo environment init --r-version "${{ matrix.r-version }}"
+          roo install
       - name: "Run unittests"
         run: |
           make unittest
