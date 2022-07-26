@@ -17,3 +17,4 @@ sanon = "^1.6"
 [tool.roo.dev-dependencies]
 here = "^1.0"
 lintr = "^3.0"
+devtools = "^2.4"
