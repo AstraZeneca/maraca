@@ -1,35 +1,14 @@
-library(ggfortify)
 #' Creates the maraca analysis object as an S3 object of class 'maraca::maraca'
 #'
+#' @param data
+#'
 #' @export
-maraca <- function(filename) {
-  `%>%` <- dplyr::`%>%`
-
-  ##########################
-  # Create the HCE dataset #
-  ##########################
-
-  ### Read in the data ###
-  HCE <- read.csv(filename)
-
-  vars <- dplyr::vars
-
-  # Input parameters
-  # Order of the endpoints. The continuous endpoint should always be last.
-  endpoints <- c(
-    "Outcome I", "Outcome II", "Outcome III", "Outcome IV",
-    "Continuous outcome")
-  treatments <- c("Active", "Control")
-  fixed_followup_days <- 3 * 365
-
+maraca <- function(data, endpoints, treatments, fixed_followup_days) {
   # Remove unwanted endpoints and treatments
-  HCE <- HCE %>%
-    dplyr::filter(GROUP %in% endpoints) %>%
-    dplyr::mutate_at(vars(GROUP), factor, levels = endpoints) %>%
-    dplyr::mutate_at(vars(TRTP), factor, levels = treatments)
+  HCE <- .reformat_data(data, endpoints, treatments)
   win_odds <- .compute_win_odds(HCE)
-  # Calculate meta information from the entire HCE dataset needed for plotting
 
+  # Calculate meta information from the entire HCE dataset needed for plotting
   meta <- .compute_metainfo(HCE, fixed_followup_days)
   survmod <- .compute_survmod(HCE, meta, endpoints, treatments)
   slope <- .compute_slope(HCE, meta, survmod, endpoints, treatments)
@@ -343,6 +322,17 @@ plot_tte_trellis <- function(obj) {
     data = slope_data,
     meta = slope_meta
   ))
+}
+
+.reformat_data <- function(data, endpoints, treatments) {
+  `%>%` <- dplyr::`%>%`
+  vars <- dplyr::vars
+
+  return(data %>%
+    dplyr::filter(GROUP %in% endpoints) %>%
+    dplyr::mutate_at(vars(GROUP), factor, levels = endpoints) %>%
+    dplyr::mutate_at(vars(TRTP), factor, levels = treatments)
+  )
 }
 
 # Function that scale data to a range
