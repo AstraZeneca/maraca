@@ -3,15 +3,18 @@
 #' @param data
 #'
 #' @export
-maraca <- function(data, endpoints, treatments, fixed_followup_days) {
-  # Remove unwanted endpoints and treatments
-  HCE <- .reformat_data(data, endpoints, treatments)
-  win_odds <- .compute_win_odds(HCE)
+maraca <- function(
+    data, tte_outcomes, continuous_outcome, treatments, fixed_followup_days) {
+  # Remove unwanted outcomes and treatments
+  HCE <- .reformat_data(data, tte_outcomes, continuous_outcome, treatments)
 
   # Calculate meta information from the entire HCE dataset needed for plotting
   meta <- .compute_metainfo(HCE, fixed_followup_days)
-  survmod <- .compute_survmod(HCE, meta, endpoints, treatments)
-  slope <- .compute_slope(HCE, meta, survmod, endpoints, treatments)
+  survmod <- .compute_survmod(
+    HCE, meta, tte_outcomes, continuous_outcome, treatments)
+  slope <- .compute_slope(
+    HCE, meta, survmod, tte_outcomes, continuous_outcome, treatments)
+  win_odds <- .compute_win_odds(HCE)
 
   return(
     structure(
@@ -19,7 +22,8 @@ maraca <- function(data, endpoints, treatments, fixed_followup_days) {
         meta = meta,
         slope = slope,
         survmod = survmod,
-        endpoints = endpoints,
+        tte_outcomes = tte_outcomes,
+        continuous_outcome = continuous_outcome,
         win_odds = win_odds
       ),
       class = c("maraca::maraca")
@@ -42,10 +46,9 @@ plot_maraca <- function(obj) {
   meta <- obj$meta
   slope <- obj$slope
   survmod <- obj$survmod
-  endpoints <- obj$endpoints
   win_odds <- obj$win_odds
-  start_continuous_endpoint <- meta[meta$GROUP == utils::tail(
-    endpoints, 1), ]$startx
+  start_continuous_endpoint <- meta[
+    meta$GROUP == obj$continuous_outcome, ]$startx
 
   minor_grid <- seq(
     sign(min(slope$data$AVAL0)) * floor(abs(min(slope$data$AVAL0)) / 10) * 10,
@@ -94,7 +97,7 @@ plot_maraca <- function(obj) {
     ggplot2::scale_x_continuous(
       limits = c(0, 100),
       breaks = c(meta$proportion / 2 + meta$startx),
-      labels = endpoints,
+      labels = c(obj$tte_outcomes, obj$continuous_outcome),
       minor_breaks = .to_rangeab(
         minor_grid,
         start_continuous_endpoint,
@@ -213,18 +216,20 @@ plot_tte_trellis <- function(obj) {
   return(meta)
 }
 
-.compute_survmod <- function(HCE, meta, endpoints, treatments) {
-  # Use the largest value across the hard endpoints if i
+.compute_survmod <- function(
+    HCE, meta, tte_outcomes, continuous_outcome, treatments) {
+  # Use the largest value across the hard outcomes if i
   # fixed.follow.up.days is not specified
+  endpoints <- c(tte_outcomes, continuous_outcome)
   vars <- dplyr::vars
   `%>%` <- dplyr::`%>%`
 
-  HCE$kmday <- max(meta[meta$GROUP %in% utils::head(endpoints, -1), ]$maxday)
+  HCE$kmday <- max(meta[meta$GROUP %in% tte_outcomes, ]$maxday)
   # Use the specified length of the fixed-follow-up trial if specified
   HCE$kmday <- meta$fixed.followup[1]
 
-  HCE[HCE$GROUP %in% utils::head(endpoints, -1), ]$kmday <- HCE[
-    HCE$GROUP %in% utils::head(endpoints, -1), ]$AVAL0
+  HCE[HCE$GROUP %in% tte_outcomes, ]$kmday <- HCE[
+      HCE$GROUP %in% tte_outcomes, ]$AVAL0
 
   Surv <- survival::Surv # nolint
 
@@ -232,17 +237,19 @@ plot_tte_trellis <- function(obj) {
   survmod_data <- cbind(
     ggplot2::fortify(with(HCE,
       survival::survfit(
-        Surv(time = kmday, event = GROUP == endpoints[1]) ~ TRTP))
-    ), GROUP = endpoints[1])
+        Surv(time = kmday, event = GROUP == tte_outcomes[1]) ~ TRTP))
+    ), GROUP = tte_outcomes[1])
 
-  for (i in 2:length(endpoints) - 1) {
+  # FIXME this is probably not what was intended.
+  # This adds the first entry twice
+  for (i in seq_along(tte_outcomes)) {
     survmod_data <- rbind(
       survmod_data,
       cbind(
         ggplot2::fortify(with(HCE,
           survival::survfit(
-            Surv(time = kmday, event = GROUP == endpoints[i]) ~ TRTP))
-            ), GROUP = endpoints[i]))
+            Surv(time = kmday, event = GROUP == tte_outcomes[i]) ~ TRTP))
+            ), GROUP = tte_outcomes[i]))
   }
 
   survmod_data <- survmod_data %>%
@@ -250,7 +257,7 @@ plot_tte_trellis <- function(obj) {
     dplyr::mutate_at(vars(strata), factor, levels = treatments)
 
   survmod_data$adjusted.time <- 0
-  for (i in utils::head(endpoints, -1)) {
+  for (i in tte_outcomes) {
     survmod_data[survmod_data$GROUP == i, ]$adjusted.time <- meta[
       meta$GROUP == i, ]$startx +
       survmod_data[survmod_data$GROUP == i, ]$time /
@@ -281,13 +288,13 @@ plot_tte_trellis <- function(obj) {
     (maxval - minval) + start_continuous_endpoint
 }
 
-.compute_slope <- function(HCE, meta, survmod, endpoints, treatments) {
+.compute_slope <- function(
+    HCE, meta, survmod, tte_outcomes, continuous_outcome, treatments) {
   `%>%` <- dplyr::`%>%`
   n <- dplyr::n
 
-  slope_data <- HCE[HCE$GROUP == utils::tail(endpoints, 1), ]
-  start_continuous_endpoint <- meta[meta$GROUP == utils::tail(
-    endpoints, 1), ]$startx
+  slope_data <- HCE[HCE$GROUP == continuous_outcome, ]
+  start_continuous_endpoint <- meta[meta$GROUP == continuous_outcome, ]$startx
 
   slope_data$x <- .to_rangeab(
     slope_data$AVAL0,
@@ -311,11 +318,11 @@ plot_tte_trellis <- function(obj) {
 
   slope_data$violiny <- survmod$meta[
     survmod$meta$strata == treatments[1] &
-    survmod$meta$GROUP == endpoints[length(endpoints) - 1],
+    survmod$meta$GROUP == utils::tail(tte_outcomes, 1),
     ]$km.end
   slope_data[slope_data$TRTP == treatments[2], ]$violiny <- survmod$meta[
     survmod$meta$strata == treatments[2] &
-    survmod$meta$GROUP == endpoints[length(endpoints) - 1],
+    survmod$meta$GROUP == utils::tail(tte_outcomes, 1),
     ]$km.end
 
   return(list(
@@ -324,10 +331,11 @@ plot_tte_trellis <- function(obj) {
   ))
 }
 
-.reformat_data <- function(data, endpoints, treatments) {
+.reformat_data <- function(data, tte_outcomes, continuous_outcome, treatments) {
   `%>%` <- dplyr::`%>%`
   vars <- dplyr::vars
 
+  endpoints <- c(tte_outcomes, continuous_outcome)
   return(data %>%
     dplyr::filter(GROUP %in% endpoints) %>%
     dplyr::mutate_at(vars(GROUP), factor, levels = endpoints) %>%

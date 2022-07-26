@@ -1,12 +1,14 @@
 test_that("Maraca initialisation", {
   file <- fixture_path("hce_scenario_a.csv")
   data <- read.csv(file)
-  endpoints <- c(
-    "Outcome I", "Outcome II", "Outcome III", "Outcome IV",
-    "Continuous outcome")
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
   treatments <- c("Active", "Control")
   fixed_followup_days <- 3 * 365
-  mar <- maraca(data, endpoints, treatments, fixed_followup_days)
+  mar <- maraca(
+    data, tte_outcomes, continuous_outcome, treatments, fixed_followup_days)
   expect_true(TRUE)
   expect_s3_class(mar, "maraca::maraca")
   plot(mar)
@@ -16,28 +18,30 @@ test_that("Maraca initialisation", {
 test_that("Test reformatting of data", {
   file <- fixture_path("hce_scenario_a.csv")
   data <- read.csv(file)
-  endpoints <- c(
-    "Outcome I", "Outcome II", "Outcome III", "Outcome IV",
-    "Continuous outcome")
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
   treatments <- c("Active", "Control")
-  data <- .reformat_data(data, endpoints, treatments)
+  data <- .reformat_data(data, tte_outcomes, continuous_outcome, treatments)
 
   expect_equal(class(data), "data.frame")
   expect_equal(class(data$TRTP), "factor")
   expect_equal(levels(data$TRTP), treatments)
   expect_equal(class(data$GROUP), "factor")
-  expect_equal(levels(data$GROUP), endpoints)
+  expect_equal(levels(data$GROUP), c(tte_outcomes, continuous_outcome))
 
 })
 
 test_that("Test win odds", {
   file <- fixture_path("hce_scenario_a.csv")
   data <- read.csv(file)
-  endpoints <- c(
-    "Outcome I", "Outcome II", "Outcome III", "Outcome IV",
-    "Continuous outcome")
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
   treatments <- c("Active", "Control")
-  data <- .reformat_data(data, endpoints, treatments)
+  data <- .reformat_data(data, tte_outcomes, continuous_outcome, treatments)
   win_odds <- .compute_win_odds(data)
 
   expect_equal(class(win_odds), "numeric")
@@ -50,13 +54,15 @@ test_that("Test win odds", {
 test_that("Test compute metainfo", {
   file <- fixture_path("hce_scenario_a.csv")
   data <- read.csv(file)
-  endpoints <- c(
-    "Outcome I", "Outcome II", "Outcome III", "Outcome IV",
-    "Continuous outcome")
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
   treatments <- c("Active", "Control")
-  data <- .reformat_data(data, endpoints, treatments)
+  data <- .reformat_data(data, tte_outcomes, continuous_outcome, treatments)
   metainfo <- .compute_metainfo(data, 3 * 365)
-  expect_equal(as.character(metainfo$GROUP), endpoints)
+  expect_equal(
+    as.character(metainfo$GROUP), c(tte_outcomes, continuous_outcome))
   expect_equal(metainfo$n, c(129, 115, 110, 77, 569))
   expect_equal(metainfo$proportion, c(12.9, 11.5, 11, 7.7, 56.9))
   expect_equal(
@@ -76,12 +82,14 @@ test_that("Test compute metainfo", {
 test_that("Test compute survmod", {
   file <- fixture_path("hce_scenario_a.csv")
   data <- read.csv(file)
-  endpoints <- c(
-    "Outcome I", "Outcome II", "Outcome III", "Outcome IV",
-    "Continuous outcome")
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
   treatments <- c("Active", "Control")
   meta <- .compute_metainfo(data, 3 * 365)
-  survmod <- .compute_survmod(data, meta, endpoints, treatments)
+  survmod <- .compute_survmod(
+    data, meta, tte_outcomes, continuous_outcome, treatments)
 
   # Checking the abssum along the columns to check that values remain the same.
   expect_equal(sum(abs(survmod$data$time)), 1119088.643)
@@ -120,13 +128,16 @@ test_that("Test compute survmod", {
 test_that("Test compute slope", {
   file <- fixture_path("hce_scenario_a.csv")
   data <- read.csv(file)
-  endpoints <- c(
-    "Outcome I", "Outcome II", "Outcome III", "Outcome IV",
-    "Continuous outcome")
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
   treatments <- c("Active", "Control")
   meta <- .compute_metainfo(data, 3 * 365)
-  survmod <- .compute_survmod(data, meta, endpoints, treatments)
-  slope <- .compute_slope(data, meta, survmod, endpoints, treatments)
+  survmod <- .compute_survmod(
+    data, meta, tte_outcomes, continuous_outcome, treatments)
+  slope <- .compute_slope(
+    data, meta, survmod, tte_outcomes, continuous_outcome, treatments)
   expect_equal(sum(abs(slope$data$x)), 28654.63484)
   expect_equal(sum(abs(slope$data$violinx)), 28450)
   expect_equal(sum(abs(slope$data$violiny)), 29793.61428)
