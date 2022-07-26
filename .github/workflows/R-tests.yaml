@@ -25,7 +25,7 @@ jobs:
         run: |
           pip install roo
           roo environment init --r-version "${{ matrix.r-version }}"
-          roo install
+          roo install --verbose-build
       - name: "Run unittests"
         run: |
           make unittest
