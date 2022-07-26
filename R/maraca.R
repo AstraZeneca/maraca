@@ -1,6 +1,10 @@
 #' Creates the maraca analysis object as an S3 object of class 'maraca::maraca'
 #'
 #' @param data
+#' @param tte_outcomes
+#' @param continuous_outcome
+#' @param treatments
+#' @param fixed_followup_days
 #'
 #' @export
 maraca <- function(

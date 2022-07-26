@@ -4,7 +4,10 @@
 \alias{maraca}
 \title{Creates the maraca analysis object as an S3 object of class 'maraca::maraca'}
 \usage{
-maraca(filename)
+maraca(data, tte_outcomes, continuous_outcome, treatments, fixed_followup_days)
+}
+\arguments{
+\item{fixed_followup_days}{}
 }
 \description{
 Creates the maraca analysis object as an S3 object of class 'maraca::maraca'
