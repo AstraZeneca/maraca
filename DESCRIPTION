@@ -19,13 +19,14 @@ Imports:
     ggplot2 (>= 3.3),
     ggfortify (>= 0.4),
     survival (>= 3.3),
-    sanon (>= 1.6)
+    sanon (>= 1.6),
+    checkmate (>= 2.1)
 RoxygenNote: 7.1.2
 Suggests:
     knitr (>= 1.39),
     here (>= 1.0.1),
     lintr (>= 3.0.0),
     withr (>= 2.5.0),
-    testthat
+    testthat (>= 3.1)
 VignetteBuilder: knitr
 NeedsCompilation: no

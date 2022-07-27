@@ -4,7 +4,7 @@ url = "https://cloud.r-project.org/"
 
 [[entry]]
 categories = []
-dependencies = [ "devtools", "dplyr", "ggfortify", "ggplot2", "here", "lintr", "sanon", "survival", "tidyr",]
+dependencies = [ "checkmate", "devtools", "dplyr", "ggfortify", "ggplot2", "here", "lintr", "sanon", "survival", "tidyr",]
 type = "root"
 
 [[entry]]
@@ -86,7 +86,7 @@ hash = "sha256:db40827d1bdbb90c0aa2846a2961d3bf9d76ad1b392302f9dd84cc2fd18c001f"
 
 
 [[entry]]
-categories = [ "dev",]
+categories = [ "dev", "main",]
 dependencies = []
 name = "backports"
 version = "1.4.1"
@@ -174,6 +174,19 @@ type = "source"
 [[entry.files]]
 name = "callr_3.7.1.tar.gz"
 hash = "sha256:37e3a57b3a5b3050fe55439394a9191c938f461b38174ecbaadc86539a4189ed"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "backports", "utils",]
+name = "checkmate"
+version = "2.1.0"
+source = "CRAN"
+r_constraint = ">=3.0.0"
+type = "source"
+[[entry.files]]
+name = "checkmate_2.1.0.tar.gz"
+hash = "sha256:b784dd5163a0350d084ef34882d9781373839dedeaa9a8b8e6187d773d0d21c6"
 
 
 [[entry]]
@@ -1695,5 +1708,5 @@ hash = "sha256:9f95987c964039834f770ecda2d5f7e3d3a9de553c89db2a5926c4219bf4b9d8"
 
 [metadata]
 version = 2
-content_hash = "b5a4f49bb97fd4192c62fb553e86c836b3e8c41772e20b5cd2626806e919df5e"
+content_hash = "fe53e9eb9174e47826f0f0c7223f8dac204e499ab19198c254347e4d3598438e"
 conservative = false
