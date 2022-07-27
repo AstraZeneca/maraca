@@ -16,7 +16,7 @@ jobs:
         with:
           python-version: "3.9"
       - name: "Install required system libraries"
-        run: sudo apt-get install libcurl4-openssl-dev
+        run: sudo apt-get install libcurl4-openssl-dev libharfbuzz-dev libfribidi-dev
       - uses: actions/cache@v2
         with:
           path: ~/.roo
