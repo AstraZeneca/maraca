@@ -87,6 +87,7 @@ test_that("Test compute survmod", {
   )
   continuous_outcome <- "Continuous outcome"
   treatments <- c("Active", "Control")
+  data <- .reformat_data(data, tte_outcomes, continuous_outcome, treatments)
   meta <- .compute_metainfo(data, 3 * 365)
   survmod <- .compute_survmod(
     data, meta, tte_outcomes, continuous_outcome, treatments)
@@ -100,7 +101,7 @@ test_that("Test compute survmod", {
   expect_equal(sum(abs(survmod$data$std.err)), 25.26028588)
   expect_equal(sum(abs(survmod$data$upper)), 2072.29765)
   expect_equal(sum(abs(survmod$data$lower)), 1981.654951)
-  expect_equal(sum(abs(survmod$data$adjusted.time)), 166113.986)
+  expect_equal(sum(abs(survmod$data$adjusted.time)), 42925.486)
   expect_equal(sum(abs(survmod$data$km.y)), 138.5509233)
   expect_equal(sum(abs(survmod$data$max)), 29658.7019)
   expect_equal(sum(abs(survmod$data$sum.event)), 177583)
@@ -133,16 +134,17 @@ test_that("Test compute slope", {
   )
   continuous_outcome <- "Continuous outcome"
   treatments <- c("Active", "Control")
+  data <- .reformat_data(data, tte_outcomes, continuous_outcome, treatments)
   meta <- .compute_metainfo(data, 3 * 365)
   survmod <- .compute_survmod(
     data, meta, tte_outcomes, continuous_outcome, treatments)
   slope <- .compute_slope(
     data, meta, survmod, tte_outcomes, continuous_outcome, treatments)
-  expect_equal(sum(abs(slope$data$x)), 28654.63484)
-  expect_equal(sum(abs(slope$data$violinx)), 28450)
+  expect_equal(sum(abs(slope$data$x)), 40828.387)
+  expect_equal(sum(abs(slope$data$violinx)), 40711.95)
   expect_equal(sum(abs(slope$data$violiny)), 29793.61428)
 
   expect_equal(slope$meta$n, c(298, 271))
-  expect_equal(slope$meta$median, c(54.938994, 44.384056))
-  expect_equal(slope$meta$average, c(53.820334, 46.554151))
+  expect_equal(slope$meta$median, c(74.360287, 68.354528))
+  expect_equal(slope$meta$average, c(73.72377, 69.5893123))
 })

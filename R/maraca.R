@@ -1,14 +1,18 @@
 #' Creates the maraca analysis object as an S3 object of class 'maraca::maraca'
 #'
 #' @param data
-#' @param tte_outcomes
-#' @param continuous_outcome
-#' @param treatments
-#' @param fixed_followup_days
+#' @param tte_outcomes A vector of strings containing the time-to-event
+#'                     outcome labels
+#' @param continuous_outcome A single string contaning the continuous
+#'                           outcome label
+#' @param treatments A vector of exactly two strings, containing the values
+#'                   used for the Active and Control
+#' @param fixed_followup_days The followup days
 #'
 #' @export
 maraca <- function(
     data, tte_outcomes, continuous_outcome, treatments, fixed_followup_days) {
+
   # Remove unwanted outcomes and treatments
   HCE <- .reformat_data(data, tte_outcomes, continuous_outcome, treatments)
 
