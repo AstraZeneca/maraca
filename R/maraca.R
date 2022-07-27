@@ -13,6 +13,12 @@
 maraca <- function(
     data, tte_outcomes, continuous_outcome, treatments, fixed_followup_days) {
 
+  checkmate::assert_data_frame(data)
+  checkmate::assert_character(tte_outcomes, len = 4, any.missing = FALSE)
+  checkmate::assert_string(continuous_outcome)
+  checkmate::assert_character(treatments, len = 2, any.missing = FALSE)
+  checkmate::assert_int(fixed_followup_days)
+
   # Remove unwanted outcomes and treatments
   HCE <- .reformat_data(data, tte_outcomes, continuous_outcome, treatments)
 
@@ -49,6 +55,7 @@ maraca <- function(
 #'
 #' @export
 plot_maraca <- function(obj) {
+  checkmate::assert_class(obj, "maraca::maraca")
   aes <- ggplot2::aes
 
   meta <- obj$meta
@@ -161,6 +168,8 @@ plot_maraca <- function(obj) {
 #'
 #' @export
 plot_tte_trellis <- function(obj) {
+  checkmate::assert_class(obj, "maraca::maraca")
+
   aes <- ggplot2::aes
   vars <- dplyr::vars
 

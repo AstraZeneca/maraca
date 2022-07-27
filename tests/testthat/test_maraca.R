@@ -15,6 +15,46 @@ test_that("Maraca initialisation", {
   print(plot_tte_trellis(mar))
 })
 
+test_that("Maraca wrong params", {
+  file <- fixture_path("hce_scenario_a.csv")
+  data <- read.csv(file)
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  treatments <- c("Active", "Control")
+  fixed_followup_days <- 3 * 365
+
+  expect_error(
+    maraca(
+      "hello", tte_outcomes, continuous_outcome, treatments,
+      fixed_followup_days
+    ), regexp = "Must be of type 'data\\.frame'"
+  )
+  expect_error(
+    maraca(
+      data, c(1, 2, 3), continuous_outcome, treatments, fixed_followup_days
+    ), regexp = "Must be of type 'character'"
+
+  )
+  expect_error(
+    maraca(data, tte_outcomes, 3, treatments, fixed_followup_days),
+    regexp = "Must be of type 'string'"
+  )
+  expect_error(
+    maraca(data, tte_outcomes, continuous_outcome, c(1, 2),
+           fixed_followup_days), regexp = "Must be of type 'character'"
+  )
+  expect_error(
+    maraca(data, tte_outcomes, continuous_outcome, c("foo", "bar", "baz"),
+           fixed_followup_days), regexp = "Must have length 2"
+  )
+  expect_error(
+    maraca(data, tte_outcomes, continuous_outcome, treatments, 12.3),
+    regexp = "single integerish value"
+  )
+})
+
 test_that("Test reformatting of data", {
   file <- fixture_path("hce_scenario_a.csv")
   data <- read.csv(file)
@@ -31,6 +71,11 @@ test_that("Test reformatting of data", {
   expect_equal(class(data$GROUP), "factor")
   expect_equal(levels(data$GROUP), c(tte_outcomes, continuous_outcome))
 
+})
+
+test_that("Test plot functions only work with maraca objects", {
+  expect_error(plot_maraca(123), regexp = "Must inherit")
+  expect_error(plot_tte_trellis(123), regexp = "Must inherit")
 })
 
 test_that("Test win odds", {
