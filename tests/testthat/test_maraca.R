@@ -181,26 +181,26 @@ test_that("Test compute survmod", {
     data, meta, tte_outcomes, continuous_outcome, treatments, 3 * 365)
 
   # Checking the abssum along the columns to check that values remain the same.
-  expect_equal(sum(abs(survmod$data$time)), 1119088.643)
-  expect_equal(sum(abs(survmod$data$n.risk)), 848310)
-  expect_equal(sum(abs(survmod$data$n.event)), 560)
-  expect_equal(sum(abs(survmod$data$n.censor)), 4440)
-  expect_equal(sum(abs(survmod$data$surv)), 2026.4490767)
-  expect_equal(sum(abs(survmod$data$std.err)), 25.26028588)
-  expect_equal(sum(abs(survmod$data$upper)), 2072.29765)
-  expect_equal(sum(abs(survmod$data$lower)), 1981.654951)
-  expect_equal(sum(abs(survmod$data$adjusted.time)), 42925.486)
-  expect_equal(sum(abs(survmod$data$km.y)), 138.5509233)
-  expect_equal(sum(abs(survmod$data$max)), 29658.7019)
-  expect_equal(sum(abs(survmod$data$sum.event)), 177583)
+  expect_equal(sum(abs(survmod$data$time)), 895270.914)
+  expect_equal(sum(abs(survmod$data$n.risk)), 678648)
+  expect_equal(sum(abs(survmod$data$n.event)), 431)
+  expect_equal(sum(abs(survmod$data$n.censor)), 3569)
+  expect_equal(sum(abs(survmod$data$surv)), 1624.663133)
+  expect_equal(sum(abs(survmod$data$std.err)), 19.8904401)
+  expect_equal(sum(abs(survmod$data$upper)), 1660.88674)
+  expect_equal(sum(abs(survmod$data$lower)), 1589.259767)
+  expect_equal(sum(abs(survmod$data$adjusted.time)), 40288.729)
+  expect_equal(sum(abs(survmod$data$km.y)), 107.336867)
+  expect_equal(sum(abs(survmod$data$max)), 22869.0305)
+  expect_equal(sum(abs(survmod$data$sum.event)), 93676)
   expect_equal(sum(abs(survmod$data$km.start)), 38233.38498)
-  expect_equal(sum(abs(survmod$data$km.end)), 67892.08688)
+  expect_equal(sum(abs(survmod$data$km.end)), 61102.415)
 
   expect_equal(
     survmod$meta$max,
     c(14.877758, 13.108431, 11.869606,  8.567655, 16.389072,
       14.545123, 14.965483, 10.791931), tol = 1e-6)
-  expect_equal(survmod$meta$sum.event, c(126, 55, 50, 34, 132, 60, 60, 43))
+  expect_equal(survmod$meta$sum.event, c(63, 55, 50, 34, 66, 60, 60, 43))
   expect_equal(survmod$meta$km.start,
     c(0.00000, 14.87776, 27.98619, 39.85580, 0.00000,
       16.38907, 30.93419, 45.89968), tol = 1e-6
@@ -227,9 +227,9 @@ test_that("Test compute survmod no fixed_followup_days", {
   survmod <- .compute_survmod(
     data, meta, tte_outcomes, continuous_outcome, treatments, NULL)
 
-  expect_equal(sum(abs(survmod$data$time)), 1113512.0573)
+  expect_equal(sum(abs(survmod$data$time)), 890809.646)
   expect_equal(sum(abs(survmod$data$km.start)), 38140.162)
-  expect_equal(sum(abs(survmod$data$km.end)), 67725.783)
+  expect_equal(sum(abs(survmod$data$km.end)), 60952.501)
 
 })
 

@@ -260,23 +260,22 @@ plot_tte_trellis <- function(obj) {
 
   Surv <- survival::Surv # nolint
 
-  # Create survival model dataset
-  survmod_data <- cbind(
-    ggplot2::fortify(with(HCE,
-      survival::survfit(
-        Surv(time = kmday, event = GROUP == tte_outcomes[1]) ~ TRTP))
-    ), GROUP = tte_outcomes[1])
-
-  # FIXME this is probably not what was intended.
-  # This adds the first entry twice
   for (i in seq_along(tte_outcomes)) {
-    survmod_data <- rbind(
-      survmod_data,
-      cbind(
-        ggplot2::fortify(with(HCE,
-          survival::survfit(
-            Surv(time = kmday, event = GROUP == tte_outcomes[i]) ~ TRTP))
-            ), GROUP = tte_outcomes[i]))
+    # Create survival model dataset
+    survmod_data_row <- cbind(
+      ggplot2::fortify(with(HCE,
+        survival::survfit(
+          Surv(time = kmday, event = GROUP == tte_outcomes[i]) ~ TRTP))
+      ), GROUP = tte_outcomes[i])
+
+    if (i == 1) {
+      survmod_data <- survmod_data_row
+    } else {
+      survmod_data <- rbind(
+        survmod_data,
+        survmod_data_row
+      )
+    }
   }
 
   survmod_data <- survmod_data %>%
