@@ -7,37 +7,43 @@
 #'                           outcome label
 #' @param treatments A vector of exactly two strings, containing the values
 #'                   used for the Active and Control
-#' @param fixed_followup_days The followup days
+#' @param fixed_followup_days The followup days, or NULL.
 #'
 #' @export
 maraca <- function(
-    data, tte_outcomes, continuous_outcome, treatments, fixed_followup_days) {
+    data, tte_outcomes, continuous_outcome, treatments,
+    fixed_followup_days = NULL) {
 
   checkmate::assert_data_frame(data)
   checkmate::assert_character(tte_outcomes, len = 4, any.missing = FALSE)
   checkmate::assert_string(continuous_outcome)
   checkmate::assert_character(treatments, len = 2, any.missing = FALSE)
-  checkmate::assert_int(fixed_followup_days)
+  checkmate::assert_int(fixed_followup_days, null.ok = TRUE)
 
   # Remove unwanted outcomes and treatments
   HCE <- .reformat_data(data, tte_outcomes, continuous_outcome, treatments)
 
   # Calculate meta information from the entire HCE dataset needed for plotting
-  meta <- .compute_metainfo(HCE, fixed_followup_days)
+  meta <- .compute_metainfo(HCE)
   survmod <- .compute_survmod(
-    HCE, meta, tte_outcomes, continuous_outcome, treatments)
+    HCE, meta, tte_outcomes, continuous_outcome, treatments,
+    fixed_followup_days
+  )
   slope <- .compute_slope(
-    HCE, meta, survmod, tte_outcomes, continuous_outcome, treatments)
+    HCE, meta, survmod, tte_outcomes, continuous_outcome, treatments
+  )
   win_odds <- .compute_win_odds(HCE)
 
   return(
     structure(
       list(
+        tte_outcomes = tte_outcomes,
+        continuous_outcome = continuous_outcome,
+        treatments = treatments,
+        fixed_followup_days = fixed_followup_days,
         meta = meta,
         slope = slope,
         survmod = survmod,
-        tte_outcomes = tte_outcomes,
-        continuous_outcome = continuous_outcome,
         win_odds = win_odds
       ),
       class = c("maraca::maraca")
@@ -207,7 +213,7 @@ plot_tte_trellis <- function(obj) {
   return(win_odds)
 }
 
-.compute_metainfo <- function(HCE, fixed_followup_days) {
+.compute_metainfo <- function(HCE) {
   n <- dplyr::n
   `%>%` <- dplyr::`%>%`
 
@@ -216,7 +222,6 @@ plot_tte_trellis <- function(obj) {
     dplyr::summarise(
       n = n(), proportion = n / dim(HCE)[1] * 100, maxday = max(AVAL0)) %>%
     dplyr::mutate(
-      fixed.followup = fixed_followup_days,
       startx = c(0, cumsum(utils::head(proportion, -1))),
       endx = cumsum(proportion),
       starty = 0,
@@ -234,16 +239,21 @@ plot_tte_trellis <- function(obj) {
 }
 
 .compute_survmod <- function(
-    HCE, meta, tte_outcomes, continuous_outcome, treatments) {
-  # Use the largest value across the hard outcomes if i
-  # fixed.follow.up.days is not specified
+    HCE, meta, tte_outcomes, continuous_outcome, treatments,
+    fixed_followup_days
+  ) {
   endpoints <- c(tte_outcomes, continuous_outcome)
   vars <- dplyr::vars
   `%>%` <- dplyr::`%>%`
 
-  HCE$kmday <- max(meta[meta$GROUP %in% tte_outcomes, ]$maxday)
-  # Use the specified length of the fixed-follow-up trial if specified
-  HCE$kmday <- meta$fixed.followup[1]
+  if (is.null(fixed_followup_days)) {
+    # Use the largest value across the hard outcomes if i
+    # fixed.follow.up.days is not specified
+    HCE$kmday <- max(meta[meta$GROUP %in% tte_outcomes, ]$maxday)
+  } else {
+    # Use the specified length of the fixed-follow-up trial if specified
+    HCE$kmday <- fixed_followup_days
+  }
 
   HCE[HCE$GROUP %in% tte_outcomes, ]$kmday <- HCE[
       HCE$GROUP %in% tte_outcomes, ]$AVAL0

@@ -11,8 +11,22 @@ test_that("Maraca initialisation", {
     data, tte_outcomes, continuous_outcome, treatments, fixed_followup_days)
   expect_true(TRUE)
   expect_s3_class(mar, "maraca::maraca")
+  expect_equal(mar$fixed_followup_days, fixed_followup_days)
   plot(mar)
   print(plot_tte_trellis(mar))
+})
+
+test_that("Initialisation without fixed_followup_days", {
+  file <- fixture_path("hce_scenario_a.csv")
+  data <- read.csv(file)
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  treatments <- c("Active", "Control")
+  mar <- maraca(data, tte_outcomes, continuous_outcome, treatments)
+  expect_s3_class(mar, "maraca::maraca")
+  expect_true(is.null(mar$fixed_followup_days))
 })
 
 test_that("Maraca wrong params", {
@@ -53,6 +67,36 @@ test_that("Maraca wrong params", {
     maraca(data, tte_outcomes, continuous_outcome, treatments, 12.3),
     regexp = "single integerish value"
   )
+})
+
+test_that("Maraca plotting", {
+  file <- fixture_path("hce_scenario_a.csv")
+  data <- read.csv(file)
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  treatments <- c("Active", "Control")
+  fixed_followup_days <- 3 * 365
+  mar <- maraca(
+    data, tte_outcomes, continuous_outcome, treatments, fixed_followup_days)
+  plot(mar)
+  expect_true(TRUE)
+})
+
+test_that("Maraca plot ttl_trellis", {
+  file <- fixture_path("hce_scenario_a.csv")
+  data <- read.csv(file)
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  treatments <- c("Active", "Control")
+  fixed_followup_days <- 3 * 365
+  mar <- maraca(
+    data, tte_outcomes, continuous_outcome, treatments, fixed_followup_days)
+  plot_tte_trellis(mar)
+  expect_true(TRUE)
 })
 
 test_that("Test reformatting of data", {
@@ -105,7 +149,7 @@ test_that("Test compute metainfo", {
   continuous_outcome <- "Continuous outcome"
   treatments <- c("Active", "Control")
   data <- .reformat_data(data, tte_outcomes, continuous_outcome, treatments)
-  metainfo <- .compute_metainfo(data, 3 * 365)
+  metainfo <- .compute_metainfo(data)
   expect_equal(
     as.character(metainfo$GROUP), c(tte_outcomes, continuous_outcome))
   expect_equal(metainfo$n, c(129, 115, 110, 77, 569))
@@ -115,7 +159,6 @@ test_that("Test compute metainfo", {
     c(1074.68287, 1068.22797, 1074.46617, 1028.40857, 63.76411),
     tol = 1e-5
   )
-  expect_equal(metainfo$fixed.followup, c(1095, 1095, 1095, 1095, 1095))
   expect_equal(metainfo$startx, c(0, 12.9, 24.4, 35.4, 43.1))
   expect_equal(metainfo$endx, c(12.9, 24.4, 35.4, 43.1, 100))
   expect_equal(metainfo$starty, c(0, 0, 0, 0, 0))
@@ -133,9 +176,9 @@ test_that("Test compute survmod", {
   continuous_outcome <- "Continuous outcome"
   treatments <- c("Active", "Control")
   data <- .reformat_data(data, tte_outcomes, continuous_outcome, treatments)
-  meta <- .compute_metainfo(data, 3 * 365)
+  meta <- .compute_metainfo(data)
   survmod <- .compute_survmod(
-    data, meta, tte_outcomes, continuous_outcome, treatments)
+    data, meta, tte_outcomes, continuous_outcome, treatments, 3 * 365)
 
   # Checking the abssum along the columns to check that values remain the same.
   expect_equal(sum(abs(survmod$data$time)), 1119088.643)
@@ -171,6 +214,25 @@ test_that("Test compute survmod", {
 })
 
 
+test_that("Test compute survmod no fixed_followup_days", {
+  file <- fixture_path("hce_scenario_a.csv")
+  data <- read.csv(file)
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  treatments <- c("Active", "Control")
+  data <- .reformat_data(data, tte_outcomes, continuous_outcome, treatments)
+  meta <- .compute_metainfo(data)
+  survmod <- .compute_survmod(
+    data, meta, tte_outcomes, continuous_outcome, treatments, NULL)
+
+  expect_equal(sum(abs(survmod$data$time)), 1113512.0573)
+  expect_equal(sum(abs(survmod$data$km.start)), 38140.162)
+  expect_equal(sum(abs(survmod$data$km.end)), 67725.783)
+
+})
+
 test_that("Test compute slope", {
   file <- fixture_path("hce_scenario_a.csv")
   data <- read.csv(file)
@@ -180,9 +242,9 @@ test_that("Test compute slope", {
   continuous_outcome <- "Continuous outcome"
   treatments <- c("Active", "Control")
   data <- .reformat_data(data, tte_outcomes, continuous_outcome, treatments)
-  meta <- .compute_metainfo(data, 3 * 365)
+  meta <- .compute_metainfo(data)
   survmod <- .compute_survmod(
-    data, meta, tte_outcomes, continuous_outcome, treatments)
+    data, meta, tte_outcomes, continuous_outcome, treatments, 3 * 365)
   slope <- .compute_slope(
     data, meta, survmod, tte_outcomes, continuous_outcome, treatments)
   expect_equal(sum(abs(slope$data$x)), 40828.387)
