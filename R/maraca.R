@@ -359,8 +359,3 @@ plot_tte_trellis <- function(obj) {
     dplyr::mutate_at(vars(TRTP), factor, levels = treatments)
   )
 }
-
-# Function that scale data to a range
-rangeab <- function(x, a, b) {
-  (b - a) * (x - min(x)) / (max(x) - min(x)) + a
-}
