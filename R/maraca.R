@@ -5,8 +5,9 @@
 #'                     outcome labels
 #' @param continuous_outcome A single string contaning the continuous
 #'                           outcome label
-#' @param treatments A vector of exactly two strings, containing the values
-#'                   used for the Active and Control
+#' @param arm_levels A named vector of exactly two strings, mapping the
+#'                   values used for the active and control arms to the values
+#'                   used in the data.
 #' @param fixed_followup_days The followup days, or NULL.
 #' @param column_names A named vector to map the
 #'        outcome, arm, ordered and original to the associated column names
@@ -17,7 +18,10 @@ maraca <- function(
     data,
     tte_outcomes,
     continuous_outcome,
-    treatments,
+    arm_levels = c(
+      control = "Control",
+      active = "Active"
+    ),
     fixed_followup_days = NULL,
     column_names = c(
       outcome = "outcome", arm = "arm",
@@ -28,7 +32,11 @@ maraca <- function(
   checkmate::assert_data_frame(data)
   checkmate::assert_character(tte_outcomes, len = 4, any.missing = FALSE)
   checkmate::assert_string(continuous_outcome)
-  checkmate::assert_character(treatments, len = 2, any.missing = FALSE)
+  checkmate::assert_character(arm_levels, len = 2, any.missing = FALSE)
+  checkmate::assert_names(
+    names(arm_levels),
+    identical.to = c("control", "active")
+  )
   checkmate::assert_int(fixed_followup_days, null.ok = TRUE)
   checkmate::assert_character(column_names, len = 4, any.missing = FALSE)
   checkmate::assert_names(
@@ -36,28 +44,28 @@ maraca <- function(
     identical.to = c("outcome", "arm", "ordered", "original")
   )
 
-  # Remove unwanted outcomes and treatments, and normalise column names
+  # Remove unwanted outcomes and arm levels, and normalise column names
   # in the internal data.
   HCE <- .reformat_data(
-    data, tte_outcomes, continuous_outcome, treatments, column_names)
+    data, tte_outcomes, continuous_outcome, arm_levels, column_names)
 
   # Calculate meta information from the entire HCE dataset needed for plotting
   meta <- .compute_metainfo(HCE)
   survmod <- .compute_survmod(
-    HCE, meta, tte_outcomes, continuous_outcome, treatments,
+    HCE, meta, tte_outcomes, continuous_outcome, arm_levels,
     fixed_followup_days
   )
   slope <- .compute_slope(
-    HCE, meta, survmod, tte_outcomes, continuous_outcome, treatments
+    HCE, meta, survmod, tte_outcomes, continuous_outcome, arm_levels
   )
-  win_odds <- .compute_win_odds(HCE)
+  win_odds <- .compute_win_odds(HCE, arm_levels)
 
   return(
     structure(
       list(
         tte_outcomes = tte_outcomes,
         continuous_outcome = continuous_outcome,
-        treatments = treatments,
+        arm_levels = arm_levels,
         fixed_followup_days = fixed_followup_days,
         column_names = column_names,
         meta = meta,
@@ -221,9 +229,11 @@ plot_tte_trellis <- function(obj) {
 
 # Private functions
 
-.compute_win_odds <- function(HCE) {
+.compute_win_odds <- function(HCE, arm_levels) {
   grp <- sanon::grp # nolint
-  fit <- sanon::sanon(ordered ~ grp(arm, ref = "Control"), data = HCE)
+  fit <- sanon::sanon(
+    ordered ~ grp(arm, ref = arm_levels["control"]),
+    data = HCE)
   CI0 <- stats::confint(fit)$ci
   CI <- CI0 / (1 - CI0)
   p <- fit$p
@@ -260,7 +270,7 @@ plot_tte_trellis <- function(obj) {
 }
 
 .compute_survmod <- function(
-    HCE, meta, tte_outcomes, continuous_outcome, treatments,
+    HCE, meta, tte_outcomes, continuous_outcome, arm_levels,
     fixed_followup_days
   ) {
   endpoints <- c(tte_outcomes, continuous_outcome)
@@ -301,7 +311,7 @@ plot_tte_trellis <- function(obj) {
 
   survmod_data <- survmod_data %>%
     dplyr::mutate_at(vars(outcome), factor, levels = endpoints) %>%
-    dplyr::mutate_at(vars(strata), factor, levels = treatments)
+    dplyr::mutate_at(vars(strata), factor, levels = arm_levels)
 
   survmod_data$adjusted.time <- 0
   for (i in tte_outcomes) {
@@ -336,7 +346,7 @@ plot_tte_trellis <- function(obj) {
 }
 
 .compute_slope <- function(
-    HCE, meta, survmod, tte_outcomes, continuous_outcome, treatments) {
+    HCE, meta, survmod, tte_outcomes, continuous_outcome, arm_levels) {
   `%>%` <- dplyr::`%>%`
   n <- dplyr::n
 
@@ -356,19 +366,19 @@ plot_tte_trellis <- function(obj) {
       average = base::mean(x))
 
   slope_data$violinx <- 0
-  slope_data[slope_data$arm == treatments[1], ]$violinx <- seq(
+  slope_data[slope_data$arm == arm_levels["active"], ]$violinx <- seq(
     from = start_continuous_endpoint, to = 100,
     length.out = slope_meta$n[1])
-  slope_data[slope_data$arm == treatments[2], ]$violinx <- seq(
+  slope_data[slope_data$arm == arm_levels["control"], ]$violinx <- seq(
     from = start_continuous_endpoint, to = 100,
     length.out = slope_meta$n[2])
 
   slope_data$violiny <- survmod$meta[
-    survmod$meta$strata == treatments[1] &
+    survmod$meta$strata == arm_levels["active"] &
     survmod$meta$outcome == utils::tail(tte_outcomes, 1),
     ]$km.end
-  slope_data[slope_data$arm == treatments[2], ]$violiny <- survmod$meta[
-    survmod$meta$strata == treatments[2] &
+  slope_data[slope_data$arm == arm_levels["control"], ]$violiny <- survmod$meta[
+    survmod$meta$strata == arm_levels["control"] &
     survmod$meta$outcome == utils::tail(tte_outcomes, 1),
     ]$km.end
 
@@ -379,7 +389,7 @@ plot_tte_trellis <- function(obj) {
 }
 
 .reformat_data <- function(
-    data, tte_outcomes, continuous_outcome, treatments, column_names) {
+    data, tte_outcomes, continuous_outcome, arm_levels, column_names) {
   `%>%` <- dplyr::`%>%`
   vars <- dplyr::vars
   all_of <- dplyr::all_of
@@ -392,6 +402,6 @@ plot_tte_trellis <- function(obj) {
   return(HCE %>%
     dplyr::filter(outcome %in% endpoints) %>%
     dplyr::mutate_at(vars(outcome), factor, levels = endpoints) %>%
-    dplyr::mutate_at(vars(arm), factor, levels = treatments)
+    dplyr::mutate_at(vars(arm), factor, levels = arm_levels)
   )
 }
