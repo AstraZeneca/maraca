@@ -100,6 +100,17 @@ test_that("Maraca wrong params", {
     ),
     regexp = "Names must be a identical to"
   )
+
+  expect_error(
+    maraca(
+      data, tte_outcomes, continuous_outcome, treatments, 12,
+      c(
+        outcome = "GROUP", arm = "notexistent",
+        ordered = "AVAL", original = "AVAL0"
+      )
+    ),
+    regexp = "Can't rename columns that don't exist"
+  )
 })
 
 test_that("Maraca plotting", {
