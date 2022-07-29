@@ -229,10 +229,10 @@ plot_tte_trellis <- function(obj) {
 
 # Private functions
 
-.compute_win_odds <- function(HCE, arm_levels) {
+.compute_win_odds <- function(HCE) {
   grp <- sanon::grp # nolint
   fit <- sanon::sanon(
-    ordered ~ grp(arm, ref = arm_levels["control"]),
+    ordered ~ grp(arm, ref = "control"),
     data = HCE)
   CI0 <- stats::confint(fit)$ci
   CI <- CI0 / (1 - CI0)
@@ -311,7 +311,7 @@ plot_tte_trellis <- function(obj) {
 
   survmod_data <- survmod_data %>%
     dplyr::mutate_at(vars(outcome), factor, levels = endpoints) %>%
-    dplyr::mutate_at(vars(strata), factor, levels = arm_levels)
+    dplyr::mutate_at(vars(strata), factor, levels = names(arm_levels))
 
   survmod_data$adjusted.time <- 0
   for (i in tte_outcomes) {
@@ -366,19 +366,19 @@ plot_tte_trellis <- function(obj) {
       average = base::mean(x))
 
   slope_data$violinx <- 0
-  slope_data[slope_data$arm == arm_levels["active"], ]$violinx <- seq(
+  slope_data[slope_data$arm == "active", ]$violinx <- seq(
     from = start_continuous_endpoint, to = 100,
     length.out = slope_meta$n[1])
-  slope_data[slope_data$arm == arm_levels["control"], ]$violinx <- seq(
+  slope_data[slope_data$arm == "control", ]$violinx <- seq(
     from = start_continuous_endpoint, to = 100,
     length.out = slope_meta$n[2])
 
   slope_data$violiny <- survmod$meta[
-    survmod$meta$strata == arm_levels["active"] &
+    survmod$meta$strata == "active" &
     survmod$meta$outcome == utils::tail(tte_outcomes, 1),
     ]$km.end
-  slope_data[slope_data$arm == arm_levels["control"], ]$violiny <- survmod$meta[
-    survmod$meta$strata == arm_levels["control"] &
+  slope_data[slope_data$arm == "control", ]$violiny <- survmod$meta[
+    survmod$meta$strata == "control" &
     survmod$meta$outcome == utils::tail(tte_outcomes, 1),
     ]$km.end
 
@@ -398,10 +398,16 @@ plot_tte_trellis <- function(obj) {
     dplyr::rename(all_of(column_names)) %>%
     dplyr::select(all_of(names(column_names)))
 
+  inverse_map <- setNames(names(arm_levels), arm_levels)
+
+  HCE$arm <- sapply(HCE$arm, function(x) {
+    return(inverse_map[x])
+  })
+
   endpoints <- c(tte_outcomes, continuous_outcome)
   return(HCE %>%
     dplyr::filter(outcome %in% endpoints) %>%
     dplyr::mutate_at(vars(outcome), factor, levels = endpoints) %>%
-    dplyr::mutate_at(vars(arm), factor, levels = arm_levels)
+    dplyr::mutate_at(vars(arm), factor, levels = names(arm_levels))
   )
 }

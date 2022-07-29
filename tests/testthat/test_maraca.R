@@ -171,7 +171,7 @@ test_that("Test reformatting of data", {
 
   expect_equal(class(data), "data.frame")
   expect_equal(class(data$arm), "factor")
-  expect_equal(levels(data$arm), unname(arm_levels))
+  expect_equal(levels(data$arm), names(arm_levels))
   expect_equal(class(data$outcome), "factor")
   expect_equal(levels(data$outcome), c(tte_outcomes, continuous_outcome))
 
@@ -232,8 +232,8 @@ test_that("Test compute metainfo", {
   expect_equal(metainfo$endx, c(12.9, 24.4, 35.4, 43.1, 100))
   expect_equal(metainfo$starty, c(0, 0, 0, 0, 0))
   expect_equal(metainfo$n.groups, c(5, 5, 5, 5, 5))
-  expect_equal(metainfo$n_Active, c(63, 55, 50, 34, 298))
-  expect_equal(metainfo$n_Control, c(66, 60, 60, 43, 271))
+  expect_equal(metainfo$n_active, c(63, 55, 50, 34, 298))
+  expect_equal(metainfo$n_control, c(66, 60, 60, 43, 271))
 })
 
 test_that("Test compute survmod", {
