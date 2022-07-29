@@ -8,6 +8,9 @@
 #' @param treatments A vector of exactly two strings, containing the values
 #'                   used for the Active and Control
 #' @param fixed_followup_days The followup days, or NULL.
+#' @param column_names A named vector to map the
+#'        outcome, arm, ordered and original to the associated column names
+#'        in the data.
 #'
 #' @export
 maraca <- function(
@@ -27,6 +30,11 @@ maraca <- function(
   checkmate::assert_string(continuous_outcome)
   checkmate::assert_character(treatments, len = 2, any.missing = FALSE)
   checkmate::assert_int(fixed_followup_days, null.ok = TRUE)
+  checkmate::assert_character(column_names, len = 4, any.missing = FALSE)
+  checkmate::assert_names(
+    names(column_names),
+    identical.to = c("outcome", "arm", "ordered", "original")
+  )
 
   # Remove unwanted outcomes and treatments, and normalise column names
   # in the internal data.
@@ -51,6 +59,7 @@ maraca <- function(
         continuous_outcome = continuous_outcome,
         treatments = treatments,
         fixed_followup_days = fixed_followup_days,
+        column_names = column_names,
         meta = meta,
         slope = slope,
         survmod = survmod,

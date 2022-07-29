@@ -78,6 +78,28 @@ test_that("Maraca wrong params", {
     maraca(data, tte_outcomes, continuous_outcome, treatments, 12.3),
     regexp = "single integerish value"
   )
+
+  expect_error(
+    maraca(
+      data, tte_outcomes, continuous_outcome, treatments, 12,
+      c("a")
+    ),
+    regexp = "Must have length 4"
+  )
+  expect_error(
+    maraca(
+      data, tte_outcomes, continuous_outcome, treatments, 12,
+      c("a", "b", "c", "d")
+    ),
+    regexp = "Must have names"
+  )
+  expect_error(
+    maraca(
+      data, tte_outcomes, continuous_outcome, treatments, 12,
+      c(foo = "a", bar = "b", baz = "c", quux = "d")
+    ),
+    regexp = "Names must be a identical to"
+  )
 })
 
 test_that("Maraca plotting", {
