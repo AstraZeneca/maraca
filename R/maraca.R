@@ -8,20 +8,38 @@
 #' @param treatments A vector of exactly two strings, containing the values
 #'                   used for the Active and Control
 #' @param fixed_followup_days The followup days, or NULL.
+#' @param column_names A named vector to map the
+#'        outcome, arm, ordered and original to the associated column names
+#'        in the data.
 #'
 #' @export
 maraca <- function(
-    data, tte_outcomes, continuous_outcome, treatments,
-    fixed_followup_days = NULL) {
+    data,
+    tte_outcomes,
+    continuous_outcome,
+    treatments,
+    fixed_followup_days = NULL,
+    column_names = c(
+      outcome = "outcome", arm = "arm",
+      ordered = "ordered", original = "original"
+    )
+    ) {
 
   checkmate::assert_data_frame(data)
   checkmate::assert_character(tte_outcomes, len = 4, any.missing = FALSE)
   checkmate::assert_string(continuous_outcome)
   checkmate::assert_character(treatments, len = 2, any.missing = FALSE)
   checkmate::assert_int(fixed_followup_days, null.ok = TRUE)
+  checkmate::assert_character(column_names, len = 4, any.missing = FALSE)
+  checkmate::assert_names(
+    names(column_names),
+    identical.to = c("outcome", "arm", "ordered", "original")
+  )
 
-  # Remove unwanted outcomes and treatments
-  HCE <- .reformat_data(data, tte_outcomes, continuous_outcome, treatments)
+  # Remove unwanted outcomes and treatments, and normalise column names
+  # in the internal data.
+  HCE <- .reformat_data(
+    data, tte_outcomes, continuous_outcome, treatments, column_names)
 
   # Calculate meta information from the entire HCE dataset needed for plotting
   meta <- .compute_metainfo(HCE)
@@ -41,6 +59,7 @@ maraca <- function(
         continuous_outcome = continuous_outcome,
         treatments = treatments,
         fixed_followup_days = fixed_followup_days,
+        column_names = column_names,
         meta = meta,
         slope = slope,
         survmod = survmod,
@@ -69,21 +88,23 @@ plot_maraca <- function(obj) {
   survmod <- obj$survmod
   win_odds <- obj$win_odds
   start_continuous_endpoint <- meta[
-    meta$GROUP == obj$continuous_outcome, ]$startx
+    meta$outcome == obj$continuous_outcome, ]$startx
 
   minor_grid <- seq(
-    sign(min(slope$data$AVAL0)) * floor(abs(min(slope$data$AVAL0)) / 10) * 10,
-    sign(max(slope$data$AVAL0)) * floor(abs(max(slope$data$AVAL0)) / 10) * 10,
+    sign(min(slope$data$original)) *
+      floor(abs(min(slope$data$original)) / 10) * 10,
+    sign(max(slope$data$original)) *
+      floor(abs(max(slope$data$original)) / 10) * 10,
     by = 10
   )
 
   zeroposition <- .to_rangeab(0,
     start_continuous_endpoint,
-    min(slope$data$AVAL0),
-    max(slope$data$AVAL0)
+    min(slope$data$original),
+    max(slope$data$original)
   )
   # Plot the information in the Maraca plot
-  plot <- ggplot2::ggplot(survmod$data, aes(colour = TRTP)) +
+  plot <- ggplot2::ggplot(survmod$data, aes(colour = arm)) +
     ggplot2::geom_vline(
       xintercept = cumsum(c(0, meta$proportion)),
       color = "grey80"
@@ -99,7 +120,7 @@ plot_maraca <- function(obj) {
     ) +
     ggplot2::geom_line(
       data = slope$data,
-      aes(x = violinx, y = violiny, color = TRTP)
+      aes(x = violinx, y = violiny, color = arm)
     ) +
     ggplot2::geom_line(
       data = survmod$data,
@@ -122,8 +143,8 @@ plot_maraca <- function(obj) {
       minor_breaks = .to_rangeab(
         minor_grid,
         start_continuous_endpoint,
-        min(slope$data$AVAL0),
-        max(slope$data$AVAL0)
+        min(slope$data$original),
+        max(slope$data$original)
       )
     ) +
     ggplot2::annotate(
@@ -131,8 +152,8 @@ plot_maraca <- function(obj) {
       x = .to_rangeab(
         minor_grid,
         start_continuous_endpoint,
-        min(slope$data$AVAL0),
-        max(slope$data$AVAL0)
+        min(slope$data$original),
+        max(slope$data$original)
         ),
       y = 0,
       label = minor_grid, color = "grey60"
@@ -182,7 +203,7 @@ plot_tte_trellis <- function(obj) {
   survmod <- obj$survmod
   plot <- ggplot2::ggplot(survmod$data) +
     ggplot2::geom_line(aes(x = time, y = km.y * 100, color = strata)) +
-    ggplot2::facet_grid(cols = vars(GROUP))
+    ggplot2::facet_grid(cols = vars(outcome))
   return(plot)
 }
 
@@ -202,7 +223,7 @@ plot_tte_trellis <- function(obj) {
 
 .compute_win_odds <- function(HCE) {
   grp <- sanon::grp # nolint
-  fit <- sanon::sanon(AVAL ~ grp(TRTP, ref = "Control"), data = HCE)
+  fit <- sanon::sanon(ordered ~ grp(arm, ref = "Control"), data = HCE)
   CI0 <- stats::confint(fit)$ci
   CI <- CI0 / (1 - CI0)
   p <- fit$p
@@ -218,22 +239,22 @@ plot_tte_trellis <- function(obj) {
   `%>%` <- dplyr::`%>%`
 
   meta1 <- HCE %>%
-    dplyr::group_by(GROUP) %>%
+    dplyr::group_by(outcome) %>%
     dplyr::summarise(
-      n = n(), proportion = n / dim(HCE)[1] * 100, maxday = max(AVAL0)) %>%
+      n = n(), proportion = n / dim(HCE)[1] * 100, maxday = max(original)) %>%
     dplyr::mutate(
       startx = c(0, cumsum(utils::head(proportion, -1))),
       endx = cumsum(proportion),
       starty = 0,
-      n.groups = length(unique(GROUP))
+      n.groups = length(unique(outcome))
     )
 
   meta2 <- HCE %>%
-    dplyr::group_by(GROUP, TRTP) %>%
+    dplyr::group_by(outcome, arm) %>%
     dplyr::summarise(n = n(), proportion = n / dim(HCE)[1] * 100) %>%
-    tidyr::pivot_wider(names_from = TRTP, values_from = c(n, proportion))
+    tidyr::pivot_wider(names_from = arm, values_from = c(n, proportion))
 
-  meta <- dplyr::left_join(meta1, meta2, "GROUP")
+  meta <- dplyr::left_join(meta1, meta2, "outcome")
 
   return(meta)
 }
@@ -249,14 +270,14 @@ plot_tte_trellis <- function(obj) {
   if (is.null(fixed_followup_days)) {
     # Use the largest value across the hard outcomes if i
     # fixed.follow.up.days is not specified
-    HCE$kmday <- max(meta[meta$GROUP %in% tte_outcomes, ]$maxday)
+    HCE$kmday <- max(meta[meta$outcome %in% tte_outcomes, ]$maxday)
   } else {
     # Use the specified length of the fixed-follow-up trial if specified
     HCE$kmday <- fixed_followup_days
   }
 
-  HCE[HCE$GROUP %in% tte_outcomes, ]$kmday <- HCE[
-      HCE$GROUP %in% tte_outcomes, ]$AVAL0
+  HCE[HCE$outcome %in% tte_outcomes, ]$kmday <- HCE[
+      HCE$outcome %in% tte_outcomes, ]$original
 
   Surv <- survival::Surv # nolint
 
@@ -265,8 +286,8 @@ plot_tte_trellis <- function(obj) {
     survmod_data_row <- cbind(
       ggplot2::fortify(with(HCE,
         survival::survfit(
-          Surv(time = kmday, event = GROUP == tte_outcomes[i]) ~ TRTP))
-      ), GROUP = tte_outcomes[i])
+          Surv(time = kmday, event = outcome == tte_outcomes[i]) ~ arm))
+      ), outcome = tte_outcomes[i])
 
     if (i == 1) {
       survmod_data <- survmod_data_row
@@ -279,28 +300,28 @@ plot_tte_trellis <- function(obj) {
   }
 
   survmod_data <- survmod_data %>%
-    dplyr::mutate_at(vars(GROUP), factor, levels = endpoints) %>%
+    dplyr::mutate_at(vars(outcome), factor, levels = endpoints) %>%
     dplyr::mutate_at(vars(strata), factor, levels = treatments)
 
   survmod_data$adjusted.time <- 0
   for (i in tte_outcomes) {
-    survmod_data[survmod_data$GROUP == i, ]$adjusted.time <- meta[
-      meta$GROUP == i, ]$startx +
-      survmod_data[survmod_data$GROUP == i, ]$time /
-      max(survmod_data[survmod_data$GROUP == i, ]$time) *
-      meta[meta$GROUP == i, ]$proportion
+    survmod_data[survmod_data$outcome == i, ]$adjusted.time <- meta[
+      meta$outcome == i, ]$startx +
+      survmod_data[survmod_data$outcome == i, ]$time /
+      max(survmod_data[survmod_data$outcome == i, ]$time) *
+      meta[meta$outcome == i, ]$proportion
   }
 
   survmod_data <- survmod_data %>% dplyr::mutate(km.y = 1 - surv)
 
   survmod_meta <- survmod_data %>%
-    dplyr::group_by(strata, GROUP) %>%
+    dplyr::group_by(strata, outcome) %>%
     dplyr::summarise(max = 100 * max(1 - surv), sum.event = sum(n.event)) %>%
     dplyr::mutate(km.start = c(0, cumsum(utils::head(max, -1))),
       km.end = cumsum(max))
 
   survmod_data <- survmod_data %>% dplyr::left_join(
-    survmod_meta, by = c("strata", "GROUP")
+    survmod_meta, by = c("strata", "outcome")
   )
 
   return(list(
@@ -319,36 +340,36 @@ plot_tte_trellis <- function(obj) {
   `%>%` <- dplyr::`%>%`
   n <- dplyr::n
 
-  slope_data <- HCE[HCE$GROUP == continuous_outcome, ]
-  start_continuous_endpoint <- meta[meta$GROUP == continuous_outcome, ]$startx
+  slope_data <- HCE[HCE$outcome == continuous_outcome, ]
+  start_continuous_endpoint <- meta[meta$outcome == continuous_outcome, ]$startx
 
   slope_data$x <- .to_rangeab(
-    slope_data$AVAL0,
+    slope_data$original,
     start_continuous_endpoint,
-    min(slope_data$AVAL0),
-    max(slope_data$AVAL0)
+    min(slope_data$original),
+    max(slope_data$original)
   )
 
   slope_meta <- slope_data %>%
-    dplyr::group_by(TRTP) %>%
+    dplyr::group_by(arm) %>%
     dplyr::summarise(n = n(), median = stats::median(x),
       average = base::mean(x))
 
   slope_data$violinx <- 0
-  slope_data[slope_data$TRTP == treatments[1], ]$violinx <- seq(
+  slope_data[slope_data$arm == treatments[1], ]$violinx <- seq(
     from = start_continuous_endpoint, to = 100,
     length.out = slope_meta$n[1])
-  slope_data[slope_data$TRTP == treatments[2], ]$violinx <- seq(
+  slope_data[slope_data$arm == treatments[2], ]$violinx <- seq(
     from = start_continuous_endpoint, to = 100,
     length.out = slope_meta$n[2])
 
   slope_data$violiny <- survmod$meta[
     survmod$meta$strata == treatments[1] &
-    survmod$meta$GROUP == utils::tail(tte_outcomes, 1),
+    survmod$meta$outcome == utils::tail(tte_outcomes, 1),
     ]$km.end
-  slope_data[slope_data$TRTP == treatments[2], ]$violiny <- survmod$meta[
+  slope_data[slope_data$arm == treatments[2], ]$violiny <- survmod$meta[
     survmod$meta$strata == treatments[2] &
-    survmod$meta$GROUP == utils::tail(tte_outcomes, 1),
+    survmod$meta$outcome == utils::tail(tte_outcomes, 1),
     ]$km.end
 
   return(list(
@@ -357,14 +378,20 @@ plot_tte_trellis <- function(obj) {
   ))
 }
 
-.reformat_data <- function(data, tte_outcomes, continuous_outcome, treatments) {
+.reformat_data <- function(
+    data, tte_outcomes, continuous_outcome, treatments, column_names) {
   `%>%` <- dplyr::`%>%`
   vars <- dplyr::vars
+  all_of <- dplyr::all_of
+
+  HCE <- data %>%
+    dplyr::rename(all_of(column_names)) %>%
+    dplyr::select(all_of(names(column_names)))
 
   endpoints <- c(tte_outcomes, continuous_outcome)
-  return(data %>%
-    dplyr::filter(GROUP %in% endpoints) %>%
-    dplyr::mutate_at(vars(GROUP), factor, levels = endpoints) %>%
-    dplyr::mutate_at(vars(TRTP), factor, levels = treatments)
+  return(HCE %>%
+    dplyr::filter(outcome %in% endpoints) %>%
+    dplyr::mutate_at(vars(outcome), factor, levels = endpoints) %>%
+    dplyr::mutate_at(vars(arm), factor, levels = treatments)
   )
 }

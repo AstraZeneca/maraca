@@ -6,9 +6,13 @@ test_that("Maraca initialisation", {
   )
   continuous_outcome <- "Continuous outcome"
   treatments <- c("Active", "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+  )
   fixed_followup_days <- 3 * 365
   mar <- maraca(
-    data, tte_outcomes, continuous_outcome, treatments, fixed_followup_days)
+    data, tte_outcomes, continuous_outcome, treatments, fixed_followup_days,
+    column_names)
   expect_true(TRUE)
   expect_s3_class(mar, "maraca::maraca")
   expect_equal(mar$fixed_followup_days, fixed_followup_days)
@@ -24,7 +28,11 @@ test_that("Initialisation without fixed_followup_days", {
   )
   continuous_outcome <- "Continuous outcome"
   treatments <- c("Active", "Control")
-  mar <- maraca(data, tte_outcomes, continuous_outcome, treatments)
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+  )
+  mar <- maraca(data, tte_outcomes, continuous_outcome, treatments,
+  column_names = column_names)
   expect_s3_class(mar, "maraca::maraca")
   expect_true(is.null(mar$fixed_followup_days))
 })
@@ -38,6 +46,9 @@ test_that("Maraca wrong params", {
   continuous_outcome <- "Continuous outcome"
   treatments <- c("Active", "Control")
   fixed_followup_days <- 3 * 365
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+  )
 
   expect_error(
     maraca(
@@ -67,6 +78,39 @@ test_that("Maraca wrong params", {
     maraca(data, tte_outcomes, continuous_outcome, treatments, 12.3),
     regexp = "single integerish value"
   )
+
+  expect_error(
+    maraca(
+      data, tte_outcomes, continuous_outcome, treatments, 12,
+      c("a")
+    ),
+    regexp = "Must have length 4"
+  )
+  expect_error(
+    maraca(
+      data, tte_outcomes, continuous_outcome, treatments, 12,
+      c("a", "b", "c", "d")
+    ),
+    regexp = "Must have names"
+  )
+  expect_error(
+    maraca(
+      data, tte_outcomes, continuous_outcome, treatments, 12,
+      c(foo = "a", bar = "b", baz = "c", quux = "d")
+    ),
+    regexp = "Names must be a identical to"
+  )
+
+  expect_error(
+    maraca(
+      data, tte_outcomes, continuous_outcome, treatments, 12,
+      c(
+        outcome = "GROUP", arm = "notexistent",
+        ordered = "AVAL", original = "AVAL0"
+      )
+    ),
+    regexp = "Can't rename columns that don't exist"
+  )
 })
 
 test_that("Maraca plotting", {
@@ -78,13 +122,17 @@ test_that("Maraca plotting", {
   continuous_outcome <- "Continuous outcome"
   treatments <- c("Active", "Control")
   fixed_followup_days <- 3 * 365
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+  )
   mar <- maraca(
-    data, tte_outcomes, continuous_outcome, treatments, fixed_followup_days)
+    data, tte_outcomes, continuous_outcome, treatments, fixed_followup_days,
+    column_names = column_names)
   plot(mar)
   expect_true(TRUE)
 })
 
-test_that("Maraca plot ttl_trellis", {
+test_that("Maraca plot tte_trellis", {
   file <- fixture_path("hce_scenario_a.csv")
   data <- read.csv(file)
   tte_outcomes <- c(
@@ -93,8 +141,13 @@ test_that("Maraca plot ttl_trellis", {
   continuous_outcome <- "Continuous outcome"
   treatments <- c("Active", "Control")
   fixed_followup_days <- 3 * 365
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+  )
   mar <- maraca(
-    data, tte_outcomes, continuous_outcome, treatments, fixed_followup_days)
+    data, tte_outcomes, continuous_outcome, treatments, fixed_followup_days,
+    column_names = column_names
+    )
   plot_tte_trellis(mar)
   expect_true(TRUE)
 })
@@ -107,13 +160,18 @@ test_that("Test reformatting of data", {
   )
   continuous_outcome <- "Continuous outcome"
   treatments <- c("Active", "Control")
-  data <- .reformat_data(data, tte_outcomes, continuous_outcome, treatments)
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+  )
+  data <- .reformat_data(
+    data, tte_outcomes, continuous_outcome, treatments, column_names
+  )
 
   expect_equal(class(data), "data.frame")
-  expect_equal(class(data$TRTP), "factor")
-  expect_equal(levels(data$TRTP), treatments)
-  expect_equal(class(data$GROUP), "factor")
-  expect_equal(levels(data$GROUP), c(tte_outcomes, continuous_outcome))
+  expect_equal(class(data$arm), "factor")
+  expect_equal(levels(data$arm), treatments)
+  expect_equal(class(data$outcome), "factor")
+  expect_equal(levels(data$outcome), c(tte_outcomes, continuous_outcome))
 
 })
 
@@ -130,7 +188,11 @@ test_that("Test win odds", {
   )
   continuous_outcome <- "Continuous outcome"
   treatments <- c("Active", "Control")
-  data <- .reformat_data(data, tte_outcomes, continuous_outcome, treatments)
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+  )
+  data <- .reformat_data(data, tte_outcomes, continuous_outcome, treatments,
+    column_names = column_names)
   win_odds <- .compute_win_odds(data)
 
   expect_equal(class(win_odds), "numeric")
@@ -148,10 +210,14 @@ test_that("Test compute metainfo", {
   )
   continuous_outcome <- "Continuous outcome"
   treatments <- c("Active", "Control")
-  data <- .reformat_data(data, tte_outcomes, continuous_outcome, treatments)
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+  )
+  data <- .reformat_data(data, tte_outcomes, continuous_outcome, treatments,
+    column_names = column_names)
   metainfo <- .compute_metainfo(data)
   expect_equal(
-    as.character(metainfo$GROUP), c(tte_outcomes, continuous_outcome))
+    as.character(metainfo$outcome), c(tte_outcomes, continuous_outcome))
   expect_equal(metainfo$n, c(129, 115, 110, 77, 569))
   expect_equal(metainfo$proportion, c(12.9, 11.5, 11, 7.7, 56.9))
   expect_equal(
@@ -175,7 +241,12 @@ test_that("Test compute survmod", {
   )
   continuous_outcome <- "Continuous outcome"
   treatments <- c("Active", "Control")
-  data <- .reformat_data(data, tte_outcomes, continuous_outcome, treatments)
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+  )
+  data <- .reformat_data(data, tte_outcomes, continuous_outcome, treatments,
+    column_names
+  )
   meta <- .compute_metainfo(data)
   survmod <- .compute_survmod(
     data, meta, tte_outcomes, continuous_outcome, treatments, 3 * 365)
@@ -222,7 +293,11 @@ test_that("Test compute survmod no fixed_followup_days", {
   )
   continuous_outcome <- "Continuous outcome"
   treatments <- c("Active", "Control")
-  data <- .reformat_data(data, tte_outcomes, continuous_outcome, treatments)
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+  )
+  data <- .reformat_data(data, tte_outcomes, continuous_outcome, treatments,
+    column_names = column_names)
   meta <- .compute_metainfo(data)
   survmod <- .compute_survmod(
     data, meta, tte_outcomes, continuous_outcome, treatments, NULL)
@@ -241,7 +316,11 @@ test_that("Test compute slope", {
   )
   continuous_outcome <- "Continuous outcome"
   treatments <- c("Active", "Control")
-  data <- .reformat_data(data, tte_outcomes, continuous_outcome, treatments)
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+  )
+  data <- .reformat_data(data, tte_outcomes, continuous_outcome, treatments,
+    column_names = column_names)
   meta <- .compute_metainfo(data)
   survmod <- .compute_survmod(
     data, meta, tte_outcomes, continuous_outcome, treatments, 3 * 365)
