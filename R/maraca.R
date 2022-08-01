@@ -21,7 +21,8 @@
 #'        in the data. The vector names must match in order "outcome", "arm",
 #'        "ordered" and "original". Note that this parameter only need to be
 #'        specified if you have column names different from the ones above.
-#' @param fixed_followup_days The followup days, or NULL.
+#' @param fixed_followup_days The followup days, or NULL. If NULL, use the
+#'        largest value across the hard outcomes.
 #'
 #' @export
 maraca <- function(
@@ -47,16 +48,17 @@ maraca <- function(
     names(arm_levels),
     identical.to = c("active", "control")
   )
-  checkmate::assert_int(fixed_followup_days, null.ok = TRUE)
   checkmate::assert_character(column_names, len = 4, any.missing = FALSE)
   checkmate::assert_names(
     names(column_names),
     identical.to = c("outcome", "arm", "ordered", "original")
   )
+  checkmate::assert_int(fixed_followup_days, null.ok = TRUE)
 
-  # Check if the arm and outcome are strings, rather than factors.
   # Remove unwanted outcomes and arm levels, and normalise column names
   # in the internal data.
+  # Note: We use HCE to refer to our internal, normalised data frame.
+  # and with "data" to the user-provided, external, dirty data frame.
   HCE <- .reformat_data(
     data, tte_outcomes, continuous_outcome, arm_levels, column_names)
 
@@ -240,6 +242,7 @@ plot_tte_trellis <- function(obj) {
 
 # Private functions
 
+# Computes the win odds from the internal data.
 .compute_win_odds <- function(HCE) {
   grp <- sanon::grp # nolint
   fit <- sanon::sanon(
@@ -255,6 +258,7 @@ plot_tte_trellis <- function(obj) {
   return(win_odds)
 }
 
+# Computes the metainfo from the internal HCE data.
 .compute_metainfo <- function(HCE) {
   n <- dplyr::n
   `%>%` <- dplyr::`%>%`
@@ -280,6 +284,7 @@ plot_tte_trellis <- function(obj) {
   return(meta)
 }
 
+# Performs the survmod calculation
 .compute_survmod <- function(
     HCE, meta, tte_outcomes, continuous_outcome, arm_levels,
     fixed_followup_days
@@ -289,8 +294,8 @@ plot_tte_trellis <- function(obj) {
   `%>%` <- dplyr::`%>%`
 
   if (is.null(fixed_followup_days)) {
-    # Use the largest value across the hard outcomes if i
-    # fixed.follow.up.days is not specified
+    # Use the largest value across the hard outcomes if
+    # fixed_followup_days is not specified
     HCE$kmday <- max(meta[meta$outcome %in% tte_outcomes, ]$maxday)
   } else {
     # Use the specified length of the fixed-follow-up trial if specified
@@ -351,11 +356,13 @@ plot_tte_trellis <- function(obj) {
   ))
 }
 
+# Support function for the range
 .to_rangeab <- function(x, start_continuous_endpoint, minval, maxval) {
     (100 - start_continuous_endpoint) * (x - minval) /
     (maxval - minval) + start_continuous_endpoint
 }
 
+# Computes the slope
 .compute_slope <- function(
     HCE, meta, survmod, tte_outcomes, continuous_outcome, arm_levels) {
   `%>%` <- dplyr::`%>%`
@@ -398,15 +405,18 @@ plot_tte_trellis <- function(obj) {
   ))
 }
 
+# Reformats the data coming in from outside so that it fits our expectation.
 .reformat_data <- function(
     data, tte_outcomes, continuous_outcome, arm_levels, column_names) {
   `%>%` <- dplyr::`%>%`
   vars <- dplyr::vars
   all_of <- dplyr::all_of
+
   HCE <- data %>%
     dplyr::rename(all_of(column_names)) %>%
     dplyr::select(all_of(names(column_names)))
 
+  # Check if the arm and outcome are strings, rather than factors.
   if (class(HCE[, "arm"]) != "character") {
     stop(paste(
       "The arm column must be characters.",

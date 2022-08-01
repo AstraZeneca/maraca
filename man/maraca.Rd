@@ -41,7 +41,8 @@ in the data. The vector names must match in order "outcome", "arm",
 "ordered" and "original". Note that this parameter only need to be
 specified if you have column names different from the ones above.}
 
-\item{fixed_followup_days}{The followup days, or NULL.}
+\item{fixed_followup_days}{The followup days, or NULL. If NULL, use the
+largest value across the hard outcomes.}
 }
 \description{
 Creates the maraca analysis object as an S3 object of class 'maraca::maraca'
