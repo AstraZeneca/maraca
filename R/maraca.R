@@ -13,10 +13,14 @@
 #' @param arm_levels A named vector of exactly two strings, mapping the
 #'                   values used for the active and control arms to the values
 #'                   used in the data. The names must be "active" and "control"
-#'                   in this order
+#'                   in this order. Note that this parameter only need to
+#'                   be specified if you have labels different from
+#'                    "active" and "control".
 #' @param column_names A named vector to map the
 #'        outcome, arm, ordered and original to the associated column names
-#'        in the data.
+#'        in the data. The vector names must match in order "outcome", "arm",
+#'        "ordered" and "original". Note that this parameter only need to be
+#'        specified if you have column names different from the ones above.
 #' @param fixed_followup_days The followup days, or NULL.
 #'
 #' @export
