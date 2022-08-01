@@ -240,7 +240,7 @@ plot_tte_trellis <- function(obj) {
   print(plot_maraca(x))
 }
 
-# Private functions
+### Private functions
 
 # Computes the win odds from the internal data.
 .compute_win_odds <- function(HCE) {
