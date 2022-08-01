@@ -44,6 +44,14 @@ maraca <- function(
     identical.to = c("outcome", "arm", "ordered", "original")
   )
 
+  # Check if the arm and outcome are strings, rather than factors.
+  if (class(data[, column_names["arm"]]) != "character") {
+    stop(paste(
+      "The arm column must be characters.",
+      "If you used read.csv, ensure you specify stringsAsFactors = FALSE."
+    ))
+  }
+
   # Remove unwanted outcomes and arm levels, and normalise column names
   # in the internal data.
   HCE <- .reformat_data(
@@ -58,7 +66,7 @@ maraca <- function(
   slope <- .compute_slope(
     HCE, meta, survmod, tte_outcomes, continuous_outcome, arm_levels
   )
-  win_odds <- .compute_win_odds(HCE, arm_levels)
+  win_odds <- .compute_win_odds(HCE)
 
   return(
     structure(
@@ -308,6 +316,7 @@ plot_tte_trellis <- function(obj) {
       )
     }
   }
+  print(survmod_data)
 
   survmod_data <- survmod_data %>%
     dplyr::mutate_at(vars(outcome), factor, levels = endpoints) %>%
@@ -359,7 +368,6 @@ plot_tte_trellis <- function(obj) {
     min(slope_data$original),
     max(slope_data$original)
   )
-
   slope_meta <- slope_data %>%
     dplyr::group_by(arm) %>%
     dplyr::summarise(n = n(), median = stats::median(x),
@@ -368,10 +376,10 @@ plot_tte_trellis <- function(obj) {
   slope_data$violinx <- 0
   slope_data[slope_data$arm == "active", ]$violinx <- seq(
     from = start_continuous_endpoint, to = 100,
-    length.out = slope_meta$n[1])
+    length.out = slope_meta$n[slope_meta$arm == "active"])
   slope_data[slope_data$arm == "control", ]$violinx <- seq(
     from = start_continuous_endpoint, to = 100,
-    length.out = slope_meta$n[2])
+    length.out = slope_meta$n[slope_meta$arm == "control"])
 
   slope_data$violiny <- survmod$meta[
     survmod$meta$strata == "active" &
@@ -393,13 +401,11 @@ plot_tte_trellis <- function(obj) {
   `%>%` <- dplyr::`%>%`
   vars <- dplyr::vars
   all_of <- dplyr::all_of
-
   HCE <- data %>%
     dplyr::rename(all_of(column_names)) %>%
     dplyr::select(all_of(names(column_names)))
 
   inverse_map <- setNames(names(arm_levels), arm_levels)
-
   HCE$arm <- sapply(HCE$arm, function(x) {
     return(inverse_map[x])
   })
