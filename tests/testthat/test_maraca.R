@@ -6,7 +6,7 @@ test_that("Maraca initialisation", {
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
   continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(control = "Control", active = "Active")
+  arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
   )
@@ -28,7 +28,7 @@ test_that("Initialisation without fixed_followup_days", {
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
   continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(control = "Control", active = "Active")
+  arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
   )
@@ -40,12 +40,12 @@ test_that("Initialisation without fixed_followup_days", {
 
 test_that("Maraca wrong params", {
   file <- fixture_path("hce_scenario_a.csv")
-  data <- read.csv(file)
+  data <- read.csv(file, stringsAsFactors = FALSE)
   tte_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
   continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(control = "Control", active = "Active")
+  arm_levels <- c(active = "Active", control = "Control")
   fixed_followup_days <- 3 * 365
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
@@ -114,6 +114,32 @@ test_that("Maraca wrong params", {
     ),
     regexp = "Can't rename columns that don't exist"
   )
+
+  data2 <- data.frame(data)
+  data2$TRTP <- as.factor(data2$TRTP)
+  expect_error(
+    maraca(
+      data2, tte_outcomes, continuous_outcome, arm_levels, 12,
+      c(
+        outcome = "GROUP", arm = "TRTP",
+        ordered = "AVAL", original = "AVAL0"
+      )
+    ),
+    regexp = "The arm column must be characters"
+  )
+
+  data2 <- data.frame(data)
+  data2$GROUP <- as.factor(data2$GROUP)
+  expect_error(
+    maraca(
+      data2, tte_outcomes, continuous_outcome, arm_levels, 12,
+      c(
+        outcome = "GROUP", arm = "TRTP",
+        ordered = "AVAL", original = "AVAL0"
+      )
+    ),
+    regexp = "The outcome column must be characters"
+  )
 })
 
 test_that("Maraca plotting", {
@@ -123,7 +149,7 @@ test_that("Maraca plotting", {
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
   continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(control = "Control", active = "Active")
+  arm_levels <- c(active = "Active", control = "Control")
   fixed_followup_days <- 3 * 365
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
@@ -142,7 +168,7 @@ test_that("Maraca plot tte_trellis", {
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
   continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(control = "Control", active = "Active")
+  arm_levels <- c(active = "Active", control = "Control")
   fixed_followup_days <- 3 * 365
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
@@ -162,7 +188,7 @@ test_that("Test reformatting of data", {
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
   continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(control = "Control", active = "Active")
+  arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
   )
@@ -190,7 +216,7 @@ test_that("Test win odds", {
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
   continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(control = "Control", active = "Active")
+  arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
   )
@@ -213,7 +239,7 @@ test_that("Test compute metainfo", {
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
   continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(control = "Control", active = "Active")
+  arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
   )
@@ -244,7 +270,7 @@ test_that("Test compute survmod", {
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
   continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(control = "Control", active = "Active")
+  arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
   )
@@ -295,7 +321,7 @@ test_that("Test compute survmod no fixed_followup_days", {
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
   continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(control = "Control", active = "Active")
+  arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
   )
@@ -318,7 +344,7 @@ test_that("Test compute slope", {
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
   continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(control = "Control", active = "Active")
+  arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
   )

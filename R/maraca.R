@@ -7,7 +7,8 @@
 #'                           outcome label
 #' @param arm_levels A named vector of exactly two strings, mapping the
 #'                   values used for the active and control arms to the values
-#'                   used in the data.
+#'                   used in the data. The names must be "active" and "control"
+#'                   in this order
 #' @param fixed_followup_days The followup days, or NULL.
 #' @param column_names A named vector to map the
 #'        outcome, arm, ordered and original to the associated column names
@@ -19,8 +20,8 @@ maraca <- function(
     tte_outcomes,
     continuous_outcome,
     arm_levels = c(
-      control = "Control",
-      active = "Active"
+      active = "Active",
+      control = "Control"
     ),
     fixed_followup_days = NULL,
     column_names = c(
@@ -35,7 +36,7 @@ maraca <- function(
   checkmate::assert_character(arm_levels, len = 2, any.missing = FALSE)
   checkmate::assert_names(
     names(arm_levels),
-    identical.to = c("control", "active")
+    identical.to = c("active", "control")
   )
   checkmate::assert_int(fixed_followup_days, null.ok = TRUE)
   checkmate::assert_character(column_names, len = 4, any.missing = FALSE)
@@ -45,13 +46,6 @@ maraca <- function(
   )
 
   # Check if the arm and outcome are strings, rather than factors.
-  if (class(data[, column_names["arm"]]) != "character") {
-    stop(paste(
-      "The arm column must be characters.",
-      "If you used read.csv, ensure you specify stringsAsFactors = FALSE."
-    ))
-  }
-
   # Remove unwanted outcomes and arm levels, and normalise column names
   # in the internal data.
   HCE <- .reformat_data(
@@ -316,7 +310,6 @@ plot_tte_trellis <- function(obj) {
       )
     }
   }
-  print(survmod_data)
 
   survmod_data <- survmod_data %>%
     dplyr::mutate_at(vars(outcome), factor, levels = endpoints) %>%
@@ -404,6 +397,20 @@ plot_tte_trellis <- function(obj) {
   HCE <- data %>%
     dplyr::rename(all_of(column_names)) %>%
     dplyr::select(all_of(names(column_names)))
+
+  if (class(HCE[, "arm"]) != "character") {
+    stop(paste(
+      "The arm column must be characters.",
+      "If you used read.csv, ensure you specify stringsAsFactors = FALSE."
+    ))
+  }
+
+  if (class(HCE[, "outcome"]) != "character") {
+    stop(paste(
+      "The outcome column must be characters.",
+      "If you used read.csv, ensure you specify stringsAsFactors = FALSE."
+    ))
+  }
 
   inverse_map <- setNames(names(arm_levels), arm_levels)
   HCE$arm <- sapply(HCE$arm, function(x) {
