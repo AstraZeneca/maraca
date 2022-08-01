@@ -4,8 +4,8 @@ Type: Package
 Title: Maracas Plots
 License: Apache License (>= 2)
 Authors@R: c(
-    person("Martin Karpefors", "", email = "unknown@example.com", role = "aut"),
-    person("Stefano Borini", "", email = "unknown@example.com", role = c("ctb", "cre")))
+    person("Martin Karpefors", "", email = "martin.karpefors@astrazeneca.com", role = "aut"),
+    person("Stefano Borini", "", email = "stefano.borini@astrazeneca.com", role = c("ctb", "cre")))
 Description: Provides functions to generate and plot maraca plots.
 URL: https://github.com/AstraZeneca/maraca
 BugReports: https://github.com/AstraZeneca/maraca/issues

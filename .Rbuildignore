@@ -1,3 +1,4 @@
+.github
 ..Rcheck
 maraca.Rcheck
 dist
@@ -12,3 +13,4 @@ rproject.toml
 .envs
 .lintr
 .keepdir
+tests/artifacts/

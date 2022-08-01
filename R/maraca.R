@@ -431,7 +431,7 @@ plot_tte_trellis <- function(obj) {
     ))
   }
 
-  inverse_map <- setNames(names(arm_levels), arm_levels)
+  inverse_map <- stats::setNames(names(arm_levels), arm_levels)
   HCE$arm <- sapply(HCE$arm, function(x) {
     return(inverse_map[x])
   })

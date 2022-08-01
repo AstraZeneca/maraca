@@ -1,7 +1,7 @@
 # Authors
 
-- Martin Karpefors <unknown@example.com>
+- Martin Karpefors <martin.karpefors@astrazeneca.com>
 
 # Maintainers
 
-- Stefano Borini <unknown@example.com>
+- Stefano Borini <stefano.borini@astrazeneca.com>
