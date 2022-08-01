@@ -12,8 +12,10 @@ test_that("Maraca initialisation", {
   )
   fixed_followup_days <- 3 * 365
   mar <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels, fixed_followup_days,
-    column_names)
+    data, tte_outcomes, continuous_outcome, arm_levels,
+    column_names,
+    fixed_followup_days
+    )
   expect_true(TRUE)
   expect_s3_class(mar, "maraca::maraca")
   expect_equal(mar$fixed_followup_days, fixed_followup_days)
@@ -54,22 +56,26 @@ test_that("Maraca wrong params", {
   expect_error(
     maraca(
       "hello", tte_outcomes, continuous_outcome, arm_levels,
-      fixed_followup_days
+      fixed_followup_days = fixed_followup_days
     ), regexp = "Must be of type 'data\\.frame'"
   )
   expect_error(
     maraca(
-      data, c(1, 2, 3), continuous_outcome, arm_levels, fixed_followup_days
+      data, c(1, 2, 3), continuous_outcome, arm_levels,
+      fixed_followup_days = fixed_followup_days
     ), regexp = "Must be of type 'character'"
 
   )
   expect_error(
-    maraca(data, tte_outcomes, 3, arm_levels, fixed_followup_days),
+    maraca(data, tte_outcomes, 3, arm_levels,
+      fixed_followup_days = fixed_followup_days
+    ),
     regexp = "Must be of type 'string'"
   )
   expect_error(
     maraca(data, tte_outcomes, continuous_outcome, c(1, 2),
-           fixed_followup_days), regexp = "Must be of type 'character'"
+           fixed_followup_days = fixed_followup_days),
+    regexp = "Must be of type 'character'"
   )
   expect_error(
     maraca(
@@ -78,39 +84,44 @@ test_that("Maraca wrong params", {
       fixed_followup_days), regexp = "Must have length 2"
   )
   expect_error(
-    maraca(data, tte_outcomes, continuous_outcome, arm_levels, 12.3),
+    maraca(data, tte_outcomes, continuous_outcome, arm_levels,
+           fixed_followup_days = 12.3
+          ),
     regexp = "single integerish value"
   )
 
   expect_error(
     maraca(
-      data, tte_outcomes, continuous_outcome, arm_levels, 12,
-      c("a")
+      data, tte_outcomes, continuous_outcome, arm_levels,
+      c("a"),
+      12
     ),
     regexp = "Must have length 4"
   )
   expect_error(
     maraca(
-      data, tte_outcomes, continuous_outcome, arm_levels, 12,
-      c("a", "b", "c", "d")
+      data, tte_outcomes, continuous_outcome, arm_levels,
+      c("a", "b", "c", "d"),
+      12
     ),
     regexp = "Must have names"
   )
   expect_error(
     maraca(
-      data, tte_outcomes, continuous_outcome, arm_levels, 12,
-      c(foo = "a", bar = "b", baz = "c", quux = "d")
+      data, tte_outcomes, continuous_outcome, arm_levels,
+      c(foo = "a", bar = "b", baz = "c", quux = "d"),
+      12
     ),
     regexp = "Names must be a identical to"
   )
 
   expect_error(
     maraca(
-      data, tte_outcomes, continuous_outcome, arm_levels, 12,
+      data, tte_outcomes, continuous_outcome, arm_levels,
       c(
         outcome = "GROUP", arm = "notexistent",
         ordered = "AVAL", original = "AVAL0"
-      )
+      ), 12
     ),
     regexp = "Can't rename columns that don't exist"
   )
@@ -119,11 +130,11 @@ test_that("Maraca wrong params", {
   data2$TRTP <- as.factor(data2$TRTP)
   expect_error(
     maraca(
-      data2, tte_outcomes, continuous_outcome, arm_levels, 12,
+      data2, tte_outcomes, continuous_outcome, arm_levels,
       c(
         outcome = "GROUP", arm = "TRTP",
         ordered = "AVAL", original = "AVAL0"
-      )
+      ), 12
     ),
     regexp = "The arm column must be characters"
   )
@@ -132,11 +143,11 @@ test_that("Maraca wrong params", {
   data2$GROUP <- as.factor(data2$GROUP)
   expect_error(
     maraca(
-      data2, tte_outcomes, continuous_outcome, arm_levels, 12,
+      data2, tte_outcomes, continuous_outcome, arm_levels,
       c(
         outcome = "GROUP", arm = "TRTP",
         ordered = "AVAL", original = "AVAL0"
-      )
+      ), 12
     ),
     regexp = "The outcome column must be characters"
   )
@@ -155,8 +166,10 @@ test_that("Maraca plotting", {
     outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
   )
   mar <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels, fixed_followup_days,
-    column_names = column_names)
+    data, tte_outcomes, continuous_outcome, arm_levels,
+    column_names,
+    fixed_followup_days
+    )
   plot(mar)
   expect_true(TRUE)
 })
@@ -174,8 +187,9 @@ test_that("Maraca plot tte_trellis", {
     outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
   )
   mar <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels, fixed_followup_days,
-    column_names = column_names
+    data, tte_outcomes, continuous_outcome, arm_levels,
+    column_names,
+    fixed_followup_days
     )
   plot_tte_trellis(mar)
   expect_true(TRUE)
@@ -326,7 +340,7 @@ test_that("Test compute survmod no fixed_followup_days", {
     outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
   )
   data <- .reformat_data(data, tte_outcomes, continuous_outcome, arm_levels,
-    column_names = column_names)
+    column_names)
   meta <- .compute_metainfo(data)
   survmod <- .compute_survmod(
     data, meta, tte_outcomes, continuous_outcome, arm_levels, NULL)

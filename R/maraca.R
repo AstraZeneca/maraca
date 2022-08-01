@@ -1,18 +1,23 @@
 #' Creates the maraca analysis object as an S3 object of class 'maraca::maraca'
 #'
-#' @param data
+#' @param data A data frame with columns for the following information:
+#'             - outcome column, containing the time-to-event and continuous
+#'               labels
+#'             - arm column, contaning the arm a given row belongs to.
+#'             - ordered column, containing the continuous value
+#'             - original column, containing the difference in values.
 #' @param tte_outcomes A vector of strings containing the time-to-event
-#'                     outcome labels
-#' @param continuous_outcome A single string contaning the continuous
-#'                           outcome label
+#'                     outcome labels. The order is kept for the plot.
+#' @param continuous_outcome A single string containing the continuous
+#'                           outcome label.
 #' @param arm_levels A named vector of exactly two strings, mapping the
 #'                   values used for the active and control arms to the values
 #'                   used in the data. The names must be "active" and "control"
 #'                   in this order
-#' @param fixed_followup_days The followup days, or NULL.
 #' @param column_names A named vector to map the
 #'        outcome, arm, ordered and original to the associated column names
 #'        in the data.
+#' @param fixed_followup_days The followup days, or NULL.
 #'
 #' @export
 maraca <- function(
@@ -23,11 +28,11 @@ maraca <- function(
       active = "Active",
       control = "Control"
     ),
-    fixed_followup_days = NULL,
     column_names = c(
       outcome = "outcome", arm = "arm",
       ordered = "ordered", original = "original"
-    )
+    ),
+    fixed_followup_days = NULL
     ) {
 
   checkmate::assert_data_frame(data)
