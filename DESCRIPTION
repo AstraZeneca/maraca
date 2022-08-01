@@ -21,7 +21,7 @@ Imports:
     survival (>= 3.3),
     sanon (>= 1.6),
     checkmate (>= 2.1)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 Suggests:
     knitr (>= 1.39),
     here (>= 1.0.1),

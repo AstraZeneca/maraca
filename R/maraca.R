@@ -1,54 +1,75 @@
 #' Creates the maraca analysis object as an S3 object of class 'maraca::maraca'
 #'
-#' @param data
+#' @param data A data frame with columns for the following information:
+#'             - outcome column, containing the time-to-event and continuous
+#'               labels
+#'             - arm column, contaning the arm a given row belongs to.
+#'             - ordered column, containing the continuous value
+#'             - original column, containing the difference in values.
 #' @param tte_outcomes A vector of strings containing the time-to-event
-#'                     outcome labels
-#' @param continuous_outcome A single string contaning the continuous
-#'                           outcome label
-#' @param treatments A vector of exactly two strings, containing the values
-#'                   used for the Active and Control
-#' @param fixed_followup_days The followup days, or NULL.
+#'                     outcome labels. The order is kept for the plot.
+#' @param continuous_outcome A single string containing the continuous
+#'                           outcome label.
+#' @param arm_levels A named vector of exactly two strings, mapping the
+#'                   values used for the active and control arms to the values
+#'                   used in the data. The names must be "active" and "control"
+#'                   in this order. Note that this parameter only need to
+#'                   be specified if you have labels different from
+#'                    "active" and "control".
 #' @param column_names A named vector to map the
 #'        outcome, arm, ordered and original to the associated column names
-#'        in the data.
+#'        in the data. The vector names must match in order "outcome", "arm",
+#'        "ordered" and "original". Note that this parameter only need to be
+#'        specified if you have column names different from the ones above.
+#' @param fixed_followup_days The followup days, or NULL. If NULL, use the
+#'        largest value across the hard outcomes.
 #'
 #' @export
 maraca <- function(
     data,
     tte_outcomes,
     continuous_outcome,
-    treatments,
-    fixed_followup_days = NULL,
+    arm_levels = c(
+      active = "Active",
+      control = "Control"
+    ),
     column_names = c(
       outcome = "outcome", arm = "arm",
       ordered = "ordered", original = "original"
-    )
+    ),
+    fixed_followup_days = NULL
     ) {
 
   checkmate::assert_data_frame(data)
   checkmate::assert_character(tte_outcomes, len = 4, any.missing = FALSE)
   checkmate::assert_string(continuous_outcome)
-  checkmate::assert_character(treatments, len = 2, any.missing = FALSE)
-  checkmate::assert_int(fixed_followup_days, null.ok = TRUE)
+  checkmate::assert_character(arm_levels, len = 2, any.missing = FALSE)
+  checkmate::assert_names(
+    names(arm_levels),
+    identical.to = c("active", "control")
+  )
   checkmate::assert_character(column_names, len = 4, any.missing = FALSE)
   checkmate::assert_names(
     names(column_names),
     identical.to = c("outcome", "arm", "ordered", "original")
   )
+  checkmate::assert_int(fixed_followup_days, null.ok = TRUE)
 
-  # Remove unwanted outcomes and treatments, and normalise column names
+  # Remove unwanted outcomes and arm levels, and normalise column names
   # in the internal data.
+  # Note: We use HCE to refer to our internal, normalised data frame.
+  # and with "data" to the user-provided, external, dirty data frame.
   HCE <- .reformat_data(
-    data, tte_outcomes, continuous_outcome, treatments, column_names)
+    data, tte_outcomes, continuous_outcome, arm_levels, column_names)
 
   # Calculate meta information from the entire HCE dataset needed for plotting
   meta <- .compute_metainfo(HCE)
   survmod <- .compute_survmod(
-    HCE, meta, tte_outcomes, continuous_outcome, treatments,
+    HCE, meta, tte_outcomes, continuous_outcome, arm_levels,
     fixed_followup_days
   )
   slope <- .compute_slope(
-    HCE, meta, survmod, tte_outcomes, continuous_outcome, treatments
+    HCE, meta, survmod, tte_outcomes, continuous_outcome, arm_levels
   )
   win_odds <- .compute_win_odds(HCE)
 
@@ -57,7 +78,7 @@ maraca <- function(
       list(
         tte_outcomes = tte_outcomes,
         continuous_outcome = continuous_outcome,
-        treatments = treatments,
+        arm_levels = arm_levels,
         fixed_followup_days = fixed_followup_days,
         column_names = column_names,
         meta = meta,
@@ -219,11 +240,14 @@ plot_tte_trellis <- function(obj) {
   print(plot_maraca(x))
 }
 
-# Private functions
+### Private functions
 
+# Computes the win odds from the internal data.
 .compute_win_odds <- function(HCE) {
   grp <- sanon::grp # nolint
-  fit <- sanon::sanon(ordered ~ grp(arm, ref = "Control"), data = HCE)
+  fit <- sanon::sanon(
+    ordered ~ grp(arm, ref = "control"),
+    data = HCE)
   CI0 <- stats::confint(fit)$ci
   CI <- CI0 / (1 - CI0)
   p <- fit$p
@@ -234,6 +258,7 @@ plot_tte_trellis <- function(obj) {
   return(win_odds)
 }
 
+# Computes the metainfo from the internal HCE data.
 .compute_metainfo <- function(HCE) {
   n <- dplyr::n
   `%>%` <- dplyr::`%>%`
@@ -259,8 +284,9 @@ plot_tte_trellis <- function(obj) {
   return(meta)
 }
 
+# Performs the survmod calculation
 .compute_survmod <- function(
-    HCE, meta, tte_outcomes, continuous_outcome, treatments,
+    HCE, meta, tte_outcomes, continuous_outcome, arm_levels,
     fixed_followup_days
   ) {
   endpoints <- c(tte_outcomes, continuous_outcome)
@@ -268,8 +294,8 @@ plot_tte_trellis <- function(obj) {
   `%>%` <- dplyr::`%>%`
 
   if (is.null(fixed_followup_days)) {
-    # Use the largest value across the hard outcomes if i
-    # fixed.follow.up.days is not specified
+    # Use the largest value across the hard outcomes if
+    # fixed_followup_days is not specified
     HCE$kmday <- max(meta[meta$outcome %in% tte_outcomes, ]$maxday)
   } else {
     # Use the specified length of the fixed-follow-up trial if specified
@@ -301,7 +327,7 @@ plot_tte_trellis <- function(obj) {
 
   survmod_data <- survmod_data %>%
     dplyr::mutate_at(vars(outcome), factor, levels = endpoints) %>%
-    dplyr::mutate_at(vars(strata), factor, levels = treatments)
+    dplyr::mutate_at(vars(strata), factor, levels = names(arm_levels))
 
   survmod_data$adjusted.time <- 0
   for (i in tte_outcomes) {
@@ -330,13 +356,15 @@ plot_tte_trellis <- function(obj) {
   ))
 }
 
+# Support function for the range
 .to_rangeab <- function(x, start_continuous_endpoint, minval, maxval) {
     (100 - start_continuous_endpoint) * (x - minval) /
     (maxval - minval) + start_continuous_endpoint
 }
 
+# Computes the slope
 .compute_slope <- function(
-    HCE, meta, survmod, tte_outcomes, continuous_outcome, treatments) {
+    HCE, meta, survmod, tte_outcomes, continuous_outcome, arm_levels) {
   `%>%` <- dplyr::`%>%`
   n <- dplyr::n
 
@@ -349,26 +377,25 @@ plot_tte_trellis <- function(obj) {
     min(slope_data$original),
     max(slope_data$original)
   )
-
   slope_meta <- slope_data %>%
     dplyr::group_by(arm) %>%
     dplyr::summarise(n = n(), median = stats::median(x),
       average = base::mean(x))
 
   slope_data$violinx <- 0
-  slope_data[slope_data$arm == treatments[1], ]$violinx <- seq(
+  slope_data[slope_data$arm == "active", ]$violinx <- seq(
     from = start_continuous_endpoint, to = 100,
-    length.out = slope_meta$n[1])
-  slope_data[slope_data$arm == treatments[2], ]$violinx <- seq(
+    length.out = slope_meta$n[slope_meta$arm == "active"])
+  slope_data[slope_data$arm == "control", ]$violinx <- seq(
     from = start_continuous_endpoint, to = 100,
-    length.out = slope_meta$n[2])
+    length.out = slope_meta$n[slope_meta$arm == "control"])
 
   slope_data$violiny <- survmod$meta[
-    survmod$meta$strata == treatments[1] &
+    survmod$meta$strata == "active" &
     survmod$meta$outcome == utils::tail(tte_outcomes, 1),
     ]$km.end
-  slope_data[slope_data$arm == treatments[2], ]$violiny <- survmod$meta[
-    survmod$meta$strata == treatments[2] &
+  slope_data[slope_data$arm == "control", ]$violiny <- survmod$meta[
+    survmod$meta$strata == "control" &
     survmod$meta$outcome == utils::tail(tte_outcomes, 1),
     ]$km.end
 
@@ -378,8 +405,9 @@ plot_tte_trellis <- function(obj) {
   ))
 }
 
+# Reformats the data coming in from outside so that it fits our expectation.
 .reformat_data <- function(
-    data, tte_outcomes, continuous_outcome, treatments, column_names) {
+    data, tte_outcomes, continuous_outcome, arm_levels, column_names) {
   `%>%` <- dplyr::`%>%`
   vars <- dplyr::vars
   all_of <- dplyr::all_of
@@ -388,10 +416,30 @@ plot_tte_trellis <- function(obj) {
     dplyr::rename(all_of(column_names)) %>%
     dplyr::select(all_of(names(column_names)))
 
+  # Check if the arm and outcome are strings, rather than factors.
+  if (class(HCE[, "arm"]) != "character") {
+    stop(paste(
+      "The arm column must be characters.",
+      "If you used read.csv, ensure you specify stringsAsFactors = FALSE."
+    ))
+  }
+
+  if (class(HCE[, "outcome"]) != "character") {
+    stop(paste(
+      "The outcome column must be characters.",
+      "If you used read.csv, ensure you specify stringsAsFactors = FALSE."
+    ))
+  }
+
+  inverse_map <- setNames(names(arm_levels), arm_levels)
+  HCE$arm <- sapply(HCE$arm, function(x) {
+    return(inverse_map[x])
+  })
+
   endpoints <- c(tte_outcomes, continuous_outcome)
   return(HCE %>%
     dplyr::filter(outcome %in% endpoints) %>%
     dplyr::mutate_at(vars(outcome), factor, levels = endpoints) %>%
-    dplyr::mutate_at(vars(arm), factor, levels = treatments)
+    dplyr::mutate_at(vars(arm), factor, levels = names(arm_levels))
   )
 }

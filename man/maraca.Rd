@@ -4,19 +4,45 @@
 \alias{maraca}
 \title{Creates the maraca analysis object as an S3 object of class 'maraca::maraca'}
 \usage{
-maraca(data, tte_outcomes, continuous_outcome, treatments, fixed_followup_days)
+maraca(
+  data,
+  tte_outcomes,
+  continuous_outcome,
+  arm_levels = c(active = "Active", control = "Control"),
+  column_names = c(outcome = "outcome", arm = "arm", ordered = "ordered", original =
+    "original"),
+  fixed_followup_days = NULL
+)
 }
 \arguments{
+\item{data}{A data frame with columns for the following information:
+- outcome column, containing the time-to-event and continuous
+  labels
+- arm column, contaning the arm a given row belongs to.
+- ordered column, containing the continuous value
+- original column, containing the difference in values.}
+
 \item{tte_outcomes}{A vector of strings containing the time-to-event
-outcome labels}
+outcome labels. The order is kept for the plot.}
 
-\item{continuous_outcome}{A single string contaning the continuous
-outcome label}
+\item{continuous_outcome}{A single string containing the continuous
+outcome label.}
 
-\item{treatments}{A vector of exactly two strings, containing the values
-used for the Active and Control}
+\item{arm_levels}{A named vector of exactly two strings, mapping the
+values used for the active and control arms to the values
+used in the data. The names must be "active" and "control"
+in this order. Note that this parameter only need to
+be specified if you have labels different from
+ "active" and "control".}
 
-\item{fixed_followup_days}{The followup days}
+\item{column_names}{A named vector to map the
+outcome, arm, ordered and original to the associated column names
+in the data. The vector names must match in order "outcome", "arm",
+"ordered" and "original". Note that this parameter only need to be
+specified if you have column names different from the ones above.}
+
+\item{fixed_followup_days}{The followup days, or NULL. If NULL, use the
+largest value across the hard outcomes.}
 }
 \description{
 Creates the maraca analysis object as an S3 object of class 'maraca::maraca'
