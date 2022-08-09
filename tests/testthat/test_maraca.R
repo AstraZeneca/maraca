@@ -206,7 +206,7 @@ test_that("Test reformatting of data", {
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
   )
-  data <- .reformat_data(
+  data <- .reformat_and_check_data(
     data, tte_outcomes, continuous_outcome, arm_levels, column_names
   )
 
@@ -234,8 +234,8 @@ test_that("Test win odds", {
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
   )
-  data <- .reformat_data(data, tte_outcomes, continuous_outcome, arm_levels,
-    column_names = column_names
+  data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
+    arm_levels, column_names = column_names
   )
   win_odds <- .compute_win_odds(data)
 
@@ -257,7 +257,8 @@ test_that("Test compute metainfo", {
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
   )
-  data <- .reformat_data(data, tte_outcomes, continuous_outcome, arm_levels,
+  data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
+    arm_levels,
     column_names = column_names)
   metainfo <- .compute_metainfo(data)
   expect_equal(
@@ -288,7 +289,8 @@ test_that("Test compute survmod", {
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
   )
-  data <- .reformat_data(data, tte_outcomes, continuous_outcome, arm_levels,
+  data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
+    arm_levels,
     column_names
   )
   meta <- .compute_metainfo(data)
@@ -339,8 +341,8 @@ test_that("Test compute survmod no fixed_followup_days", {
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
   )
-  data <- .reformat_data(data, tte_outcomes, continuous_outcome, arm_levels,
-    column_names)
+  data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
+    arm_levels, column_names)
   meta <- .compute_metainfo(data)
   survmod <- .compute_survmod(
     data, meta, tte_outcomes, continuous_outcome, arm_levels, NULL)
@@ -362,8 +364,8 @@ test_that("Test compute slope", {
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
   )
-  data <- .reformat_data(data, tte_outcomes, continuous_outcome, arm_levels,
-    column_names = column_names)
+  data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
+    arm_levels, column_names = column_names)
   meta <- .compute_metainfo(data)
   survmod <- .compute_survmod(
     data, meta, tte_outcomes, continuous_outcome, arm_levels, 3 * 365)
@@ -376,4 +378,23 @@ test_that("Test compute slope", {
   expect_equal(slope$meta$n, c(298, 271))
   expect_equal(slope$meta$median, c(74.360287, 68.354528))
   expect_equal(slope$meta$average, c(73.72377, 69.5893123))
+})
+
+
+test_that("Test error for missing outcome", {
+  file <- fixture_path("hce_scenario_a.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome XXX"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+  )
+
+  expect_error(
+    maraca(data, tte_outcomes, continuous_outcome, arm_levels, column_names),
+    regexp = "Outcome Outcome XXX is not present in column GROUP"
+  )
 })
