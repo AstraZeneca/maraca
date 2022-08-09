@@ -41,7 +41,7 @@ maraca <- function(
     ) {
 
   checkmate::assert_data_frame(data)
-  checkmate::assert_character(tte_outcomes, len = 4, any.missing = FALSE)
+  checkmate::assert_character(tte_outcomes, any.missing = FALSE)
   checkmate::assert_string(continuous_outcome)
   checkmate::assert_character(arm_levels, len = 2, any.missing = FALSE)
   checkmate::assert_names(
@@ -330,12 +330,12 @@ plot_tte_trellis <- function(obj) {
     dplyr::mutate_at(vars(strata), factor, levels = names(arm_levels))
 
   survmod_data$adjusted.time <- 0
-  for (i in tte_outcomes) {
-    survmod_data[survmod_data$outcome == i, ]$adjusted.time <- meta[
-      meta$outcome == i, ]$startx +
-      survmod_data[survmod_data$outcome == i, ]$time /
-      max(survmod_data[survmod_data$outcome == i, ]$time) *
-      meta[meta$outcome == i, ]$proportion
+  for (entry in tte_outcomes) {
+    survmod_data[survmod_data$outcome == entry, ]$adjusted.time <- meta[
+      meta$outcome == entry, ]$startx +
+      survmod_data[survmod_data$outcome == entry, ]$time /
+      max(survmod_data[survmod_data$outcome == entry, ]$time) *
+      meta[meta$outcome == entry, ]$proportion
   }
 
   survmod_data <- survmod_data %>% dplyr::mutate(km.y = 1 - surv)
