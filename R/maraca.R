@@ -59,7 +59,7 @@ maraca <- function(
   # in the internal data.
   # Note: We use HCE to refer to our internal, normalised data frame.
   # and with "data" to the user-provided, external, dirty data frame.
-  HCE <- .reformat_data(
+  HCE <- .reformat_and_check_data(
     data, tte_outcomes, continuous_outcome, arm_levels, column_names)
 
   # Calculate meta information from the entire HCE dataset needed for plotting
@@ -406,7 +406,7 @@ plot_tte_trellis <- function(obj) {
 }
 
 # Reformats the data coming in from outside so that it fits our expectation.
-.reformat_data <- function(
+.reformat_and_check_data <- function(
     data, tte_outcomes, continuous_outcome, arm_levels, column_names) {
   `%>%` <- dplyr::`%>%`
   vars <- dplyr::vars
@@ -437,9 +437,21 @@ plot_tte_trellis <- function(obj) {
   })
 
   endpoints <- c(tte_outcomes, continuous_outcome)
-  return(HCE %>%
+  HCE <- HCE %>%
     dplyr::filter(outcome %in% endpoints) %>%
     dplyr::mutate_at(vars(outcome), factor, levels = endpoints) %>%
     dplyr::mutate_at(vars(arm), factor, levels = names(arm_levels))
-  )
+
+  # Check if the endpoints are all present
+  for (entry in c(tte_outcomes, continuous_outcome)) {
+    if (!any(HCE$outcome == entry)) {
+      stop(paste(
+        "Outcome", entry, "is not present in column",
+        column_names[["outcome"]]
+      ))
+    }
+  }
+
+  return(HCE)
+
 }
