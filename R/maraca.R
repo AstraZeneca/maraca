@@ -23,6 +23,8 @@
 #'        specified if you have column names different from the ones above.
 #' @param fixed_followup_days The followup days, or NULL. If NULL, use the
 #'        largest value across the hard outcomes.
+#' @param compute_win_odds If TRUE (default) compute the win odds, otherwise
+#'                         don't compute them.
 #'
 #' @export
 maraca <- function(
@@ -37,7 +39,8 @@ maraca <- function(
       outcome = "outcome", arm = "arm",
       ordered = "ordered", original = "original"
     ),
-    fixed_followup_days = NULL
+    fixed_followup_days = NULL,
+    compute_win_odds = TRUE
     ) {
 
   checkmate::assert_data_frame(data)
@@ -54,6 +57,7 @@ maraca <- function(
     identical.to = c("outcome", "arm", "ordered", "original")
   )
   checkmate::assert_int(fixed_followup_days, null.ok = TRUE)
+  checkmate::assert_flag(compute_win_odds)
 
   # Remove unwanted outcomes and arm levels, and normalise column names
   # in the internal data.
@@ -71,7 +75,11 @@ maraca <- function(
   slope <- .compute_slope(
     HCE, meta, survmod, tte_outcomes, continuous_outcome, arm_levels
   )
-  win_odds <- .compute_win_odds(HCE)
+
+  win_odds <- NULL
+  if (compute_win_odds) {
+    win_odds <- .compute_win_odds(HCE)
+  }
 
   return(
     structure(
@@ -178,7 +186,10 @@ plot_maraca <- function(obj) {
         ),
       y = 0,
       label = minor_grid, color = "grey60"
-    ) +
+    )
+
+  if (!is.null(win_odds)) {
+    plot <- plot +
     ggplot2::annotate(
       geom = "label",
       x = 0,
@@ -190,7 +201,10 @@ plot_maraca <- function(obj) {
         sep = ""
       ),
       hjust = 0, vjust = 1.4, size = 3
-    ) +
+    )
+  }
+
+  plot <- plot +
     ggplot2::theme(
       axis.text.x.bottom = ggplot2::element_text(
         angle = 90,
