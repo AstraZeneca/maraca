@@ -37,7 +37,6 @@ test_that("Maraca initialisation", {
     column_names,
     fixed_followup_days
     )
-  expect_true(TRUE)
   expect_s3_class(mar, "maraca::maraca")
   expect_equal(mar$fixed_followup_days, fixed_followup_days)
   plot(mar)
@@ -443,6 +442,27 @@ test_that("Test compute win_odds flag", {
 
 })
 
+test_that("Test handle NA data", {
+  file <- fixture_path("hce_scenario_a.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+  )
+
+  data$AVAL0[[3]] <- NA
+  mar <- maraca(
+    data, tte_outcomes, continuous_outcome, arm_levels, column_names
+  )
+
+  plot(mar)
+  expect_true(TRUE)
+})
+
 test_that("Test modify continuous x grid", {
   file <- fixture_path("hce_scenario_a.csv")
   args <- .maraca_args(file)
@@ -457,7 +477,6 @@ test_that("Test modify continuous x grid", {
   expect_true(TRUE)
 
   plot(mar, continuous_grid_spacing_x = 8)
-
 })
 
 test_that("Test apply transformation to continuous scale", {

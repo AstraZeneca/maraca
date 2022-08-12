@@ -125,17 +125,17 @@ plot_maraca <- function(
     meta$outcome == obj$continuous_outcome, ]$startx
 
   minor_grid <- seq(
-    sign(min(continuous$data$original)) *
-      floor(abs(min(continuous$data$original)) / 10) * 10,
-    sign(max(continuous$data$original)) *
-      floor(abs(max(continuous$data$original)) / 10) * 10,
+    sign(min(continuous$data$original, na.rm = TRUE)) *
+      floor(abs(min(continuous$data$original, na.rm = TRUE)) / 10) * 10,
+    sign(max(continuous$data$original, na.rm = TRUE)) *
+      floor(abs(max(continuous$data$original, na.rm = TRUE)) / 10) * 10,
     by = continuous_grid_spacing_x
   )
 
   zeroposition <- .to_rangeab(0,
     start_continuous_endpoint,
-    min(continuous$data$original),
-    max(continuous$data$original)
+    min(continuous$data$original, na.rm = TRUE),
+    max(continuous$data$original, na.rm = TRUE)
   )
   # Plot the information in the Maraca plot
   plot <- ggplot2::ggplot(survmod$data, aes(colour = arm)) +
@@ -177,8 +177,8 @@ plot_maraca <- function(
       minor_breaks = .to_rangeab(
         minor_grid,
         start_continuous_endpoint,
-        min(continuous$data$original),
-        max(continuous$data$original)
+        min(continuous$data$original, na.rm = TRUE),
+        max(continuous$data$original, na.rm = TRUE)
       ),
       trans = trans
     ) +
@@ -187,8 +187,8 @@ plot_maraca <- function(
       x = .to_rangeab(
         minor_grid,
         start_continuous_endpoint,
-        min(continuous$data$original),
-        max(continuous$data$original)
+        min(continuous$data$original, na.rm = TRUE),
+        max(continuous$data$original, na.rm = TRUE)
         ),
       y = 0,
       label = minor_grid, color = "grey60"
@@ -291,7 +291,9 @@ plot_tte_trellis <- function(obj) {
   meta1 <- HCE %>%
     dplyr::group_by(outcome) %>%
     dplyr::summarise(
-      n = n(), proportion = n / dim(HCE)[1] * 100, maxday = max(original)) %>%
+      n = n(),
+      proportion = n / dim(HCE)[1] * 100,
+      maxday = max(original, na.rm = TRUE)) %>%
     dplyr::mutate(
       startx = c(0, cumsum(utils::head(proportion, -1))),
       endx = cumsum(proportion),
@@ -359,7 +361,7 @@ plot_tte_trellis <- function(obj) {
     survmod_data[survmod_data$outcome == entry, ]$adjusted.time <- meta[
       meta$outcome == entry, ]$startx +
       survmod_data[survmod_data$outcome == entry, ]$time /
-      max(survmod_data[survmod_data$outcome == entry, ]$time) *
+      max(survmod_data[survmod_data$outcome == entry, ]$time, na.rm = TRUE) *
       meta[meta$outcome == entry, ]$proportion
   }
 
@@ -367,7 +369,9 @@ plot_tte_trellis <- function(obj) {
 
   survmod_meta <- survmod_data %>%
     dplyr::group_by(strata, outcome) %>%
-    dplyr::summarise(max = 100 * max(1 - surv), sum.event = sum(n.event)) %>%
+    dplyr::summarise(
+      max = 100 * max(1 - surv, na.rm = TRUE),
+      sum.event = sum(n.event, na.rm = TRUE)) %>%
     dplyr::mutate(km.start = c(0, cumsum(utils::head(max, -1))),
       km.end = cumsum(max))
 
@@ -399,13 +403,13 @@ plot_tte_trellis <- function(obj) {
   continuous_data$x <- .to_rangeab(
     continuous_data$original,
     start_continuous_endpoint,
-    min(continuous_data$original),
-    max(continuous_data$original)
+    min(continuous_data$original, na.rm = TRUE),
+    max(continuous_data$original, na.rm = TRUE)
   )
   continuous_meta <- continuous_data %>%
     dplyr::group_by(arm) %>%
-    dplyr::summarise(n = n(), median = stats::median(x),
-      average = base::mean(x))
+    dplyr::summarise(n = n(), median = stats::median(x, na.rm = TRUE),
+      average = base::mean(x, na.rm = TRUE))
 
   continuous_data$violinx <- 0
   continuous_data[continuous_data$arm == "active", ]$violinx <- seq(
