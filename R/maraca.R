@@ -106,9 +106,14 @@ maraca <- function(
 #' object for it to be displayed.
 #'
 #' @param obj an object of S3 class 'maraca::maraca'
+#' @param continuous_grid_spacing_x The spacing of the x grid to use for the
+#'        continuous section of the plot.
+#' @param trans the transformation to apply to the data before plotting.
+#'        The accepted values are the same that ggplot2::scale_x_continuous
 #'
 #' @export
-plot_maraca <- function(obj, continuous_grid_spacing_x = 10) {
+plot_maraca <- function(
+    obj, continuous_grid_spacing_x = 10, trans = "identity") {
   checkmate::assert_class(obj, "maraca::maraca")
   aes <- ggplot2::aes
 
@@ -174,7 +179,8 @@ plot_maraca <- function(obj, continuous_grid_spacing_x = 10) {
         start_continuous_endpoint,
         min(continuous$data$original),
         max(continuous$data$original)
-      )
+      ),
+      trans = trans
     ) +
     ggplot2::annotate(
       geom = "text",
@@ -248,10 +254,15 @@ plot_tte_trellis <- function(obj) {
 #'
 #' @param x an object of S3 class 'maraca::maraca'
 #' @param \dots not used
+#' @param continuous_grid_spacing_x The spacing of the x grid to use for the
+#'        continuous section of the plot.
+#' @param trans the transformation to apply to the data before plotting.
+#'        The accepted values are the same that ggplot2::scale_x_continuous
 #'
 #' @export
-`plot.maraca::maraca` <- function(x, continuous_grid_spacing_x = 10, ...) {
-  print(plot_maraca(x, continuous_grid_spacing_x))
+`plot.maraca::maraca` <- function(
+    x, continuous_grid_spacing_x = 10, trans = "identity", ...) {
+  print(plot_maraca(x, continuous_grid_spacing_x, trans))
 }
 
 ### Private functions
