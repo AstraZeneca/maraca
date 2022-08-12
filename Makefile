@@ -1,4 +1,4 @@
-.PHONY: help test unittest build document namespace
+.PHONY: help test unittest build document namespace vignettes
 help:
 	@echo "make (env|test|unittest|build)"
 
@@ -20,6 +20,9 @@ build: clean document namespace
 namespace:
 	rm NAMESPACE
 	Rscript -e "devtools::document('.', roclets=c('namespace'))"
+
+vignettes:
+	Rscript -e "devtools::build_vignettes(keep_md=FALSE)"
 
 check: build
 	R CMD check --as-cran dist/maraca_*.tar.gz

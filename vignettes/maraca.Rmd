@@ -1,0 +1,107 @@
+---
+title: "Maraca Plots - Basic Usage"
+author: "Martin Karpefors, Stefano Borini"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Maraca Plots - Basic Usage}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
+library(maraca)
+```
+
+# Basic usage
+
+Plotting with maraca requires to have the data in an appropriate format.
+We provide a few scenarios in the package, named `hce_scenario_a.csv`,
+`hce_scenario_b.csv`, `hce_scenario_c.csv` and `hce_scenario_d.csv`.
+
+```{r maraca1, eval = TRUE}
+file_path <- system.file("extdata", "hce_scenario_a.csv", package = "maraca")
+
+data <- read.csv(file_path, stringsAsFactors = FALSE)
+colnames(data)
+```
+
+The option `stringsAsFactors = FALSE` is required for R 3.x. It is the
+default in R > 4.0 and can be omitted. The important point is that the
+data frame must contains character strings, not factors.
+
+The `data` data frame contains information on various columns. These columns
+may have arbitrary names, so the `maraca` function allows you to specify
+these names and how they map to the internal nomenclature using the
+`column_names` parameter. This parameter is a named character vector, mapping
+the standard names used by maraca with the column names in your dataset.
+
+```{r maraca2, eval = TRUE}
+column_names <- c(
+    outcome = "GROUP",
+    arm = "TRTP",
+    ordered = "AVAL",
+    original = "AVAL0"
+)
+```
+
+the `outcome` column must be a character column containing the outcome
+for each entry.
+
+```{r maraca3, eval = TRUE}
+unique(data[["GROUP"]])
+```
+
+The strings associated to each entry are arbitrary, so maraca
+allows you to specify them in the `tte_outcomes` and `continuous_outcome`
+parameters:
+
+```{r maraca4, eval = TRUE}
+tte_outcomes <- c(
+  "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+)
+continuous_outcome <- "Continuous outcome"
+```
+
+the `arm` column must also be a character column containing to which arm
+each row belongs.
+
+```{r maraca5, eval = TRUE}
+unique(data[["TRTP"]])
+```
+
+The strings associated to each entry are arbitrary, so maraca
+allows you to specify them in the `arm_levels` parameter, as a named
+vector of character strings. In this example, our file contains "Active"
+and "Control" as identifiers, as seen in the output above, so we will specify
+
+```{r maraca6, eval = TRUE}
+arm_levels = c(active = "Active", control = "Control")
+```
+
+Finally, the `ordered` and `original` columns must contain numerical values
+for the ordered and original data respectively.
+
+All of the above can be aggregated in the call to create a maraca object from
+the given dataset
+
+```{r maraca7, eval = TRUE}
+mar <- maraca(
+  data, tte_outcomes, continuous_outcome, arm_levels, column_names
+)
+```
+
+# Plotting the resulting object
+
+There are two functions to perform plotting of the maraca object. One is
+ordinary `plot`, the other is `plot_tte_trellis`. Both accept the maraca object
+as first argument.
+
+```{r maraca8, eval = TRUE, fig.width = 7, fig.height = 6}
+plot(mar)
+```
+
+```{r maraca9, eval = TRUE, fig.width = 7, fig.height = 6}
+plot_tte_trellis(mar)
+```
