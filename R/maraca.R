@@ -108,7 +108,7 @@ maraca <- function(
 #' @param obj an object of S3 class 'maraca::maraca'
 #'
 #' @export
-plot_maraca <- function(obj) {
+plot_maraca <- function(obj, continuous_grid_spacing_x = 10) {
   checkmate::assert_class(obj, "maraca::maraca")
   aes <- ggplot2::aes
 
@@ -124,7 +124,7 @@ plot_maraca <- function(obj) {
       floor(abs(min(continuous$data$original, na.rm = TRUE)) / 10) * 10,
     sign(max(continuous$data$original, na.rm = TRUE)) *
       floor(abs(max(continuous$data$original, na.rm = TRUE)) / 10) * 10,
-    by = 10
+    by = continuous_grid_spacing_x
   )
 
   zeroposition <- .to_rangeab(0,
@@ -247,11 +247,11 @@ plot_tte_trellis <- function(obj) {
 #' This will produce the plot_maraca plot.
 #'
 #' @param x an object of S3 class 'maraca::maraca'
-#' @param ... not used
+#' @param \dots not used
 #'
 #' @export
-`plot.maraca::maraca` <- function(x, ...) {
-  print(plot_maraca(x))
+`plot.maraca::maraca` <- function(x, continuous_grid_spacing_x = 10, ...) {
+  print(plot_maraca(x, continuous_grid_spacing_x))
 }
 
 ### Private functions

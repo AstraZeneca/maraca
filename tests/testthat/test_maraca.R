@@ -1,3 +1,24 @@
+.maraca_args <- function(file) {
+  data <- read.csv(file, stringsAsFactors = FALSE)
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+  )
+
+  return(list(
+    data = data,
+    tte_outcomes = tte_outcomes,
+    continuous_outcome = continuous_outcome,
+    arm_levels = arm_levels,
+    column_names = column_names
+  ))
+}
+
+
 test_that("Maraca initialisation", {
   file <- fixture_path("hce_scenario_a.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
@@ -440,5 +461,20 @@ test_that("Test handle NA data", {
 
   plot(mar)
   expect_true(TRUE)
+})
 
+test_that("Test modify continuous x grid", {
+  file <- fixture_path("hce_scenario_a.csv")
+  args <- .maraca_args(file)
+  mar <- maraca(
+    args$data,
+    args$tte_outcomes,
+    args$continuous_outcome,
+    args$arm_levels,
+    args$column_names
+  )
+
+  expect_true(TRUE)
+
+  plot(mar, continuous_grid_spacing_x = 8)
 })
