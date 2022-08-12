@@ -478,3 +478,20 @@ test_that("Test modify continuous x grid", {
 
   plot(mar, continuous_grid_spacing_x = 8)
 })
+
+test_that("Test apply transformation to continuous scale", {
+  file <- fixture_path("hce_scenario_a.csv")
+  args <- .maraca_args(file)
+  mar <- maraca(
+    args$data,
+    args$tte_outcomes,
+    args$continuous_outcome,
+    args$arm_levels,
+    args$column_names
+  )
+
+  expect_true(TRUE)
+
+  plot(mar, trans = "sqrt")
+
+})
