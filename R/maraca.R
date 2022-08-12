@@ -30,8 +30,8 @@ maraca <- function(
     tte_outcomes,
     continuous_outcome,
     arm_levels = c(
-      active = "Active",
-      control = "Control"
+      active = "active",
+      control = "control"
     ),
     column_names = c(
       outcome = "outcome", arm = "arm",
