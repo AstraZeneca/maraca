@@ -12,12 +12,12 @@ BugReports: https://github.com/AstraZeneca/maraca/issues
 Encoding: UTF-8
 LazyData: true
 Depends:
-    R (>= 3.5)
+    R (>= 3.5),
+    ggfortify (>= 0.4)
 Imports:
     dplyr (>= 1.0),
     tidyr (>= 1.2),
     ggplot2 (>= 3.3),
-    ggfortify (>= 0.4),
     survival (>= 3.3),
     sanon (>= 1.6),
     checkmate (>= 2.1)
