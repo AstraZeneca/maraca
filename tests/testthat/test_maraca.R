@@ -353,7 +353,7 @@ test_that("Test compute survmod no fixed_followup_days", {
 
 })
 
-test_that("Test compute slope", {
+test_that("Test compute continuous", {
   file <- fixture_path("hce_scenario_a.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
   tte_outcomes <- c(
@@ -369,15 +369,15 @@ test_that("Test compute slope", {
   meta <- .compute_metainfo(data)
   survmod <- .compute_survmod(
     data, meta, tte_outcomes, continuous_outcome, arm_levels, 3 * 365)
-  slope <- .compute_slope(
+  continuous <- .compute_continuous(
     data, meta, survmod, tte_outcomes, continuous_outcome, arm_levels)
-  expect_equal(sum(abs(slope$data$x)), 40828.387)
-  expect_equal(sum(abs(slope$data$violinx)), 40711.95)
-  expect_equal(sum(abs(slope$data$violiny)), 29793.61428)
+  expect_equal(sum(abs(continuous$data$x)), 40828.387)
+  expect_equal(sum(abs(continuous$data$violinx)), 40711.95)
+  expect_equal(sum(abs(continuous$data$violiny)), 29793.61428)
 
-  expect_equal(slope$meta$n, c(298, 271))
-  expect_equal(slope$meta$median, c(74.360287, 68.354528))
-  expect_equal(slope$meta$average, c(73.72377, 69.5893123))
+  expect_equal(continuous$meta$n, c(298, 271))
+  expect_equal(continuous$meta$median, c(74.360287, 68.354528))
+  expect_equal(continuous$meta$average, c(73.72377, 69.5893123))
 })
 
 

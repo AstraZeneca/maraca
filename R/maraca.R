@@ -72,7 +72,7 @@ maraca <- function(
     HCE, meta, tte_outcomes, continuous_outcome, arm_levels,
     fixed_followup_days
   )
-  slope <- .compute_slope(
+  continuous <- .compute_continuous(
     HCE, meta, survmod, tte_outcomes, continuous_outcome, arm_levels
   )
 
@@ -90,8 +90,8 @@ maraca <- function(
         fixed_followup_days = fixed_followup_days,
         column_names = column_names,
         meta = meta,
-        slope = slope,
         survmod = survmod,
+        continuous = continuous,
         win_odds = win_odds
       ),
       class = c("maraca::maraca")
@@ -113,24 +113,24 @@ plot_maraca <- function(obj) {
   aes <- ggplot2::aes
 
   meta <- obj$meta
-  slope <- obj$slope
+  continuous <- obj$continuous
   survmod <- obj$survmod
   win_odds <- obj$win_odds
   start_continuous_endpoint <- meta[
     meta$outcome == obj$continuous_outcome, ]$startx
 
   minor_grid <- seq(
-    sign(min(slope$data$original)) *
-      floor(abs(min(slope$data$original)) / 10) * 10,
-    sign(max(slope$data$original)) *
-      floor(abs(max(slope$data$original)) / 10) * 10,
+    sign(min(continuous$data$original)) *
+      floor(abs(min(continuous$data$original)) / 10) * 10,
+    sign(max(continuous$data$original)) *
+      floor(abs(max(continuous$data$original)) / 10) * 10,
     by = 10
   )
 
   zeroposition <- .to_rangeab(0,
     start_continuous_endpoint,
-    min(slope$data$original),
-    max(slope$data$original)
+    min(continuous$data$original),
+    max(continuous$data$original)
   )
   # Plot the information in the Maraca plot
   plot <- ggplot2::ggplot(survmod$data, aes(colour = arm)) +
@@ -144,11 +144,11 @@ plot_maraca <- function(obj) {
       size = 1
     ) +
     ggplot2::geom_vline(
-      xintercept = slope$meta$median,
+      xintercept = continuous$meta$median,
       color = c("#F8766D", "#00BFC4"), linetype = "dashed", size = 0.3
     ) +
     ggplot2::geom_line(
-      data = slope$data,
+      data = continuous$data,
       aes(x = violinx, y = violiny, color = arm)
     ) +
     ggplot2::geom_line(
@@ -156,11 +156,11 @@ plot_maraca <- function(obj) {
       aes(x = adjusted.time, y = km.start + km.y * 100, color = strata)
     ) +
     ggplot2::geom_violin(
-      data = slope$data,
+      data = continuous$data,
       aes(x = x, y = violiny, fill = factor(violiny)), alpha = 0.5
     ) +
     ggplot2::geom_boxplot(
-      data = slope$data,
+      data = continuous$data,
       aes(x = x, y = violiny, fill = factor(violiny)), alpha = 0.5, width = 2
     ) +
     ggplot2::xlab("Type of endpoint") +
@@ -172,8 +172,8 @@ plot_maraca <- function(obj) {
       minor_breaks = .to_rangeab(
         minor_grid,
         start_continuous_endpoint,
-        min(slope$data$original),
-        max(slope$data$original)
+        min(continuous$data$original),
+        max(continuous$data$original)
       )
     ) +
     ggplot2::annotate(
@@ -181,8 +181,8 @@ plot_maraca <- function(obj) {
       x = .to_rangeab(
         minor_grid,
         start_continuous_endpoint,
-        min(slope$data$original),
-        max(slope$data$original)
+        min(continuous$data$original),
+        max(continuous$data$original)
         ),
       y = 0,
       label = minor_grid, color = "grey60"
@@ -376,46 +376,46 @@ plot_tte_trellis <- function(obj) {
     (maxval - minval) + start_continuous_endpoint
 }
 
-# Computes the slope
-.compute_slope <- function(
+# Computes the continuous information
+.compute_continuous <- function(
     HCE, meta, survmod, tte_outcomes, continuous_outcome, arm_levels) {
   `%>%` <- dplyr::`%>%`
   n <- dplyr::n
 
-  slope_data <- HCE[HCE$outcome == continuous_outcome, ]
+  continuous_data <- HCE[HCE$outcome == continuous_outcome, ]
   start_continuous_endpoint <- meta[meta$outcome == continuous_outcome, ]$startx
 
-  slope_data$x <- .to_rangeab(
-    slope_data$original,
+  continuous_data$x <- .to_rangeab(
+    continuous_data$original,
     start_continuous_endpoint,
-    min(slope_data$original),
-    max(slope_data$original)
+    min(continuous_data$original),
+    max(continuous_data$original)
   )
-  slope_meta <- slope_data %>%
+  continuous_meta <- continuous_data %>%
     dplyr::group_by(arm) %>%
     dplyr::summarise(n = n(), median = stats::median(x),
       average = base::mean(x))
 
-  slope_data$violinx <- 0
-  slope_data[slope_data$arm == "active", ]$violinx <- seq(
+  continuous_data$violinx <- 0
+  continuous_data[continuous_data$arm == "active", ]$violinx <- seq(
     from = start_continuous_endpoint, to = 100,
-    length.out = slope_meta$n[slope_meta$arm == "active"])
-  slope_data[slope_data$arm == "control", ]$violinx <- seq(
+    length.out = continuous_meta$n[continuous_meta$arm == "active"])
+  continuous_data[continuous_data$arm == "control", ]$violinx <- seq(
     from = start_continuous_endpoint, to = 100,
-    length.out = slope_meta$n[slope_meta$arm == "control"])
+    length.out = continuous_meta$n[continuous_meta$arm == "control"])
 
-  slope_data$violiny <- survmod$meta[
+  continuous_data$violiny <- survmod$meta[
     survmod$meta$strata == "active" &
     survmod$meta$outcome == utils::tail(tte_outcomes, 1),
     ]$km.end
-  slope_data[slope_data$arm == "control", ]$violiny <- survmod$meta[
+  continuous_data[continuous_data$arm == "control", ]$violiny <- survmod$meta[
     survmod$meta$strata == "control" &
     survmod$meta$outcome == utils::tail(tte_outcomes, 1),
     ]$km.end
 
   return(list(
-    data = slope_data,
-    meta = slope_meta
+    data = continuous_data,
+    meta = continuous_meta
   ))
 }
 
