@@ -398,3 +398,26 @@ test_that("Test error for missing outcome", {
     regexp = "Outcome Outcome XXX is not present in column GROUP"
   )
 })
+
+test_that("Test compute win_odds flag", {
+  file <- fixture_path("hce_scenario_a.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+  )
+
+  mar <- maraca(
+    data, tte_outcomes, continuous_outcome, arm_levels, column_names,
+    compute_win_odds = FALSE
+  )
+
+  expect_true(is.null(mar$win_odds))
+
+  plot(mar)
+
+})
