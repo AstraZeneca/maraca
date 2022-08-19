@@ -4,12 +4,25 @@
 \alias{plot.maraca::maraca}
 \title{Generic function to plot the maraca object using plot().}
 \usage{
-\method{plot}{`maraca::maraca`}(x, ...)
+\method{plot}{`maraca::maraca`}(
+  x,
+  continuous_grid_spacing_x = 10,
+  trans = "identity",
+  density_plot_type = "default",
+  vline_type = "median",
+  ...
+)
 }
 \arguments{
 \item{x}{an object of S3 class 'maraca::maraca'}
 
-\item{...}{not used}
+\item{continuous_grid_spacing_x}{The spacing of the x grid to use for the
+continuous section of the plot.}
+
+\item{trans}{the transformation to apply to the data before plotting.
+The accepted values are the same that ggplot2::scale_x_continuous}
+
+\item{\dots}{not used}
 }
 \description{
 This will produce the plot_maraca plot.

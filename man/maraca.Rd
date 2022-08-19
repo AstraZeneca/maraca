@@ -8,10 +8,11 @@ maraca(
   data,
   tte_outcomes,
   continuous_outcome,
-  arm_levels = c(active = "Active", control = "Control"),
+  arm_levels = c(active = "active", control = "control"),
   column_names = c(outcome = "outcome", arm = "arm", ordered = "ordered", original =
     "original"),
-  fixed_followup_days = NULL
+  fixed_followup_days = NULL,
+  compute_win_odds = TRUE
 )
 }
 \arguments{
@@ -43,6 +44,9 @@ specified if you have column names different from the ones above.}
 
 \item{fixed_followup_days}{The followup days, or NULL. If NULL, use the
 largest value across the hard outcomes.}
+
+\item{compute_win_odds}{If TRUE (default) compute the win odds, otherwise
+don't compute them.}
 }
 \description{
 Creates the maraca analysis object as an S3 object of class 'maraca::maraca'
