@@ -512,5 +512,24 @@ test_that("Test density plot selection", {
   plot(mar, density_plot_type = "default")
   plot(mar, density_plot_type = "violin")
   plot(mar, density_plot_type = "box")
-  plot(mar, density_plot_type = "scatter")
+  suppressWarnings(
+    plot(mar, density_plot_type = "scatter")
+  )
+})
+
+test_that("Test vline type", {
+  file <- fixture_path("hce_scenario_a.csv")
+  args <- .maraca_args(file)
+  mar <- maraca(
+    args$data,
+    args$tte_outcomes,
+    args$continuous_outcome,
+    args$arm_levels,
+    args$column_names
+  )
+
+  expect_true(TRUE)
+
+  plot(mar, vline_type = "median")
+  plot(mar, vline_type = "mean")
 })

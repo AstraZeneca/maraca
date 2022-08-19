@@ -110,14 +110,22 @@ maraca <- function(
 #'        continuous section of the plot.
 #' @param trans the transformation to apply to the data before plotting.
 #'        The accepted values are the same that ggplot2::scale_x_continuous
+#' @param density_plot_type which type of plot to display in the continuous
+#'        part of the plot. Options are "default", "violin", "box", "scatter".
+#' @param vline_type what the vertical lines in the continuous part of the plot
+#'        should highlight. Options are "median", "mean", "none".
 #'
 #' @export
 plot_maraca <- function(
     obj, continuous_grid_spacing_x = 10, trans = "identity",
-    density_plot_type = "default") {
+    density_plot_type = "default",
+    vline_type = "median") {
   checkmate::assert_class(obj, "maraca::maraca")
   checkmate::assert_choice(
     density_plot_type, c("default", "violin", "box", "scatter")
+  )
+  checkmate::assert_choice(
+    vline_type, c("median", "mean", "none")
   )
   aes <- ggplot2::aes
 
@@ -151,11 +159,33 @@ plot_maraca <- function(
       xintercept = zeroposition,
       color = "white",
       size = 1
-    ) +
-    ggplot2::geom_vline(
-      xintercept = continuous$meta$median,
-      color = c("#F8766D", "#00BFC4"), linetype = "dashed", size = 0.3
-    ) +
+    )
+
+  if (vline_type == "median") {
+    plot <- plot +
+      ggplot2::geom_vline(
+        mapping = aes(
+          xintercept = median,
+          color = arm
+        ),
+        data = continuous$meta,
+        linetype = "dashed",
+        size = 0.3
+      )
+  } else if (vline_type == "mean") {
+    plot <- plot +
+      ggplot2::geom_vline(
+        mapping = aes(
+          xintercept = average,
+          color = arm
+        ),
+        data = continuous$meta,
+        linetype = "dashed",
+        size = 0.3
+      )
+  }
+
+  plot <- plot +
     ggplot2::geom_line(
       data = continuous$data,
       aes(x = violinx, y = violiny, color = arm)
@@ -281,8 +311,11 @@ plot_tte_trellis <- function(obj) {
 #' @export
 `plot.maraca::maraca` <- function(
     x, continuous_grid_spacing_x = 10, trans = "identity",
-    density_plot_type = "default", ...) {
-  print(plot_maraca(x, continuous_grid_spacing_x, trans, density_plot_type))
+    density_plot_type = "default",
+    vline_type = "median",
+    ...) {
+  print(plot_maraca(
+    x, continuous_grid_spacing_x, trans, density_plot_type, vline_type))
 }
 
 ### Private functions
