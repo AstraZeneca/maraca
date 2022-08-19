@@ -533,3 +533,20 @@ test_that("Test vline type", {
   plot(mar, vline_type = "median")
   plot(mar, vline_type = "mean")
 })
+
+test_that("test ordered column", {
+  file <- fixture_path("hce_scenario_a.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+  )
+  data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
+    arm_levels, column_names)
+
+  .with_ordered_column(data)
+})

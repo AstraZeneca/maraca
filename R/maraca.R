@@ -336,6 +336,38 @@ plot_tte_trellis <- function(obj) {
   return(win_odds)
 }
 
+# This function does a bit of dirty magic to distribute the values
+# onto different "floors", each floor being a numeric offset that is higher
+# for each passing tte variable (and highest for the continuous).
+# In practice, we are translating the values for each tte variable group.
+# Explanation inline
+.with_ordered_column <- function(HCE) {
+  # We create a data frame, grouping according to the outcome,
+  # then we get the minimum and maximum values of the original value.
+  # What we want to know is the "window" where data are for each of the groups
+  # We then select the largest window.
+  tmp <- HCE %>%
+    dplyr::group_by(outcome) %>%
+    dplyr::summarise(min = min(original), max = max(original)) %>%
+    dplyr::mutate(separation = max - min) %>%
+    dplyr::summarise(max_separation = max(separation))
+
+  # With the largest window found, we know that if we offset the data at
+  # least of this amount, they will never overlap. Bit of clever math here,
+  # we use a gap that is larger, amounting to the number of digits, so we
+  # have nicer gap value such as 10, 100, or 1000 etc.
+  gap <- 10 ^ ceiling(log10(tmp$max_separation))
+
+  # apply the gap to all values. outcome is a factor, so we use its numeric
+  # value to multiply the offset, and end up having each value "translated up"
+  # of the proper amount.
+  HCE <- HCE %>%
+    dplyr::mutate(ordered = .env$gap * (as.numeric(outcome) - 1) + original)
+
+  # and now we have a new data set with the column added.
+  return(HCE)
+}
+
 # Computes the metainfo from the internal HCE data.
 .compute_metainfo <- function(HCE) {
   n <- dplyr::n
