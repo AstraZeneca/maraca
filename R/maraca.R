@@ -113,8 +113,12 @@ maraca <- function(
 #'
 #' @export
 plot_maraca <- function(
-    obj, continuous_grid_spacing_x = 10, trans = "identity") {
+    obj, continuous_grid_spacing_x = 10, trans = "identity",
+    density_plot_type = "default") {
   checkmate::assert_class(obj, "maraca::maraca")
+  checkmate::assert_choice(
+    density_plot_type, c("default", "violin", "box", "scatter")
+  )
   aes <- ggplot2::aes
 
   meta <- obj$meta
@@ -159,15 +163,30 @@ plot_maraca <- function(
     ggplot2::geom_line(
       data = survmod$data,
       aes(x = adjusted.time, y = km.start + km.y * 100, color = strata)
-    ) +
-    ggplot2::geom_violin(
-      data = continuous$data,
-      aes(x = x, y = violiny, fill = factor(violiny)), alpha = 0.5
-    ) +
-    ggplot2::geom_boxplot(
-      data = continuous$data,
-      aes(x = x, y = violiny, fill = factor(violiny)), alpha = 0.5, width = 2
-    ) +
+    )
+
+  if (density_plot_type == "default" || density_plot_type == "violin") {
+    plot <- plot +
+      ggplot2::geom_violin(
+        data = continuous$data,
+        aes(x = x, y = violiny, fill = factor(violiny)), alpha = 0.5
+      )
+  }
+
+  if (density_plot_type == "default" || density_plot_type == "box") {
+    plot <- plot +
+      ggplot2::geom_boxplot(
+        data = continuous$data,
+        aes(x = x, y = violiny, fill = factor(violiny)), alpha = 0.5, width = 2
+      )
+  }
+
+  if (density_plot_type == "scatter") {
+    plot <- plot +
+      ggplot2::geom_jitter(data = continuous$data, aes(x = x, y = violiny))
+  }
+
+  plot <- plot +
     ggplot2::xlab("Type of endpoint") +
     ggplot2::ylab("Cumulative proportion") +
     ggplot2::scale_x_continuous(
@@ -261,8 +280,9 @@ plot_tte_trellis <- function(obj) {
 #'
 #' @export
 `plot.maraca::maraca` <- function(
-    x, continuous_grid_spacing_x = 10, trans = "identity", ...) {
-  print(plot_maraca(x, continuous_grid_spacing_x, trans))
+    x, continuous_grid_spacing_x = 10, trans = "identity",
+    density_plot_type = "default", ...) {
+  print(plot_maraca(x, continuous_grid_spacing_x, trans, density_plot_type))
 }
 
 ### Private functions
