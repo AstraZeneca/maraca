@@ -309,7 +309,7 @@ plot_tte_trellis <- function(obj) {
 #'        The accepted values are the same that ggplot2::scale_x_continuous
 #'
 #' @export
-`plot.maraca::maraca` <- function(
+plot.`maraca::maraca` <- function(
     x, continuous_grid_spacing_x = 10, trans = "identity",
     density_plot_type = "default",
     vline_type = "median",
@@ -347,6 +347,8 @@ plot_tte_trellis <- function(obj) {
   # then we get the minimum and maximum values of the value.
   # What we want to know is the "window" where data are for each of the groups
   # We then select the largest window.
+  `%>%` <- dplyr::`%>%`
+
   tmp <- HCE %>%
     dplyr::group_by(outcome) %>%
     dplyr::summarise(min = min(value), max = max(value)) %>%

@@ -11,6 +11,7 @@ vignette: >
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
+library(dplyr)
 library(maraca)
 ```
 
@@ -41,8 +42,7 @@ the standard names used by maraca with the column names in your dataset.
 column_names <- c(
     outcome = "GROUP",
     arm = "TRTP",
-    ordered = "AVAL",
-    original = "AVAL0"
+    value = "AVAL0"
 )
 ```
 
@@ -80,8 +80,7 @@ and "Control" as identifiers, as seen in the output above, so we will specify
 arm_levels = c(active = "Active", control = "Control")
 ```
 
-Finally, the `ordered` and `original` columns must contain numerical values
-for the ordered and original data respectively.
+Finally, the `value` column must contain numerical values for the data.
 
 All of the above can be aggregated in the call to create a maraca object from
 the given dataset
