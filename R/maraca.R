@@ -428,8 +428,11 @@ plot_tte_trellis <- function(obj) {
         outcome = tte_outcomes[i]
       )
 
+    # remove first and last point
+    survmod_data_row <- survmod_data_row[2:length(survmod_data_row) - 1]
+
     if (i == 1) {
-      survmod_data <- survmod_data_row[2:length(survmod_data_row)-1]
+      survmod_data <- survmod_data_row
     } else {
       survmod_data <- rbind(
         survmod_data,
@@ -437,7 +440,7 @@ plot_tte_trellis <- function(obj) {
       )
     }
   }
-
+  print(survmod_data)
   survmod_data <- survmod_data %>%
     dplyr::mutate_at(vars(outcome), factor, levels = endpoints) %>%
     dplyr::mutate_at(vars(strata), factor, levels = names(arm_levels))
