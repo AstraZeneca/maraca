@@ -428,8 +428,11 @@ plot_tte_trellis <- function(obj) {
         outcome = tte_outcomes[i]
       )
 
+    n <- dplyr::n
     # remove first and last point
-    survmod_data_row <- survmod_data_row[2:length(survmod_data_row) - 1]
+    survmod_data_row <- survmod_data_row %>%
+      dplyr::group_by(strata) %>%
+      dplyr::slice(2:(n()-1))
 
     if (i == 1) {
       survmod_data <- survmod_data_row
@@ -440,7 +443,7 @@ plot_tte_trellis <- function(obj) {
       )
     }
   }
-  print(survmod_data)
+
   survmod_data <- survmod_data %>%
     dplyr::mutate_at(vars(outcome), factor, levels = endpoints) %>%
     dplyr::mutate_at(vars(strata), factor, levels = names(arm_levels))
@@ -461,8 +464,12 @@ plot_tte_trellis <- function(obj) {
     dplyr::summarise(
       max = 100 * max(1 - surv, na.rm = TRUE),
       sum.event = sum(n.event, na.rm = TRUE)) %>%
-    dplyr::mutate(km.start = c(0, cumsum(utils::head(max, -1))),
-      km.end = cumsum(max))
+    dplyr::mutate(
+      km.start = c(0, cumsum(utils::head(max, -1))),
+      km.end = cumsum(max)
+    )
+
+  print(survmod_meta)
 
   survmod_data <- survmod_data %>% dplyr::left_join(
     survmod_meta, by = c("strata", "outcome")
