@@ -170,7 +170,7 @@ plot_maraca <- function(
         ),
         data = continuous$meta,
         linetype = "dashed",
-        size = 0.3
+        size = 0.8
       )
   } else if (vline_type == "mean") {
     plot <- plot +
@@ -181,7 +181,7 @@ plot_maraca <- function(
         ),
         data = continuous$meta,
         linetype = "dashed",
-        size = 0.3
+        size = 0.8
       )
   }
 
