@@ -20,7 +20,7 @@
 
 
 test_that("Maraca initialisation", {
-  file <- fixture_path("hce_scenario_a.csv")
+  file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
 
   tte_outcomes <- c(
@@ -44,7 +44,7 @@ test_that("Maraca initialisation", {
 })
 
 test_that("Initialisation without fixed_followup_days", {
-  file <- fixture_path("hce_scenario_a.csv")
+  file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
   tte_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
@@ -61,7 +61,7 @@ test_that("Initialisation without fixed_followup_days", {
 })
 
 test_that("Maraca wrong params", {
-  file <- fixture_path("hce_scenario_a.csv")
+  file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
   tte_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
@@ -174,7 +174,7 @@ test_that("Maraca wrong params", {
 })
 
 test_that("Maraca plotting", {
-  file <- fixture_path("hce_scenario_a.csv")
+  file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
   tte_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
@@ -195,7 +195,7 @@ test_that("Maraca plotting", {
 })
 
 test_that("Maraca plot tte_trellis", {
-  file <- fixture_path("hce_scenario_a.csv")
+  file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
   tte_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
@@ -216,7 +216,7 @@ test_that("Maraca plot tte_trellis", {
 })
 
 test_that("Test reformatting of data", {
-  file <- fixture_path("hce_scenario_a.csv")
+  file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
   tte_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
@@ -244,7 +244,7 @@ test_that("Test plot functions only work with maraca objects", {
 })
 
 test_that("Test win odds", {
-  file <- fixture_path("hce_scenario_a.csv")
+  file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
   tte_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
@@ -267,7 +267,7 @@ test_that("Test win odds", {
 })
 
 test_that("Test compute metainfo", {
-  file <- fixture_path("hce_scenario_a.csv")
+  file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
   tte_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
@@ -299,7 +299,7 @@ test_that("Test compute metainfo", {
 })
 
 test_that("Test compute survmod", {
-  file <- fixture_path("hce_scenario_a.csv")
+  file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
   tte_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
@@ -351,7 +351,7 @@ test_that("Test compute survmod", {
 
 
 test_that("Test compute survmod no fixed_followup_days", {
-  file <- fixture_path("hce_scenario_a.csv")
+  file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
   tte_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
@@ -374,7 +374,7 @@ test_that("Test compute survmod no fixed_followup_days", {
 })
 
 test_that("Test compute continuous", {
-  file <- fixture_path("hce_scenario_a.csv")
+  file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
   tte_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
@@ -402,7 +402,7 @@ test_that("Test compute continuous", {
 
 
 test_that("Test error for missing outcome", {
-  file <- fixture_path("hce_scenario_a.csv")
+  file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
   tte_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome XXX"
@@ -420,7 +420,7 @@ test_that("Test error for missing outcome", {
 })
 
 test_that("Test compute win_odds flag", {
-  file <- fixture_path("hce_scenario_a.csv")
+  file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
   tte_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
@@ -443,7 +443,7 @@ test_that("Test compute win_odds flag", {
 })
 
 test_that("Test handle NA data", {
-  file <- fixture_path("hce_scenario_a.csv")
+  file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
   tte_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
@@ -464,7 +464,7 @@ test_that("Test handle NA data", {
 })
 
 test_that("Test modify continuous x grid", {
-  file <- fixture_path("hce_scenario_a.csv")
+  file <- fixture_path("hce_scenario_c.csv")
   args <- .maraca_args(file)
   mar <- maraca(
     args$data,
@@ -480,7 +480,7 @@ test_that("Test modify continuous x grid", {
 })
 
 test_that("Test apply transformation to continuous scale", {
-  file <- fixture_path("hce_scenario_a.csv")
+  file <- fixture_path("hce_scenario_c.csv")
   args <- .maraca_args(file)
   mar <- maraca(
     args$data,
@@ -497,7 +497,7 @@ test_that("Test apply transformation to continuous scale", {
 })
 
 test_that("Test density plot selection", {
-  file <- fixture_path("hce_scenario_a.csv")
+  file <- fixture_path("hce_scenario_c.csv")
   args <- .maraca_args(file)
   mar <- maraca(
     args$data,
@@ -518,7 +518,7 @@ test_that("Test density plot selection", {
 })
 
 test_that("Test vline type", {
-  file <- fixture_path("hce_scenario_a.csv")
+  file <- fixture_path("hce_scenario_c.csv")
   args <- .maraca_args(file)
   mar <- maraca(
     args$data,
@@ -535,7 +535,7 @@ test_that("Test vline type", {
 })
 
 test_that("test ordered column", {
-  file <- fixture_path("hce_scenario_a.csv")
+  file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
   tte_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
