@@ -10,10 +10,9 @@ maraca(
   tte_outcomes,
   continuous_outcome,
   arm_levels = c(active = "active", control = "control"),
-  column_names = c(outcome = "outcome", arm = "arm", ordered = "ordered", original =
-    "original"),
+  column_names = c(outcome = "outcome", arm = "arm", value = "value"),
   fixed_followup_days = NULL,
-  compute_win_odds = TRUE
+  compute_win_odds = FALSE
 )
 }
 \arguments{
@@ -21,8 +20,7 @@ maraca(
 - outcome column, containing the time-to-event and continuous
   labels
 - arm column, contaning the arm a given row belongs to.
-- ordered column, containing the continuous value
-- original column, containing the difference in values.}
+- value column, containing the values.}
 
 \item{tte_outcomes}{A vector of strings containing the time-to-event
 outcome labels. The order is kept for the plot.}
@@ -38,14 +36,14 @@ be specified if you have labels different from
  "active" and "control".}
 
 \item{column_names}{A named vector to map the
-outcome, arm, ordered and original to the associated column names
+outcome, arm, value to the associated column names
 in the data. The vector names must match in order "outcome", "arm",
-"ordered" and "original". Note that this parameter only need to be
+and "value". Note that this parameter only need to be
 specified if you have column names different from the ones above.}
 
 \item{fixed_followup_days}{The followup days, or NULL. If NULL, use the
 largest value across the hard outcomes.}
 
-\item{compute_win_odds}{If TRUE (default) compute the win odds, otherwise
+\item{compute_win_odds}{If TRUE compute the win odds, otherwise (default)
 don't compute them.}
 }

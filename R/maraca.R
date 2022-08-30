@@ -22,7 +22,7 @@
 #'        specified if you have column names different from the ones above.
 #' @param fixed_followup_days The followup days, or NULL. If NULL, use the
 #'        largest value across the hard outcomes.
-#' @param compute_win_odds If TRUE (default) compute the win odds, otherwise
+#' @param compute_win_odds If TRUE compute the win odds, otherwise (default)
 #'                         don't compute them.
 #'
 #' @export
@@ -40,7 +40,7 @@ maraca <- function(
       value = "value"
     ),
     fixed_followup_days = NULL,
-    compute_win_odds = TRUE
+    compute_win_odds = FALSE
     ) {
 
   checkmate::assert_data_frame(data)
