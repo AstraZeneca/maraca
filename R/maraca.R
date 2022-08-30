@@ -429,7 +429,7 @@ plot_tte_trellis <- function(obj) {
       )
 
     if (i == 1) {
-      survmod_data <- survmod_data_row
+      survmod_data <- survmod_data_row[2:length(survmod_data_row)-1]
     } else {
       survmod_data <- rbind(
         survmod_data,
