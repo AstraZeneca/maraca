@@ -4,8 +4,7 @@
 #'             - outcome column, containing the time-to-event and continuous
 #'               labels
 #'             - arm column, contaning the arm a given row belongs to.
-#'             - ordered column, containing the continuous value
-#'             - original column, containing the difference in values.
+#'             - value column, containing the values.
 #' @param tte_outcomes A vector of strings containing the time-to-event
 #'                     outcome labels. The order is kept for the plot.
 #' @param continuous_outcome A single string containing the continuous
@@ -17,9 +16,9 @@
 #'                   be specified if you have labels different from
 #'                    "active" and "control".
 #' @param column_names A named vector to map the
-#'        outcome, arm, ordered and original to the associated column names
+#'        outcome, arm, value to the associated column names
 #'        in the data. The vector names must match in order "outcome", "arm",
-#'        "ordered" and "original". Note that this parameter only need to be
+#'        and "value". Note that this parameter only need to be
 #'        specified if you have column names different from the ones above.
 #' @param fixed_followup_days The followup days, or NULL. If NULL, use the
 #'        largest value across the hard outcomes.
@@ -36,8 +35,9 @@ maraca <- function(
       control = "control"
     ),
     column_names = c(
-      outcome = "outcome", arm = "arm",
-      ordered = "ordered", original = "original"
+      outcome = "outcome",
+      arm = "arm",
+      value = "value"
     ),
     fixed_followup_days = NULL,
     compute_win_odds = TRUE
@@ -51,10 +51,10 @@ maraca <- function(
     names(arm_levels),
     identical.to = c("active", "control")
   )
-  checkmate::assert_character(column_names, len = 4, any.missing = FALSE)
+  checkmate::assert_character(column_names, len = 3, any.missing = FALSE)
   checkmate::assert_names(
     names(column_names),
-    identical.to = c("outcome", "arm", "ordered", "original")
+    identical.to = c("outcome", "arm", "value")
   )
   checkmate::assert_int(fixed_followup_days, null.ok = TRUE)
   checkmate::assert_flag(compute_win_odds)
@@ -137,17 +137,17 @@ plot_maraca <- function(
     meta$outcome == obj$continuous_outcome, ]$startx
 
   minor_grid <- seq(
-    sign(min(continuous$data$original, na.rm = TRUE)) *
-      floor(abs(min(continuous$data$original, na.rm = TRUE)) / 10) * 10,
-    sign(max(continuous$data$original, na.rm = TRUE)) *
-      floor(abs(max(continuous$data$original, na.rm = TRUE)) / 10) * 10,
+    sign(min(continuous$data$value, na.rm = TRUE)) *
+      floor(abs(min(continuous$data$value, na.rm = TRUE)) / 10) * 10,
+    sign(max(continuous$data$value, na.rm = TRUE)) *
+      floor(abs(max(continuous$data$value, na.rm = TRUE)) / 10) * 10,
     by = continuous_grid_spacing_x
   )
 
   zeroposition <- .to_rangeab(0,
     start_continuous_endpoint,
-    min(continuous$data$original, na.rm = TRUE),
-    max(continuous$data$original, na.rm = TRUE)
+    min(continuous$data$value, na.rm = TRUE),
+    max(continuous$data$value, na.rm = TRUE)
   )
   # Plot the information in the Maraca plot
   plot <- ggplot2::ggplot(survmod$data, aes(colour = arm)) +
@@ -226,8 +226,8 @@ plot_maraca <- function(
       minor_breaks = .to_rangeab(
         minor_grid,
         start_continuous_endpoint,
-        min(continuous$data$original, na.rm = TRUE),
-        max(continuous$data$original, na.rm = TRUE)
+        min(continuous$data$value, na.rm = TRUE),
+        max(continuous$data$value, na.rm = TRUE)
       ),
       trans = trans
     ) +
@@ -236,8 +236,8 @@ plot_maraca <- function(
       x = .to_rangeab(
         minor_grid,
         start_continuous_endpoint,
-        min(continuous$data$original, na.rm = TRUE),
-        max(continuous$data$original, na.rm = TRUE)
+        min(continuous$data$value, na.rm = TRUE),
+        max(continuous$data$value, na.rm = TRUE)
         ),
       y = 0,
       label = minor_grid, color = "grey60"
@@ -322,6 +322,7 @@ plot_tte_trellis <- function(obj) {
 
 # Computes the win odds from the internal data.
 .compute_win_odds <- function(HCE) {
+  HCE <- .with_ordered_column(HCE)
   grp <- sanon::grp # nolint
   fit <- sanon::sanon(
     ordered ~ grp(arm, ref = "control"),
@@ -336,6 +337,38 @@ plot_tte_trellis <- function(obj) {
   return(win_odds)
 }
 
+# This function does a bit of dirty magic to distribute the values
+# onto different "floors", each floor being a numeric offset that is higher
+# for each passing tte variable (and highest for the continuous).
+# In practice, we are translating the values for each tte variable group.
+# Explanation inline
+.with_ordered_column <- function(HCE) {
+  # We create a data frame, grouping according to the outcome,
+  # then we get the minimum and maximum values of the value.
+  # What we want to know is the "window" where data are for each of the groups
+  # We then select the largest window.
+  tmp <- HCE %>%
+    dplyr::group_by(outcome) %>%
+    dplyr::summarise(min = min(value), max = max(value)) %>%
+    dplyr::mutate(separation = max - min) %>%
+    dplyr::summarise(max_separation = max(separation))
+
+  # With the largest window found, we know that if we offset the data at
+  # least of this amount, they will never overlap. Bit of clever math here,
+  # we use a gap that is larger, amounting to the number of digits, so we
+  # have nicer gap value such as 10, 100, or 1000 etc.
+  gap <- 10 ^ ceiling(log10(tmp$max_separation)) # nolint
+
+  # apply the gap to all values. outcome is a factor, so we use its numeric
+  # value to multiply the offset, and end up having each value "translated up"
+  # of the proper amount.
+  HCE <- HCE %>%
+    dplyr::mutate(ordered = .env$gap * (as.numeric(outcome) - 1) + value)
+
+  # and now we have a new data set with the column added.
+  return(HCE)
+}
+
 # Computes the metainfo from the internal HCE data.
 .compute_metainfo <- function(HCE) {
   n <- dplyr::n
@@ -346,7 +379,7 @@ plot_tte_trellis <- function(obj) {
     dplyr::summarise(
       n = n(),
       proportion = n / dim(HCE)[1] * 100,
-      maxday = max(original, na.rm = TRUE)) %>%
+      maxday = max(value, na.rm = TRUE)) %>%
     dplyr::mutate(
       startx = c(0, cumsum(utils::head(proportion, -1))),
       endx = cumsum(proportion),
@@ -383,7 +416,7 @@ plot_tte_trellis <- function(obj) {
   }
 
   HCE[HCE$outcome %in% tte_outcomes, ]$kmday <- HCE[
-      HCE$outcome %in% tte_outcomes, ]$original
+      HCE$outcome %in% tte_outcomes, ]$value
 
   Surv <- survival::Surv # nolint
 
@@ -454,10 +487,10 @@ plot_tte_trellis <- function(obj) {
   start_continuous_endpoint <- meta[meta$outcome == continuous_outcome, ]$startx
 
   continuous_data$x <- .to_rangeab(
-    continuous_data$original,
+    continuous_data$value,
     start_continuous_endpoint,
-    min(continuous_data$original, na.rm = TRUE),
-    max(continuous_data$original, na.rm = TRUE)
+    min(continuous_data$value, na.rm = TRUE),
+    max(continuous_data$value, na.rm = TRUE)
   )
   continuous_meta <- continuous_data %>%
     dplyr::group_by(arm) %>%

@@ -6,7 +6,7 @@
   continuous_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
-    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
 
   return(list(
@@ -29,7 +29,7 @@ test_that("Maraca initialisation", {
   continuous_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
-    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
   fixed_followup_days <- 3 * 365
   mar <- maraca(
@@ -52,7 +52,7 @@ test_that("Initialisation without fixed_followup_days", {
   continuous_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
-    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
   mar <- maraca(data, tte_outcomes, continuous_outcome, arm_levels,
                 column_names = column_names)
@@ -70,7 +70,7 @@ test_that("Maraca wrong params", {
   arm_levels <- c(active = "Active", control = "Control")
   fixed_followup_days <- 3 * 365
   column_names <- c(
-    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
 
   expect_error(
@@ -116,12 +116,12 @@ test_that("Maraca wrong params", {
       c("a"),
       12
     ),
-    regexp = "Must have length 4"
+    regexp = "Must have length 3"
   )
   expect_error(
     maraca(
       data, tte_outcomes, continuous_outcome, arm_levels,
-      c("a", "b", "c", "d"),
+      c("a", "b", "c"),
       12
     ),
     regexp = "Must have names"
@@ -129,7 +129,7 @@ test_that("Maraca wrong params", {
   expect_error(
     maraca(
       data, tte_outcomes, continuous_outcome, arm_levels,
-      c(foo = "a", bar = "b", baz = "c", quux = "d"),
+      c(foo = "a", bar = "b", baz = "c"),
       12
     ),
     regexp = "Names must be a identical to"
@@ -140,7 +140,7 @@ test_that("Maraca wrong params", {
       data, tte_outcomes, continuous_outcome, arm_levels,
       c(
         outcome = "GROUP", arm = "notexistent",
-        ordered = "AVAL", original = "AVAL0"
+        value = "AVAL0"
       ), 12
     ),
     regexp = "Can't rename columns that don't exist"
@@ -153,7 +153,7 @@ test_that("Maraca wrong params", {
       data2, tte_outcomes, continuous_outcome, arm_levels,
       c(
         outcome = "GROUP", arm = "TRTP",
-        ordered = "AVAL", original = "AVAL0"
+        value = "AVAL0"
       ), 12
     ),
     regexp = "The arm column must be characters"
@@ -166,7 +166,7 @@ test_that("Maraca wrong params", {
       data2, tte_outcomes, continuous_outcome, arm_levels,
       c(
         outcome = "GROUP", arm = "TRTP",
-        ordered = "AVAL", original = "AVAL0"
+        value = "AVAL0"
       ), 12
     ),
     regexp = "The outcome column must be characters"
@@ -183,7 +183,7 @@ test_that("Maraca plotting", {
   arm_levels <- c(active = "Active", control = "Control")
   fixed_followup_days <- 3 * 365
   column_names <- c(
-    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
   mar <- maraca(
     data, tte_outcomes, continuous_outcome, arm_levels,
@@ -204,7 +204,7 @@ test_that("Maraca plot tte_trellis", {
   arm_levels <- c(active = "Active", control = "Control")
   fixed_followup_days <- 3 * 365
   column_names <- c(
-    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
   mar <- maraca(
     data, tte_outcomes, continuous_outcome, arm_levels,
@@ -224,7 +224,7 @@ test_that("Test reformatting of data", {
   continuous_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
-    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
   data <- .reformat_and_check_data(
     data, tte_outcomes, continuous_outcome, arm_levels, column_names
@@ -252,7 +252,7 @@ test_that("Test win odds", {
   continuous_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
-    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
   data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
     arm_levels, column_names = column_names
@@ -275,7 +275,7 @@ test_that("Test compute metainfo", {
   continuous_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
-    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
   data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
     arm_levels,
@@ -307,7 +307,7 @@ test_that("Test compute survmod", {
   continuous_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
-    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
   data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
     arm_levels,
@@ -359,7 +359,7 @@ test_that("Test compute survmod no fixed_followup_days", {
   continuous_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
-    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
   data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
     arm_levels, column_names)
@@ -382,7 +382,7 @@ test_that("Test compute continuous", {
   continuous_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
-    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
   data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
     arm_levels, column_names = column_names)
@@ -410,7 +410,7 @@ test_that("Test error for missing outcome", {
   continuous_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
-    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
 
   expect_error(
@@ -428,7 +428,7 @@ test_that("Test compute win_odds flag", {
   continuous_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
-    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
 
   mar <- maraca(
@@ -451,7 +451,7 @@ test_that("Test handle NA data", {
   continuous_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
-    outcome = "GROUP", arm = "TRTP", ordered = "AVAL", original = "AVAL0"
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
 
   data$AVAL0[[3]] <- NA
@@ -532,4 +532,24 @@ test_that("Test vline type", {
 
   plot(mar, vline_type = "median")
   plot(mar, vline_type = "mean")
+})
+
+test_that("test ordered column", {
+  file <- fixture_path("hce_scenario_a.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
+  )
+  hce <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
+    arm_levels, column_names)
+
+  hce <- .with_ordered_column(hce)
+
+  # Verify against the ones we calculated in the fixture
+  expect_equal(data$AVAL, hce$ordered, tol = 1e-7)
 })
