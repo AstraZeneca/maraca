@@ -27,8 +27,11 @@ part of the plot. Options are "default", "violin", "box", "scatter".}
 \item{vline_type}{what the vertical lines in the continuous part of the plot
 should highlight. Options are "median", "mean", "none".}
 }
-\description{
-Renders and returns a ggplot2 object of the maraca data. This function
+\value{
+a ggplot2 object of the data. This function
 will not render the plot immediately. You have to print() the returned
 object for it to be displayed.
+}
+\description{
+Creates and returns the plot of the maraca data.
 }

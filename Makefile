@@ -8,7 +8,7 @@ test:
 	Rscript -e "devtools::test()"
 
 unittest:
-	Rscript -e "devtools::test()"
+	Rscript -e "devtools::test(reporter=c('summary', 'fail'))"
 
 document:
 	Rscript -e "devtools::document()"

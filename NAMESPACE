@@ -3,4 +3,5 @@
 S3method(plot,"maraca::maraca")
 export(maraca)
 export(plot_maraca)
+export(plot_tte_composite)
 export(plot_tte_trellis)
