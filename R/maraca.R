@@ -68,12 +68,16 @@ maraca <- function(
 
   # Calculate meta information from the entire HCE dataset needed for plotting
   meta <- .compute_metainfo(HCE)
-  survmod <- .compute_survmod(
+  survmod_by_outcome <- .compute_survmod_by_outcome(
+    HCE, meta, tte_outcomes, continuous_outcome, arm_levels,
+    fixed_followup_days
+  )
+  survmod_complete <- .compute_survmod_complete(
     HCE, meta, tte_outcomes, continuous_outcome, arm_levels,
     fixed_followup_days
   )
   continuous <- .compute_continuous(
-    HCE, meta, survmod, tte_outcomes, continuous_outcome, arm_levels
+    HCE, meta, survmod_by_outcome, tte_outcomes, continuous_outcome, arm_levels
   )
 
   win_odds <- NULL
@@ -90,7 +94,8 @@ maraca <- function(
         fixed_followup_days = fixed_followup_days,
         column_names = column_names,
         meta = meta,
-        survmod = survmod,
+        survmod_by_outcome = survmod_by_outcome,
+        survmod_complete = survmod_complete,
         continuous = continuous,
         win_odds = win_odds
       ),
@@ -131,7 +136,7 @@ plot_maraca <- function(
 
   meta <- obj$meta
   continuous <- obj$continuous
-  survmod <- obj$survmod
+  survmod <- obj$survmod_by_outcome
   win_odds <- obj$win_odds
   start_continuous_endpoint <- meta[
     meta$outcome == obj$continuous_outcome, ]$startx
@@ -290,11 +295,39 @@ plot_tte_trellis <- function(obj) {
   aes <- ggplot2::aes
   vars <- dplyr::vars
 
-  survmod <- obj$survmod
+  survmod <- obj$survmod_by_outcome
   plot <- ggplot2::ggplot(survmod$data) +
     ggplot2::geom_line(aes(x = time, y = km.y * 100, color = strata)) +
     ggplot2::facet_grid(cols = vars(outcome))
   return(plot)
+}
+
+#' @export
+plot_tte_composite <- function(obj) {
+  survmod <- obj$survmod_complete
+  survdata <- survmod$data
+  hr <- survmod$hr
+  hr_result <- round(hr$conf.int, 2)
+
+  plot <- ggplot2::autoplot(survdata, fun = "event") +
+  ggplot2::xlab("Time (days)") +
+  ggplot2::ylab("Kaplan-Meier percent") +
+  ggplot2::annotate(
+      geom = "label",
+      x = 0,
+      y = Inf,
+      label = paste(
+        "TTE composite HR: ",
+        hr_result[1], " (", hr_result[3], ", ", hr_result[4], ")",
+        sep = ""
+      ),
+      hjust = -0.2,
+      vjust = 1.4,
+      size = 3
+    )
+
+  return(plot)
+
 }
 
 #' Generic function to plot the maraca object using plot().
@@ -398,7 +431,7 @@ plot_tte_trellis <- function(obj) {
 }
 
 # Performs the survmod calculation
-.compute_survmod <- function(
+.compute_survmod_by_outcome <- function(
     HCE, meta, tte_outcomes, continuous_outcome, arm_levels,
     fixed_followup_days
   ) {
@@ -498,6 +531,33 @@ plot_tte_trellis <- function(obj) {
     meta = survmod_meta
   ))
 }
+
+.compute_survmod_complete <- function(
+    HCE, meta, tte_outcomes, continuous_outcome, arm_levels,
+    fixed_followup_days
+) {
+  # In this case EVENT=1 for all TTE outcomes and AVALT=AVAL0.
+  # For continuous outcomes AVALT is set to fixed_followup_days.
+  HCE$event <- 0
+  tte_row_mask <- (HCE$outcome %in% tte_outcomes)
+  HCE[tte_row_mask, "event"] <- 1
+  HCE$kmday <- fixed_followup_days
+  HCE[tte_row_mask, "kmday"] <- HCE[tte_row_mask, ]$value
+
+  #HCE <- dplyr::mutate(HCE, arm = relevel(arm, ref = "control"))
+
+  Surv <- survival::Surv # nolint
+  fit0 <- survival::coxph(Surv(kmday, event) ~ arm, data = HCE)
+  hr <- summary(fit0)
+  survdata <- survival::survfit(Surv(kmday, event) ~ arm, data = HCE)
+
+  return(list(
+    data = survdata,
+    hr = hr
+  ))
+
+}
+
 
 # Support function for the range
 .to_rangeab <- function(x, start_continuous_endpoint, minval, maxval) {
