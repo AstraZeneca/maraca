@@ -43,6 +43,32 @@ test_that("Maraca initialisation", {
   print(plot_tte_trellis(mar))
 })
 
+test_that("plot_tte_components", {
+  file <- fixture_path("hce_scenario_c.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
+  )
+  fixed_followup_days <- 3 * 365
+  mar <- maraca(
+    data, tte_outcomes, continuous_outcome, arm_levels,
+    column_names,
+    fixed_followup_days
+    )
+  print(plot_tte_components(mar))
+})
+
+
+
+if (FALSE) {
+
+
 test_that("Initialisation without fixed_followup_days", {
   file <- fixture_path("hce_scenario_c.csv")
 
@@ -606,3 +632,5 @@ test_that("test hce focus function", {
   .hce_survival_focus(data, 4, tte_outcomes, fixed_followup_days)
   expect_true(TRUE)
 })
+
+}

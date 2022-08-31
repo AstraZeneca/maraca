@@ -337,15 +337,15 @@ plot_tte_composite <- function(obj) {
 
 #' @export
 plot_tte_components <- function(obj) {
-  survdata <- obj$survmod_by_outcome$data
-  plot <- ggplot2::autoplot(
-      survdata,
-      fun = "event",
-      ylim = c(0, 1.00)
-    ) +
+  fits <- obj$survmod_by_outcome$fits
+  print(fits[[1]])
+  args <- lapply(fits, function(x) {
+    ggplot2::autoplot(x, fun = "event", ylim = c(0, 1.00)) +
     ggplot2::geom_hline(yintercept = 0.6) +
-    ggplot2::theme(legend.position = "none") +
-    ggplot2::facet_grid(cols = vars(outcome))
+    ggplot2::theme(legend.position = "none")
+  })
+  args$nrow <- 1
+  plot <- do.call(gridExtra::grid.arrange, args)
 
   return(plot)
 }
@@ -467,19 +467,22 @@ plot_tte_components <- function(obj) {
 
   Surv <- survival::Surv # nolint
 
+  all_fits <- list()
   for (i in seq_along(tte_outcomes)) {
     HCE_focused <- .hce_survival_focus(
       HCE, i, tte_outcomes, fixed_followup_days)
 
+    fit <- survival::survfit(
+      Surv(time = kmday, event = outcome == tte_outcomes[i]) ~ arm,
+      data = HCE_focused
+    )
+
+    all_fits[[i]] <- fit
+
     # Create survival model dataset
     survmod_data_row <- cbind(
-      ggplot2::fortify(
-          survival::survfit(
-            Surv(time = kmday, event = outcome == tte_outcomes[i]) ~ arm,
-            data = HCE_focused
-          )
-        ),
-        outcome = tte_outcomes[i]
+      ggplot2::fortify(fit),
+      outcome = tte_outcomes[i]
       )
 
     n <- dplyr::n
@@ -559,7 +562,8 @@ plot_tte_components <- function(obj) {
 
   return(list(
     data = survmod_data,
-    meta = survmod_meta
+    meta = survmod_meta,
+    fits = all_fits
   ))
 }
 
