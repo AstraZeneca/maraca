@@ -473,14 +473,6 @@ plot_tte_composite <- function(obj) {
       survmod_data_row <- survmod_data_row %>%
         dplyr::group_by(strata) %>%
         dplyr::slice(2:(n() - 1))
-      add_points <- survmod_data_row %>%
-        dplyr::group_by(strata) %>%
-        dplyr::slice_tail(n = 1)
-      add_points$time <- fixed_followup_days
-      survmod_data_row <- rbind(
-        survmod_data_row,
-        add_points
-      )
     } else {
       survmod_data_row <- survmod_data_row %>%
         dplyr::group_by(strata) %>%
@@ -503,11 +495,12 @@ plot_tte_composite <- function(obj) {
 
   survmod_data$adjusted.time <- 0
   for (entry in tte_outcomes) {
-    survmod_data[survmod_data$outcome == entry, ]$adjusted.time <- meta[
-      meta$outcome == entry, ]$startx +
-      survmod_data[survmod_data$outcome == entry, ]$time /
-      max(survmod_data[survmod_data$outcome == entry, ]$time, na.rm = TRUE) *
-      meta[meta$outcome == entry, ]$proportion
+    outcome_filter <- survmod_data$outcome == entry
+    survmod_data[outcome_filter, ]$adjusted.time <-
+        meta[meta$outcome == entry, ]$startx +
+        survmod_data[outcome_filter, ]$time /
+        max(survmod_data[outcome_filter, ]$time, na.rm = TRUE) *
+        meta[meta$outcome == entry, ]$proportion
   }
 
   survmod_data <- survmod_data %>% dplyr::mutate(km.y = 1 - surv)
@@ -521,6 +514,23 @@ plot_tte_composite <- function(obj) {
       km.start = c(0, cumsum(utils::head(max, -1))),
       km.end = cumsum(max)
     )
+
+  # We put an additional point on both curves to match the continuous
+  # horizontal line no matter which point is rightmost in the last outcome.
+  # This way the junction appears smooth
+  add_points <- survmod_data %>%
+    dplyr::group_by(strata) %>%
+    dplyr::slice_tail(n = 1)
+
+  # We use the endx point so we are sure that it's the highest we can get in
+  # x terms that matches the grey line. Note also that we add the point
+  # after we calculated the meta information.
+  add_points$adjusted.time <- meta[
+    meta$outcome == utils::tail(tte_outcomes, 1), ]$endx
+  survmod_data <- rbind(
+    survmod_data,
+    add_points
+  )
 
   survmod_data <- survmod_data %>% dplyr::left_join(
     survmod_meta, by = c("strata", "outcome")
