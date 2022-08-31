@@ -41,6 +41,26 @@ test_that("Maraca initialisation", {
   expect_equal(mar$fixed_followup_days, fixed_followup_days)
   plot(mar)
   print(plot_tte_trellis(mar))
+})
+
+test_that("Test plot_tte_composite", {
+  file <- fixture_path("hce_scenario_a.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
+  )
+  fixed_followup_days <- 3 * 365
+  mar <- maraca(
+    data, tte_outcomes, continuous_outcome, arm_levels,
+    column_names,
+    fixed_followup_days
+    )
   print(plot_tte_composite(mar))
 })
 
