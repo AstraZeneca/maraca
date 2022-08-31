@@ -430,9 +430,30 @@ plot_tte_trellis <- function(obj) {
 
     n <- dplyr::n
     # remove first and last point
-    survmod_data_row <- survmod_data_row %>%
-      dplyr::group_by(strata) %>%
-      dplyr::slice(2:(n()-1))
+    survmod_data_row <- survmod_data_row
+
+    if (i == 1) {
+      survmod_data_row <- survmod_data_row %>%
+        dplyr::group_by(strata) %>%
+        dplyr::slice(1:(n() - 1))
+    } else if (i == length(tte_outcomes)) {
+      survmod_data_row <- survmod_data_row %>%
+        dplyr::group_by(strata) %>%
+        dplyr::slice(2:(n() - 1))
+      add_points <- survmod_data_row %>%
+        dplyr::group_by(strata) %>%
+        dplyr::slice_tail(n = 1)
+      add_points$time <- fixed_followup_days
+      survmod_data_row <- rbind(
+        survmod_data_row,
+        add_points
+      )
+      print(survmod_data_row, n = 3478554785)
+    } else {
+      survmod_data_row <- survmod_data_row %>%
+        dplyr::group_by(strata) %>%
+        dplyr::slice(2:(n() - 1))
+    }
 
     if (i == 1) {
       survmod_data <- survmod_data_row
@@ -468,8 +489,6 @@ plot_tte_trellis <- function(obj) {
       km.start = c(0, cumsum(utils::head(max, -1))),
       km.end = cumsum(max)
     )
-
-  print(survmod_meta)
 
   survmod_data <- survmod_data %>% dplyr::left_join(
     survmod_meta, by = c("strata", "outcome")
