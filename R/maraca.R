@@ -554,10 +554,14 @@ plot_tte_composite <- function(obj) {
   HCE$kmday <- fixed_followup_days
   HCE[tte_row_mask, "kmday"] <- HCE[tte_row_mask, ]$value
 
-  #HCE <- dplyr::mutate(HCE, arm = relevel(arm, ref = "control"))
 
   Surv <- survival::Surv # nolint
-  fit0 <- survival::coxph(Surv(kmday, event) ~ arm, data = HCE)
+  # We need to relevel the factor to ensure that the first level
+  # is the control, as this is the way coxph expects the control arm to be
+  # "named".
+  fit0 <- survival::coxph(Surv(kmday, event) ~ arm,
+    data = dplyr::mutate(HCE, arm = relevel(arm, ref = "control"))
+  )
   hr <- summary(fit0)
   survdata <- survival::survfit(Surv(kmday, event) ~ arm, data = HCE)
 
