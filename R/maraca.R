@@ -106,10 +106,6 @@ maraca <- function(
 
 #' Creates and returns the plot of the maraca data.
 #'
-#' Renders and returns a ggplot2 object of the maraca data. This function
-#' will not render the plot immediately. You have to print() the returned
-#' object for it to be displayed.
-#'
 #' @param obj an object of S3 class 'maraca::maraca'
 #' @param continuous_grid_spacing_x The spacing of the x grid to use for the
 #'        continuous section of the plot.
@@ -119,6 +115,9 @@ maraca <- function(
 #'        part of the plot. Options are "default", "violin", "box", "scatter".
 #' @param vline_type what the vertical lines in the continuous part of the plot
 #'        should highlight. Options are "median", "mean", "none".
+#' @return a ggplot2 object of the data. This function
+#' will not render the plot immediately. You have to print() the returned
+#' object for it to be displayed.
 #'
 #' @export
 plot_maraca <- function(
@@ -282,11 +281,10 @@ plot_maraca <- function(
 
 #' Creates and returns the tte trellis plot of the maraca data.
 #'
-#' Renders and returns a ggplot2 object of the data. This function
+#' @param obj an object of S3 class 'maraca::maraca'
+#' @return a ggplot2 object of the data. This function
 #' will not render the plot immediately. You have to print() the returned
 #' object for it to be displayed.
-#'
-#' @param obj an object of S3 class 'maraca::maraca'
 #'
 #' @export
 plot_tte_trellis <- function(obj) {
@@ -302,6 +300,13 @@ plot_tte_trellis <- function(obj) {
   return(plot)
 }
 
+#' Creates and returns the tte composite plot of the maraca data.
+#'
+#' @param obj an object of S3 class 'maraca::maraca'
+#' @return a ggplot2 object of the data. This function
+#' will not render the plot immediately. You have to print() the returned
+#' object for it to be displayed.
+#'
 #' @export
 plot_tte_composite <- function(obj) {
   survmod <- obj$survmod_complete
