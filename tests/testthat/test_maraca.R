@@ -553,3 +553,23 @@ test_that("test ordered column", {
   # Verify against the ones we calculated in the fixture
   expect_equal(data$AVAL, hce$ordered, tol = 1e-7)
 })
+
+test_that("test hce focus function", {
+  file <- fixture_path("hce_scenario_a.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
+  )
+  data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
+    arm_levels,
+    column_names
+  )
+  fixed_followup_days <- 3 * 365
+
+  .hce_survival_focus(data, 4, tte_outcomes, fixed_followup_days)
+})

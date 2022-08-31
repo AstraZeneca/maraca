@@ -409,24 +409,50 @@ plot_tte_trellis <- function(obj) {
   if (is.null(fixed_followup_days)) {
     # Use the largest value across the hard outcomes if
     # fixed_followup_days is not specified
-    HCE$kmday <- max(meta[meta$outcome %in% tte_outcomes, ]$maxday)
-  } else {
-    # Use the specified length of the fixed-follow-up trial if specified
-    HCE$kmday <- fixed_followup_days
+    fixed_followup_days <- max(meta[meta$outcome %in% tte_outcomes, ]$maxday)
   }
-
-  HCE[HCE$outcome %in% tte_outcomes, ]$kmday <- HCE[
-      HCE$outcome %in% tte_outcomes, ]$value
 
   Surv <- survival::Surv # nolint
 
   for (i in seq_along(tte_outcomes)) {
+    HCE_focused <- .hce_survival_focus(
+      HCE, i, tte_outcomes, fixed_followup_days)
+
     # Create survival model dataset
     survmod_data_row <- cbind(
-      ggplot2::fortify(with(HCE,
-        survival::survfit(
-          Surv(time = kmday, event = outcome == tte_outcomes[i]) ~ arm))
-      ), outcome = tte_outcomes[i])
+      ggplot2::fortify(
+        with(HCE_focused,
+          survival::survfit(
+            Surv(time = kmday, event = outcome == tte_outcomes[i]) ~ arm))
+        ),
+        outcome = tte_outcomes[i]
+      )
+
+    n <- dplyr::n
+    # remove first and last point
+    survmod_data_row <- survmod_data_row
+
+    if (i == 1) {
+      survmod_data_row <- survmod_data_row %>%
+        dplyr::group_by(strata) %>%
+        dplyr::slice(1:(n() - 1))
+    } else if (i == length(tte_outcomes)) {
+      survmod_data_row <- survmod_data_row %>%
+        dplyr::group_by(strata) %>%
+        dplyr::slice(2:(n() - 1))
+      add_points <- survmod_data_row %>%
+        dplyr::group_by(strata) %>%
+        dplyr::slice_tail(n = 1)
+      add_points$time <- fixed_followup_days
+      survmod_data_row <- rbind(
+        survmod_data_row,
+        add_points
+      )
+    } else {
+      survmod_data_row <- survmod_data_row %>%
+        dplyr::group_by(strata) %>%
+        dplyr::slice(2:(n() - 1))
+    }
 
     if (i == 1) {
       survmod_data <- survmod_data_row
@@ -458,8 +484,10 @@ plot_tte_trellis <- function(obj) {
     dplyr::summarise(
       max = 100 * max(1 - surv, na.rm = TRUE),
       sum.event = sum(n.event, na.rm = TRUE)) %>%
-    dplyr::mutate(km.start = c(0, cumsum(utils::head(max, -1))),
-      km.end = cumsum(max))
+    dplyr::mutate(
+      km.start = c(0, cumsum(utils::head(max, -1))),
+      km.end = cumsum(max)
+    )
 
   survmod_data <- survmod_data %>% dplyr::left_join(
     survmod_meta, by = c("strata", "outcome")
@@ -473,9 +501,24 @@ plot_tte_trellis <- function(obj) {
 
 # Support function for the range
 .to_rangeab <- function(x, start_continuous_endpoint, minval, maxval) {
-    (100 - start_continuous_endpoint) * (x - minval) /
-    (maxval - minval) + start_continuous_endpoint
+  (100 - start_continuous_endpoint) * (x - minval) /
+  (maxval - minval) + start_continuous_endpoint
 }
+
+.hce_survival_focus <- function(HCE, idx, tte_outcomes, fixed_followup_days) {
+  # We take the pre, and post entries in the sequence,
+  # e.g. with tte_outcomes being A,B,C,D,E,F and with index i pointing at
+  # C, pre will contain A, B
+  pre_outcomes <- tte_outcomes[seq_len(idx - 1)]
+
+  HCE$kmday <- fixed_followup_days
+  pre_row_mask <- (HCE$outcome %in% pre_outcomes)
+  HCE[pre_row_mask, "kmday"] <- 0
+  tte_row_mask <- (HCE$outcome == tte_outcomes[[idx]])
+  HCE[tte_row_mask, "kmday"] <- HCE[tte_row_mask, ]$value
+  return(HCE)
+}
+
 
 # Computes the continuous information
 .compute_continuous <- function(
