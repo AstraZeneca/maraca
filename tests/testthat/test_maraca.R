@@ -337,7 +337,7 @@ test_that("Test compute survmod", {
     column_names
   )
   meta <- .compute_metainfo(data)
-  survmod <- .compute_survmod(
+  survmod <- .compute_survmod_by_outcome(
     data, meta, tte_outcomes, continuous_outcome, arm_levels, 3 * 365)
 
   # Checking the abssum along the columns to check that values remain the same.
@@ -387,7 +387,7 @@ test_that("Test compute survmod no fixed_followup_days", {
   data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
     arm_levels, column_names)
   meta <- .compute_metainfo(data)
-  survmod <- .compute_survmod(
+  survmod <- .compute_survmod_by_outcome(
     data, meta, tte_outcomes, continuous_outcome, arm_levels, NULL)
 
   expect_equal(sum(abs(survmod$data$time)), 890809.646)
@@ -410,7 +410,7 @@ test_that("Test compute continuous", {
   data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
     arm_levels, column_names = column_names)
   meta <- .compute_metainfo(data)
-  survmod <- .compute_survmod(
+  survmod <- .compute_survmod_by_outcome(
     data, meta, tte_outcomes, continuous_outcome, arm_levels, 3 * 365)
   continuous <- .compute_continuous(
     data, meta, survmod, tte_outcomes, continuous_outcome, arm_levels)
