@@ -448,7 +448,6 @@ plot_tte_trellis <- function(obj) {
         survmod_data_row,
         add_points
       )
-      print(survmod_data_row, n = 3478554785)
     } else {
       survmod_data_row <- survmod_data_row %>%
         dplyr::group_by(strata) %>%
