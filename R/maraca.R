@@ -310,11 +310,11 @@ plot_tte_trellis <- function(obj) {
 #' @export
 plot_tte_composite <- function(obj) {
   survmod <- obj$survmod_complete
-  survdata <- survmod$data
+  fit <- survmod$fit
   hr <- survmod$hr
   hr_result <- round(hr$conf.int, 2)
 
-  plot <- ggplot2::autoplot(survdata, fun = "event") +
+  plot <- ggplot2::autoplot(fit, fun = "event") +
   ggplot2::xlab("Time (days)") +
   ggplot2::ylab("Kaplan-Meier percent") +
   ggplot2::annotate(
@@ -333,6 +333,21 @@ plot_tte_composite <- function(obj) {
 
   return(plot)
 
+}
+
+#' @export
+plot_tte_components <- function(obj) {
+  survdata <- obj$survmod_by_outcome$data
+  plot <- ggplot2::autoplot(
+      survdata,
+      fun = "event",
+      ylim = c(0, 1.00)
+    ) +
+    ggplot2::geom_hline(yintercept = 0.6) +
+    ggplot2::theme(legend.position = "none") +
+    ggplot2::facet_grid(cols = vars(outcome))
+
+  return(plot)
 }
 
 #' Generic function to plot the maraca object using plot().
@@ -459,9 +474,10 @@ plot_tte_composite <- function(obj) {
     # Create survival model dataset
     survmod_data_row <- cbind(
       ggplot2::fortify(
-        with(HCE_focused,
           survival::survfit(
-            Surv(time = kmday, event = outcome == tte_outcomes[i]) ~ arm))
+            Surv(time = kmday, event = outcome == tte_outcomes[i]) ~ arm,
+            data = HCE_focused
+          )
         ),
         outcome = tte_outcomes[i]
       )
@@ -568,10 +584,10 @@ plot_tte_composite <- function(obj) {
     data = dplyr::mutate(HCE, arm = relevel(arm, ref = "control"))
   )
   hr <- summary(fit0)
-  survdata <- survival::survfit(Surv(kmday, event) ~ arm, data = HCE)
+  fit <- survival::survfit(Surv(kmday, event) ~ arm, data = HCE)
 
   return(list(
-    data = survdata,
+    fit = fit,
     hr = hr
   ))
 
