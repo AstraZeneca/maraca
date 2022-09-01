@@ -1,4 +1,5 @@
-#' Creates the maraca analysis object as an S3 object of class 'maraca::maraca'
+#' @description Creates the maraca analysis object as an S3 object of
+#' class 'maraca::maraca'.
 #'
 #' @param data A data frame with columns for the following information:
 #'             - outcome column, containing the time-to-event and continuous
@@ -309,6 +310,8 @@ plot_tte_trellis <- function(obj) {
 #'
 #' @export
 plot_tte_composite <- function(obj) {
+  checkmate::assert_class(obj, "maraca::maraca")
+
   survmod <- obj$survmod_complete
   survdata <- survmod$data
   hr <- survmod$hr

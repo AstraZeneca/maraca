@@ -1,11 +1,12 @@
-#' maraca package
+#' maraca package.
+#'
 #' @docType package
 #' @name maraca
 NULL
 
-#' Example HCE scenario A
+#' Example HCE scenario A.
 #'
-#' This is example data frame containing the example for scenario A
+#' This is example data frame containing the example for scenario A.
 #'
 #' @docType data
 #' @usage data(hce_scenario_a)
@@ -22,9 +23,9 @@ NULL
 #' }
 "hce_scenario_a"
 
-#' Example HCE scenario B
+#' Example HCE scenario B.
 #'
-#' This is example data frame containing the example for scenario B
+#' This is example data frame containing the example for scenario B.
 #'
 #' @docType data
 #' @usage data(hce_scenario_b)
@@ -41,9 +42,9 @@ NULL
 #' }
 "hce_scenario_b"
 
-#' Example HCE scenario C
+#' Example HCE scenario C.
 #'
-#' This is example data frame containing the example for scenario C
+#' This is example data frame containing the example for scenario C.
 #'
 #' @docType data
 #' @usage data(hce_scenario_c)
@@ -60,9 +61,9 @@ NULL
 #' }
 "hce_scenario_c"
 
-#' Example HCE scenario D
+#' Example HCE scenario D.
 #'
-#' This is example data frame containing the example for scenario D
+#' This is example data frame containing the example for scenario D.
 #'
 #' @docType data
 #' @usage data(hce_scenario_d)
@@ -79,9 +80,9 @@ NULL
 #' }
 "hce_scenario_d"
 
-#' Example HCE scenario KCCQ3
+#' Example HCE scenario KCCQ3.
 #'
-#' This is example data frame containing the example for scenario KCCQ3
+#' This is example data frame containing the example for scenario KCCQ3.
 #'
 #' @docType data
 #' @usage data(hce_scenario_kccq3)
