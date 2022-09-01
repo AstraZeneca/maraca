@@ -2,6 +2,7 @@
 #'
 #' @docType package
 #' @name maraca
+#' @import ggfortify
 NULL
 
 #' Example HCE scenario A.
