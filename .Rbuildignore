@@ -18,3 +18,4 @@ tests/artifacts/
 ^Meta$
 site
 x
+test_plots.pdf

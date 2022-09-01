@@ -87,7 +87,6 @@ NULL
 #' @usage data(hce_scenario_kccq3)
 #' @format A data frame with 5000 rows.
 #' \describe{
-#'   \item{X}{Row number}
 #'   \item{SUBJID}{The patient identifier}
 #'   \item{GROUP}{Which group the row belongs to}
 #'   \item{GROUPN}{Not required for computation.
@@ -95,7 +94,7 @@ NULL
 #'   \item{AVAL}{The TTE value associated to the patient}
 #'   \item{AVAL0}{Not required for computation. TTE value offset by GROUPN}
 #'   \item{TRTP}{Treatment group}
-#'   \item{HFHT}{}
-#'   \item{SEED}{}
+#'   \item{HFHT}{Not needed}
+#'   \item{SEED}{Not needed}
 #' }
-"hce_kccq3"
+"hce_scenario_kccq3"

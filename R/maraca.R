@@ -345,9 +345,13 @@ plot_tte_composite <- function(obj) {
 #'        continuous section of the plot.
 #' @param trans the transformation to apply to the data before plotting.
 #'        The accepted values are the same that ggplot2::scale_x_continuous
+#' @param density_plot_type The type of plot to use to represent the density.
+#'        Accepts "default", "violin", "box" and "scatter".
+#' @param vline_type what the vertical dashed line should represent. Accepts
+#'        "median", "mean", "none".
 #'
 #' @export
-plot.`maraca::maraca` <- function(
+`plot.maraca::maraca` <- function(
     x, continuous_grid_spacing_x = 10, trans = "identity",
     density_plot_type = "default",
     vline_type = "median",
@@ -567,7 +571,7 @@ plot.`maraca::maraca` <- function(
   # is the control, as this is the way coxph expects the control arm to be
   # "named".
   fit0 <- survival::coxph(Surv(kmday, event) ~ arm,
-    data = dplyr::mutate(HCE, arm = relevel(arm, ref = "control"))
+    data = dplyr::mutate(HCE, arm = stats::relevel(arm, ref = "control"))
   )
   hr <- summary(fit0)
   survdata <- survival::survfit(Surv(kmday, event) ~ arm, data = HCE)
