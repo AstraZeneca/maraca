@@ -12,7 +12,7 @@ maraca(
   arm_levels = c(active = "active", control = "control"),
   column_names = c(outcome = "outcome", arm = "arm", value = "value"),
   fixed_followup_days = NULL,
-  compute_win_odds = TRUE
+  compute_win_odds = FALSE
 )
 }
 \arguments{
@@ -44,6 +44,6 @@ specified if you have column names different from the ones above.}
 \item{fixed_followup_days}{The followup days, or NULL. If NULL, use the
 largest value across the hard outcomes.}
 
-\item{compute_win_odds}{If TRUE (default) compute the win odds, otherwise
+\item{compute_win_odds}{If TRUE compute the win odds, otherwise (default)
 don't compute them.}
 }
