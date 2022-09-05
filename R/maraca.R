@@ -212,7 +212,8 @@ plot_maraca <- function(
     plot <- plot +
       ggplot2::geom_boxplot(
         data = continuous$data,
-        aes(x = x, y = violiny, fill = factor(violiny)), alpha = 0.5, width = 2
+        aes(x = x, y = violiny, fill = factor(violiny)), alpha = 0.5,
+        width = abs(diff(unique(continuous$data$violiny))) / 3
       )
   }
 
