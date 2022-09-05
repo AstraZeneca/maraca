@@ -340,6 +340,13 @@ plot_tte_composite <- function(obj) {
 
 }
 
+#' Creates and returns the tte components plot of the maraca data.
+#'
+#' @param obj an object of S3 class 'maraca::maraca'
+#' @return a ggplot2 object of the data. This function
+#' will not render the plot immediately. You have to print() the returned
+#' object for it to be displayed.
+#'
 #' @export
 plot_tte_components <- function(obj) {
   fits <- obj$survmod_by_outcome$censored_continuous_fits
