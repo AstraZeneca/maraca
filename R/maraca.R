@@ -340,12 +340,18 @@ plot_tte_composite <- function(obj) {
 
 #' @export
 plot_tte_components <- function(obj) {
-  fits <- obj$survmod_by_outcome$fits
-  print(fits[[1]])
+  fits <- obj$survmod_by_outcome$censored_continuous_fits
+
   args <- lapply(fits, function(x) {
-    ggplot2::autoplot(x, fun = "event", ylim = c(0, 1.00)) +
+    ggplot2::autoplot(x, fun = "event") +
     ggplot2::geom_hline(yintercept = 0.6) +
-    ggplot2::theme(legend.position = "none")
+    ggplot2::theme(legend.position = "none") +
+    ggplot2::scale_y_continuous(
+      limits = c(0.0, 1.0),
+      labels = function(x) {
+        paste0(as.character(x * 100), "%")
+      }
+    )
   })
   args$nrow <- 1
   plot <- do.call(gridExtra::grid.arrange, args)
@@ -476,23 +482,28 @@ plot_tte_components <- function(obj) {
 
   Surv <- survival::Surv # nolint
 
-  all_fits <- list()
+  censored_continuous_fits <- list()
   for (i in seq_along(tte_outcomes)) {
     HCE_focused <- .hce_survival_focus(
       HCE, i, tte_outcomes, fixed_followup_days)
 
-    fit <- survival::survfit(
-      Surv(time = kmday, event = outcome == tte_outcomes[i]) ~ arm,
+    censored_continuous_fit <- survival::survfit(
+      Surv(time = kmday, event = (outcome != continuous_outcome)) ~ arm,
       data = HCE_focused
     )
 
-    all_fits[[i]] <- fit
+    censored_continuous_fits[[i]] <- censored_continuous_fit
 
     # Create survival model dataset
     survmod_data_row <- cbind(
-      ggplot2::fortify(fit),
-      outcome = tte_outcomes[i]
-      )
+      ggplot2::fortify(
+        survival::survfit(
+          Surv(time = kmday, event = (outcome != continuous_outcome)) ~ arm,
+          data = HCE_focused
+        )
+      ),
+      outcome = tte_outcomes[[i]]
+    )
 
     n <- dplyr::n
     # remove first and last point
@@ -544,8 +555,8 @@ plot_tte_components <- function(obj) {
       max = 100 * max(1 - surv, na.rm = TRUE),
       sum.event = sum(n.event, na.rm = TRUE)) %>%
     dplyr::mutate(
-      km.start = c(0, cumsum(utils::head(max, -1))),
-      km.end = cumsum(max)
+      km.start = 0,
+      km.end = utils::tail(max, 1)
     )
 
   # We put an additional point on both curves to match the continuous
@@ -572,7 +583,7 @@ plot_tte_components <- function(obj) {
   return(list(
     data = survmod_data,
     meta = survmod_meta,
-    fits = all_fits
+    censored_continuous_fits = censored_continuous_fits
   ))
 }
 
