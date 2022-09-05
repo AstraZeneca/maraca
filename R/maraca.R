@@ -1,4 +1,5 @@
-#' Creates the maraca analysis object as an S3 object of class 'maraca::maraca'
+#' @description Creates the maraca analysis object as an S3 object of
+#' class 'maraca::maraca'.
 #'
 #' @param data A data frame with columns for the following information:
 #'             - outcome column, containing the time-to-event and continuous
@@ -309,6 +310,8 @@ plot_tte_trellis <- function(obj) {
 #'
 #' @export
 plot_tte_composite <- function(obj) {
+  checkmate::assert_class(obj, "maraca::maraca")
+
   survmod <- obj$survmod_complete
   fit <- survmod$fit
   hr <- survmod$hr
@@ -360,6 +363,10 @@ plot_tte_components <- function(obj) {
 #'        continuous section of the plot.
 #' @param trans the transformation to apply to the data before plotting.
 #'        The accepted values are the same that ggplot2::scale_x_continuous
+#' @param density_plot_type The type of plot to use to represent the density.
+#'        Accepts "default", "violin", "box" and "scatter".
+#' @param vline_type what the vertical dashed line should represent. Accepts
+#'        "median", "mean", "none".
 #'
 #' @export
 `plot.maraca::maraca` <- function(
@@ -400,6 +407,8 @@ plot_tte_components <- function(obj) {
   # then we get the minimum and maximum values of the value.
   # What we want to know is the "window" where data are for each of the groups
   # We then select the largest window.
+  `%>%` <- dplyr::`%>%`
+
   tmp <- HCE %>%
     dplyr::group_by(outcome) %>%
     dplyr::summarise(min = min(value), max = max(value)) %>%
@@ -585,7 +594,7 @@ plot_tte_components <- function(obj) {
   # is the control, as this is the way coxph expects the control arm to be
   # "named".
   fit0 <- survival::coxph(Surv(kmday, event) ~ arm,
-    data = dplyr::mutate(HCE, arm = relevel(arm, ref = "control"))
+    data = dplyr::mutate(HCE, arm = stats::relevel(arm, ref = "control"))
   )
   hr <- summary(fit0)
   fit <- survival::survfit(Surv(kmday, event) ~ arm, data = HCE)

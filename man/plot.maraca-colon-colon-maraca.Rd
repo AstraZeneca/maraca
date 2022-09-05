@@ -22,6 +22,12 @@ continuous section of the plot.}
 \item{trans}{the transformation to apply to the data before plotting.
 The accepted values are the same that ggplot2::scale_x_continuous}
 
+\item{density_plot_type}{The type of plot to use to represent the density.
+Accepts "default", "violin", "box" and "scatter".}
+
+\item{vline_type}{what the vertical dashed line should represent. Accepts
+"median", "mean", "none".}
+
 \item{\dots}{not used}
 }
 \description{

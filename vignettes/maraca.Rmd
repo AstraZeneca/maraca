@@ -1,6 +1,6 @@
 ---
 title: "Maraca Plots - Basic Usage"
-author: "Martin Karpefors, Stefano Borini"
+author: "Martin Karpefors, Samvel Gasparyan, Stefano Borini"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
@@ -11,17 +11,39 @@ vignette: >
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
+library(dplyr)
 library(maraca)
+library(dplyr)
 ```
+
+# Introduction
+
+Hierarchical composite endpoints (HCE) are complex endpoints combining events
+of different clinical importance into an ordinal outcome that prioritize the
+most severe event of a patient. Up to now, one of the difficulties in
+interpreting HCEs has been the lack of proper tools for visualizing the
+treatment effect captured by HCE. This package makes it possible to visualize
+endpoints consisting of the combination of one to several time-to-event (TTE)
+outcomes (like Death, Hospitalization for heart failure, …) with one continuous
+outcome (like Kansas City Cardiomyopathy Questionnaire, KCCQ).
+
+The maraca plot captures all important features of how the HCE measures the
+treatment effect:
+
+*1.* the relative proportions of time-to-event outcomes in the overall population,
+*2.* the treatment effect on the combined and individual time-to-event outcomes, and
+*3.* the treatment effect on the continuous component.
+
 
 # Basic usage
 
 Plotting with maraca requires to have the data in an appropriate format.
 We provide a few scenarios in the package, named `hce_scenario_a.csv`,
-`hce_scenario_b.csv`, `hce_scenario_c.csv` and `hce_scenario_d.csv`.
+`hce_scenario_b.csv`, `hce_scenario_c.csv` and `hce_scenario_d.csv`. These scenarios cover four cases: a) Treatment effect is driven by a combination of TTE outcomes and continuous outcome, b) No treatment effect on neither the TTE outcomes nor on the continuous outcome, c) A large treatment effect on time-to-event outcomes, but no effect on continuous outcome, and finally d) A small treatment effect on time-to-event outcomes, with a larger effect on continuous outcomes, respectively.
+Other HCE scenarios can easily be simulated with the [hce package](https://github.com/Samve/hce). The hce package is also used for win odds calculations in the maraca package.
 
 ```{r maraca1, eval = TRUE}
-file_path <- system.file("extdata", "hce_scenario_a.csv", package = "maraca")
+file_path <- system.file("extdata", "hce_scenario_b.csv", package = "maraca")
 
 data <- read.csv(file_path, stringsAsFactors = FALSE)
 colnames(data)
@@ -29,7 +51,7 @@ colnames(data)
 
 The option `stringsAsFactors = FALSE` is required for R 3.x. It is the
 default in R > 4.0 and can be omitted. The important point is that the
-data frame must contains character strings, not factors.
+data frame must contain character strings, not factors.
 
 The `data` data frame contains information on various columns. These columns
 may have arbitrary names, so the `maraca` function allows you to specify
@@ -41,8 +63,7 @@ the standard names used by maraca with the column names in your dataset.
 column_names <- c(
     outcome = "GROUP",
     arm = "TRTP",
-    ordered = "AVAL",
-    original = "AVAL0"
+    value = "AVAL0"
 )
 ```
 
@@ -55,7 +76,7 @@ unique(data[["GROUP"]])
 
 The strings associated to each entry are arbitrary, so maraca
 allows you to specify them in the `tte_outcomes` and `continuous_outcome`
-parameters:
+parameters. Make sure to specify the TTE outcomes in the correct order, starting from the most severe outcome to the least severe outcome. There can only be one continuous outcome.
 
 ```{r maraca4, eval = TRUE}
 tte_outcomes <- c(
@@ -64,7 +85,7 @@ tte_outcomes <- c(
 continuous_outcome <- "Continuous outcome"
 ```
 
-the `arm` column must also be a character column containing to which arm
+the `arm` column must also be a character column describing to which arm
 each row belongs.
 
 ```{r maraca5, eval = TRUE}
@@ -80,28 +101,59 @@ and "Control" as identifiers, as seen in the output above, so we will specify
 arm_levels = c(active = "Active", control = "Control")
 ```
 
-Finally, the `ordered` and `original` columns must contain numerical values
-for the ordered and original data respectively.
+Finally, the `value` column must contain numerical values for the data.
 
 All of the above can be aggregated in the call to create a maraca object from
 the given dataset
 
 ```{r maraca7, eval = TRUE}
 mar <- maraca(
-  data, tte_outcomes, continuous_outcome, arm_levels, column_names
+  data, tte_outcomes, continuous_outcome, arm_levels, column_names, compute_win_odds = TRUE
 )
 ```
 
+The win odds can be calculated and will be annotated in the maraca plot if available- However, it is not calculated by default. Please set the `compute_win_odds = TRUE` to make the calculation. The resulting estimate, 95% confidence levels and p-value will be shown in the maraca object and can also be retrieved with
+
+```{r, eval = TRUE}
+mar$win_odds
+```
+
+
 # Plotting the resulting object
 
-There are two functions to perform plotting of the maraca object. One is
-ordinary `plot`, the other is `plot_tte_trellis`. Both accept the maraca object
-as first argument.
+To create a maraca plot, simply pass the maraca object as the first argument to the `plot` function. In addition to the maraca object, the user can optionally supply input parameters for selecting the `continuous_grid_spacing`; transforming the x-axis using "sqrt" in the `trans` argument; selecting different representations of the continuous distribution density in the `density_plot_type`; and setting `vline_type` to "mean" or "median".
+
+The following types of plots that are available: "default", "violin", "box", "scatter". The default type is just a nested combination of violin and box plot.
 
 ```{r maraca8, eval = TRUE, fig.width = 7, fig.height = 6}
-plot(mar)
+plot(mar, continuous_grid_spacing_x = 20)
 ```
 
 ```{r maraca9, eval = TRUE, fig.width = 7, fig.height = 6}
-plot_tte_trellis(mar)
+plot(mar, continuous_grid_spacing_x = 20, density_plot_type = "box")
 ```
+
+```{r maraca10, eval = TRUE, fig.width = 7, fig.height = 6}
+plot(mar, continuous_grid_spacing_x = 20, density_plot_type = "scatter", vline_type = "mean")
+```
+
+The plot_maraca function returns a ggplot2 object. This function will not render the plot immediately so you will have to print() it.
+Conveniently, you can customize your maraca plot with the comprehensive toolbox of ggplot2. For example:
+
+```{r maraca11, eval = TRUE, fig.width = 7, fig.height = 6, message=FALSE, warning=FALSE}
+p <- plot_maraca(mar, continuous_grid_spacing_x = 20, density_plot_type = "scatter", vline_type = "mean")
+p +
+  theme_bw() + scale_color_manual(values=c("#999999", "#E69F00")) +
+  theme(axis.text.x.bottom = element_text(angle = c(90,90,90,90,0), vjust = 0.5, hjust = 0.5))
+```
+
+
+Additionally, there are a few supporting plots that can be used to look closer at the time-to-event outcomes.
+`plot_tte_components` provides a one-row grid of the TTE outcomes Kaplan-Meier plots.
+`plot_tte_composite` plots the Kaplan-Meier plot for the composite of all events.
+
+
+# References
+
+Martin Karpefors, Daniel Lindholm and Samvel B. Gasparyan, "The maraca plot -- a novel visualization of hierarchical composite endpoints", submitted to Clinical Trials, August 2022.
+

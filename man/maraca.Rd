@@ -3,7 +3,7 @@
 \docType{package}
 \name{maraca}
 \alias{maraca}
-\title{maraca package}
+\title{maraca package.}
 \usage{
 maraca(
   data,
@@ -46,4 +46,8 @@ largest value across the hard outcomes.}
 
 \item{compute_win_odds}{If TRUE compute the win odds, otherwise (default)
 don't compute them.}
+}
+\description{
+Creates the maraca analysis object as an S3 object of
+class 'maraca::maraca'.
 }

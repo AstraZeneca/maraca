@@ -3,7 +3,7 @@
 \docType{data}
 \name{hce_scenario_a}
 \alias{hce_scenario_a}
-\title{Example HCE scenario A}
+\title{Example HCE scenario A.}
 \format{
 A data frame with 1000 rows.
 \describe{
@@ -21,6 +21,6 @@ A data frame with 1000 rows.
 data(hce_scenario_a)
 }
 \description{
-This is example data frame containing the example for scenario A
+This is example data frame containing the example for scenario A.
 }
 \keyword{datasets}
