@@ -197,7 +197,7 @@ plot_maraca <- function(
     ) +
     ggplot2::geom_line(
       data = survmod$data,
-      aes(x = adjusted.time, y = km.start + km.y * 100, color = strata)
+      aes(x = adjusted.time, y = km.y * 100, color = strata)
     )
 
   if (density_plot_type == "default" || density_plot_type == "violin") {
@@ -551,7 +551,6 @@ plot_tte_components <- function(obj) {
       max = 100 * max(1 - surv, na.rm = TRUE),
       sum.event = sum(n.event, na.rm = TRUE)) %>%
     dplyr::mutate(
-      km.start = 0,
       km.end = utils::tail(max, 1)
     )
 
