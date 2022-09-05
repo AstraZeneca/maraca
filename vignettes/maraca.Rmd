@@ -76,7 +76,9 @@ unique(data[["GROUP"]])
 
 The strings associated to each entry are arbitrary, so maraca
 allows you to specify them in the `tte_outcomes` and `continuous_outcome`
-parameters. Make sure to specify the TTE outcomes in the correct order, starting from the most severe outcome to the least severe outcome. There can only be one continuous outcome.
+parameters. Make sure to specify the TTE outcomes in the correct order,
+starting from the most severe outcome to the least severe outcome. There can
+only be one continuous outcome.
 
 ```{r maraca4, eval = TRUE}
 tte_outcomes <- c(
@@ -148,9 +150,10 @@ p +
 ```
 
 
-Additionally, there are a few supporting plots that can be used to look closer at the time-to-event outcomes.
-`plot_tte_components` provides a one-row grid of the TTE outcomes Kaplan-Meier plots.
-`plot_tte_composite` plots the Kaplan-Meier plot for the composite of all events.
+Additionally, there are a few supporting plots that can be used to look closer
+at the time-to-event outcomes.  `plot_tte_components` provides a one-row grid of
+the TTE outcomes Kaplan-Meier plots.  `plot_tte_composite` plots the
+Kaplan-Meier plot for the composite of all events.
 
 
 # References

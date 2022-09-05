@@ -43,6 +43,28 @@ test_that("Maraca initialisation", {
   print(plot_tte_trellis(mar))
 })
 
+test_that("plot_tte_components", {
+  file <- fixture_path("hce_scenario_c.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
+  )
+  fixed_followup_days <- 3 * 365
+  mar <- maraca(
+    data, tte_outcomes, continuous_outcome, arm_levels,
+    column_names,
+    fixed_followup_days
+    )
+  print(plot_tte_components(mar))
+  expect_true(TRUE)
+})
+
 test_that("Initialisation without fixed_followup_days", {
   file <- fixture_path("hce_scenario_c.csv")
 
@@ -346,37 +368,24 @@ test_that("Test compute survmod", {
   expect_equal(sum(abs(survmod$data$n.risk)), 169664)
   expect_equal(sum(abs(survmod$data$n.event)), 433)
   expect_equal(sum(abs(survmod$data$n.censor)), 0)
-  expect_equal(sum(abs(survmod$data$surv)), 403.530378)
-  expect_equal(sum(abs(survmod$data$std.err)), 5.4987832)
-  expect_equal(sum(abs(survmod$data$upper)), 413.518661)
-  expect_equal(sum(abs(survmod$data$lower)), 393.776805)
+  expect_equal(sum(abs(survmod$data$surv)), 338.462)
+  expect_equal(sum(abs(survmod$data$std.err)), 10.0267145)
+  expect_equal(sum(abs(survmod$data$upper)), 353.152512)
+  expect_equal(sum(abs(survmod$data$lower)), 324.489494)
   expect_equal(sum(abs(survmod$data$adjusted.time)), 9287.798376)
-  expect_equal(sum(abs(survmod$data$km.y)), 29.4696216)
-  expect_equal(sum(abs(survmod$data$max)), 5764.711380)
+  expect_equal(sum(abs(survmod$data$km.y)), 94.538)
+  expect_equal(sum(abs(survmod$data$max)), 11816.2)
   expect_equal(sum(abs(survmod$data$sum.event)), 24132)
-  expect_equal(sum(abs(survmod$data$km.start)), 7600.379605)
-  expect_equal(sum(abs(survmod$data$km.end)), 13365.091)
+  expect_equal(sum(abs(survmod$data$km.end)), 18735.2)
 
   expect_equal(
     survmod$meta$max,
-    c(
-      12.60000, 12.58581, 13.08901, 10.24096, 13.20000, 13.82488,
-      16.04278, 13.69427
-      ), tol = 1e-6)
+    c(12.6, 23.6, 33.6, 40.4, 13.2, 25.2, 37.2, 45.8), tol = 1e-6)
   expect_equal(survmod$meta$sum.event, c(
     63, 55, 50, 34, 66, 60, 60, 43
   ))
-  expect_equal(survmod$meta$km.start,
-    c(
-      0.00000, 12.60000, 25.18581, 38.27482,
-      0.00000, 13.20000, 27.02488, 43.06767
-    ), tol = 1e-6
-  )
   expect_equal(survmod$meta$km.end,
-    c(
-      12.60000, 25.18581, 38.27482, 48.51578,
-      13.20000, 27.02488, 43.06767, 56.76193
-      ), tol = 1e-6
+    c(40.4, 40.4, 40.4, 40.4, 45.8, 45.8, 45.8, 45.8), tol = 1e-6
   )
 
 })
@@ -400,8 +409,7 @@ test_that("Test compute survmod no fixed_followup_days", {
     data, meta, tte_outcomes, continuous_outcome, arm_levels, NULL)
 
   expect_equal(sum(abs(survmod$data$time)), 222588.783)
-  expect_equal(sum(abs(survmod$data$km.start)), 7567.579605)
-  expect_equal(sum(abs(survmod$data$km.end)), 13306.091)
+  expect_equal(sum(abs(survmod$data$km.end)), 18689.4)
 
 })
 
@@ -425,7 +433,7 @@ test_that("Test compute continuous", {
     data, meta, survmod, tte_outcomes, continuous_outcome, arm_levels)
   expect_equal(sum(abs(continuous$data$x)), 40828.387)
   expect_equal(sum(abs(continuous$data$violinx)), 40711.95)
-  expect_equal(sum(abs(continuous$data$violiny)), 29840.187)
+  expect_equal(sum(abs(continuous$data$violiny)), 24451)
 
   expect_equal(continuous$meta$n, c(298, 271))
   expect_equal(continuous$meta$median, c(74.360287, 68.354528))

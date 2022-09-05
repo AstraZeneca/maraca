@@ -197,7 +197,7 @@ plot_maraca <- function(
     ) +
     ggplot2::geom_line(
       data = survmod$data,
-      aes(x = adjusted.time, y = km.start + km.y * 100, color = strata)
+      aes(x = adjusted.time, y = km.y * 100, color = strata)
     )
 
   if (density_plot_type == "default" || density_plot_type == "violin") {
@@ -297,7 +297,9 @@ plot_tte_trellis <- function(obj) {
   survmod <- obj$survmod_by_outcome
   plot <- ggplot2::ggplot(survmod$data) +
     ggplot2::geom_line(aes(x = time, y = km.y * 100, color = strata)) +
-    ggplot2::facet_grid(cols = vars(outcome))
+    ggplot2::facet_grid(cols = vars(outcome)) +
+    ggplot2::xlab("Time") +
+    ggplot2::ylab("Cumulative proportion")
   return(plot)
 }
 
@@ -313,13 +315,13 @@ plot_tte_composite <- function(obj) {
   checkmate::assert_class(obj, "maraca::maraca")
 
   survmod <- obj$survmod_complete
-  survdata <- survmod$data
+  fit <- survmod$fit
   hr <- survmod$hr
   hr_result <- round(hr$conf.int, 2)
 
-  plot <- ggplot2::autoplot(survdata, fun = "event") +
-  ggplot2::xlab("Time (days)") +
-  ggplot2::ylab("Kaplan-Meier percent") +
+  plot <- ggplot2::autoplot(fit, fun = "event") +
+  ggplot2::xlab("Time") +
+  ggplot2::ylab("Cumulative proportion") +
   ggplot2::annotate(
       geom = "label",
       x = 0,
@@ -336,6 +338,35 @@ plot_tte_composite <- function(obj) {
 
   return(plot)
 
+}
+
+#' Creates and returns the tte components plot of the maraca data.
+#'
+#' @param obj an object of S3 class 'maraca::maraca'
+#' @return a ggplot2 object of the data. This function
+#' will not render the plot immediately. You have to print() the returned
+#' object for it to be displayed.
+#'
+#' @export
+plot_tte_components <- function(obj) {
+  fits <- obj$survmod_by_outcome$censored_continuous_fits
+
+  args <- lapply(fits, function(x) {
+    ggplot2::autoplot(x, fun = "event") +
+    ggplot2::geom_hline(yintercept = 0.6) +
+    ggplot2::ylab("Cumulative proportion") +
+    ggplot2::theme(legend.position = "none") +
+    ggplot2::scale_y_continuous(
+      limits = c(0.0, 1.0),
+      labels = function(x) {
+        paste0(as.character(x * 100), "%")
+      }
+    )
+  })
+  args$nrow <- 1
+  plot <- do.call(gridExtra::grid.arrange, args)
+
+  return(plot)
 }
 
 #' Generic function to plot the maraca object using plot().
@@ -461,19 +492,23 @@ plot_tte_composite <- function(obj) {
 
   Surv <- survival::Surv # nolint
 
+  censored_continuous_fits <- list()
   for (i in seq_along(tte_outcomes)) {
     HCE_focused <- .hce_survival_focus(
       HCE, i, tte_outcomes, fixed_followup_days)
 
+    censored_continuous_fit <- survival::survfit(
+      Surv(time = kmday, event = (outcome != continuous_outcome)) ~ arm,
+      data = HCE_focused
+    )
+
+    censored_continuous_fits[[i]] <- censored_continuous_fit
+
     # Create survival model dataset
     survmod_data_row <- cbind(
-      ggplot2::fortify(
-        with(HCE_focused,
-          survival::survfit(
-            Surv(time = kmday, event = outcome == tte_outcomes[i]) ~ arm))
-        ),
-        outcome = tte_outcomes[i]
-      )
+      ggplot2::fortify(censored_continuous_fit),
+      outcome = tte_outcomes[[i]]
+    )
 
     n <- dplyr::n
     # remove first and last point
@@ -525,8 +560,7 @@ plot_tte_composite <- function(obj) {
       max = 100 * max(1 - surv, na.rm = TRUE),
       sum.event = sum(n.event, na.rm = TRUE)) %>%
     dplyr::mutate(
-      km.start = c(0, cumsum(utils::head(max, -1))),
-      km.end = cumsum(max)
+      km.end = utils::tail(max, 1)
     )
 
   # We put an additional point on both curves to match the continuous
@@ -552,7 +586,8 @@ plot_tte_composite <- function(obj) {
 
   return(list(
     data = survmod_data,
-    meta = survmod_meta
+    meta = survmod_meta,
+    censored_continuous_fits = censored_continuous_fits
   ))
 }
 
@@ -577,10 +612,10 @@ plot_tte_composite <- function(obj) {
     data = dplyr::mutate(HCE, arm = stats::relevel(arm, ref = "control"))
   )
   hr <- summary(fit0)
-  survdata <- survival::survfit(Surv(kmday, event) ~ arm, data = HCE)
+  fit <- survival::survfit(Surv(kmday, event) ~ arm, data = HCE)
 
   return(list(
-    data = survdata,
+    fit = fit,
     hr = hr
   ))
 
