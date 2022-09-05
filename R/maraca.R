@@ -297,7 +297,9 @@ plot_tte_trellis <- function(obj) {
   survmod <- obj$survmod_by_outcome
   plot <- ggplot2::ggplot(survmod$data) +
     ggplot2::geom_line(aes(x = time, y = km.y * 100, color = strata)) +
-    ggplot2::facet_grid(cols = vars(outcome))
+    ggplot2::facet_grid(cols = vars(outcome)) +
+    ggplot2::xlab("Time") +
+    ggplot2::ylab("Cumulative proportion")
   return(plot)
 }
 
@@ -318,8 +320,8 @@ plot_tte_composite <- function(obj) {
   hr_result <- round(hr$conf.int, 2)
 
   plot <- ggplot2::autoplot(fit, fun = "event") +
-  ggplot2::xlab("Time (days)") +
-  ggplot2::ylab("Kaplan-Meier percent") +
+  ggplot2::xlab("Time") +
+  ggplot2::ylab("Cumulative proportion") +
   ggplot2::annotate(
       geom = "label",
       x = 0,
@@ -345,6 +347,7 @@ plot_tte_components <- function(obj) {
   args <- lapply(fits, function(x) {
     ggplot2::autoplot(x, fun = "event") +
     ggplot2::geom_hline(yintercept = 0.6) +
+    ggplot2::ylab("Cumulative proportion") +
     ggplot2::theme(legend.position = "none") +
     ggplot2::scale_y_continuous(
       limits = c(0.0, 1.0),
@@ -496,8 +499,7 @@ plot_tte_components <- function(obj) {
 
     # Create survival model dataset
     survmod_data_row <- cbind(
-      ggplot2::fortify(censored_continuous_fit)
-      ),
+      ggplot2::fortify(censored_continuous_fit),
       outcome = tte_outcomes[[i]]
     )
 
