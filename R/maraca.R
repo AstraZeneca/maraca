@@ -496,11 +496,7 @@ plot_tte_components <- function(obj) {
 
     # Create survival model dataset
     survmod_data_row <- cbind(
-      ggplot2::fortify(
-        survival::survfit(
-          Surv(time = kmday, event = (outcome != continuous_outcome)) ~ arm,
-          data = HCE_focused
-        )
+      ggplot2::fortify(censored_continuous_fit)
       ),
       outcome = tte_outcomes[[i]]
     )
