@@ -1,6 +1,6 @@
 [tool.roo]
 name = "maraca"
-version = "0.1.0"
+version = "0.2.0"
 [[tool.roo.source]]
 name = "CRAN"
 url = "https://cloud.r-project.org/"
