@@ -7,7 +7,7 @@
 plot_tte_trellis(obj)
 }
 \arguments{
-\item{obj}{an object of S3 class 'maraca::maraca'}
+\item{obj}{an object of S3 class 'maraca'}
 }
 \value{
 a ggplot2 object of the data. This function

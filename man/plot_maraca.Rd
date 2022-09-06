@@ -13,7 +13,7 @@ plot_maraca(
 )
 }
 \arguments{
-\item{obj}{an object of S3 class 'maraca::maraca'}
+\item{obj}{an object of S3 class 'maraca'}
 
 \item{continuous_grid_spacing_x}{The spacing of the x grid to use for the
 continuous section of the plot.}
