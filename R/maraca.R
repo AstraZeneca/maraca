@@ -239,7 +239,7 @@ plot_maraca <- function(
     minor_grid,
     function(x) {
       s <- ifelse(scale > 0, 0, scale)
-      return(as.character(round(x, -s)))
+      return(as.character(round(x, -s+1)))
     }
   )
   plot <- plot +
