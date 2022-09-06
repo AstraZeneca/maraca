@@ -281,29 +281,6 @@ plot_maraca <- function(
   return(plot)
 }
 
-#' Creates and returns the tte trellis plot of the maraca data.
-#'
-#' @param obj an object of S3 class 'maraca'
-#' @return a ggplot2 object of the data. This function
-#' will not render the plot immediately. You have to print() the returned
-#' object for it to be displayed.
-#'
-#' @export
-plot_tte_trellis <- function(obj) {
-  checkmate::assert_class(obj, "maraca")
-
-  aes <- ggplot2::aes
-  vars <- dplyr::vars
-
-  survmod <- obj$survmod_by_outcome
-  plot <- ggplot2::ggplot(survmod$data) +
-    ggplot2::geom_line(aes(x = time, y = km.y * 100, color = strata)) +
-    ggplot2::facet_grid(cols = vars(outcome)) +
-    ggplot2::xlab("Time") +
-    ggplot2::ylab("Cumulative proportion")
-  return(plot)
-}
-
 #' Creates and returns the tte composite plot of the maraca data.
 #'
 #' @param obj an object of S3 class 'maraca::maraca'

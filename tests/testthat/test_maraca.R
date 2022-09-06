@@ -40,7 +40,6 @@ test_that("Maraca initialisation", {
   expect_s3_class(mar, "maraca")
   expect_equal(mar$fixed_followup_days, fixed_followup_days)
   plot(mar)
-  print(plot_tte_trellis(mar))
 })
 
 test_that("plot_tte_components", {
@@ -240,26 +239,6 @@ test_that("Test plot_tte_composite", {
   expect_true(TRUE)
 })
 
-test_that("Maraca plot tte_trellis", {
-  file <- fixture_path("hce_scenario_c.csv")
-  data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
-    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
-  )
-  continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(active = "Active", control = "Control")
-  fixed_followup_days <- 3 * 365
-  column_names <- c(
-    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
-  )
-  mar <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels,
-    column_names,
-    fixed_followup_days
-    )
-  plot_tte_trellis(mar)
-  expect_true(TRUE)
-})
 
 test_that("Test reformatting of data", {
   file <- fixture_path("hce_scenario_c.csv")
@@ -286,7 +265,6 @@ test_that("Test reformatting of data", {
 
 test_that("Test plot functions only work with maraca objects", {
   expect_error(plot_maraca(123), regexp = "Must inherit")
-  expect_error(plot_tte_trellis(123), regexp = "Must inherit")
 })
 
 test_that("Test win odds", {
