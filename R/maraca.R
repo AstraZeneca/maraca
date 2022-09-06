@@ -214,6 +214,9 @@ plot_maraca <- function(
       aes(x = adjusted.time, y = km.y * 100, color = strata)
     )
 
+  plot <- plot +
+    ggplot2::scale_color_discrete("Arm", labels = obj$arm_levels)
+
   if (density_plot_type == "default" || density_plot_type == "violin") {
     plot <- plot +
       ggplot2::geom_violin(
@@ -321,6 +324,8 @@ plot_tte_composite <- function(obj) {
   plot <- ggplot2::autoplot(fit, fun = "event") +
   ggplot2::xlab("Time") +
   ggplot2::ylab("Cumulative proportion") +
+  ggplot2::scale_fill_discrete("Arm", labels = obj$arm_levels) +
+  ggplot2::scale_color_discrete("Arm", labels = obj$arm_levels) +
   ggplot2::annotate(
       geom = "label",
       x = 0,
