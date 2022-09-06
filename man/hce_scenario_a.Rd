@@ -9,11 +9,14 @@ A data frame with 1000 rows.
 \describe{
   \item{X}{Row number}
   \item{SUBJID}{The patient identifier}
-  \item{GROUP}{Which group the row belongs to}
+  \item{GROUP}{Which type of outcome the row belongs to}
   \item{GROUPN}{Not required for computation.
                 The group as an arbitrary numerical value}
-  \item{AVAL}{The TTE value associated to the patient}
-  \item{AVAL0}{Not required for computation. TTE value offset by GROUPN}
+  \item{AVAL0}{Contains both the time-to-event data for hard outcomes
+               and the continuous data for the continuous outcome}
+  \item{AVAL}{Not required for computation. Create an ordered sequence
+              of values where the AVAL0 value associated with the patient
+              is offset by GROUPN}
   \item{TRTP}{Treatment group}
 }
 }
