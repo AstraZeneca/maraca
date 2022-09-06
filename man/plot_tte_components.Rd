@@ -7,10 +7,10 @@
 plot_tte_components(obj)
 }
 \arguments{
-\item{obj}{an object of S3 class 'maraca::maraca'}
+\item{obj}{an object of S3 class 'maraca'}
 }
 \value{
-a ggplot2 object of the data. This function
+An object representing the plot of the data. This function
 will not render the plot immediately. You have to print() the returned
 object for it to be displayed.
 }

@@ -307,7 +307,7 @@ plot_maraca <- function(
 
 #' Creates and returns the tte composite plot of the maraca data.
 #'
-#' @param obj an object of S3 class 'maraca::maraca'
+#' @param obj an object of S3 class 'maraca'
 #' @return a ggplot2 object of the data. This function
 #' will not render the plot immediately. You have to print() the returned
 #' object for it to be displayed.
@@ -346,16 +346,17 @@ plot_tte_composite <- function(obj) {
 
 #' Creates and returns the tte components plot of the maraca data.
 #'
-#' @param obj an object of S3 class 'maraca::maraca'
-#' @return a ggplot2 object of the data. This function
+#' @param obj an object of S3 class 'maraca'
+#' @return An object representing the plot of the data. This function
 #' will not render the plot immediately. You have to print() the returned
 #' object for it to be displayed.
 #'
 #' @export
 plot_tte_components <- function(obj) {
+  checkmate::assert_class(obj, "maraca")
   fits <- obj$survmod_by_outcome$censored_continuous_fits
 
-  args <- lapply(fits, function(x) {
+  plots <- lapply(fits, function(x) {
     ggplot2::autoplot(x, fun = "event") +
     ggplot2::ylab("Cumulative proportion") +
     ggplot2::theme(legend.position = "none") +
@@ -365,17 +366,29 @@ plot_tte_components <- function(obj) {
       }
     )
   })
-  args$nrow <- 1
-  plot <- do.call(gridExtra::grid.arrange, args)
+
+  plot <- gridExtra::arrangeGrob(grobs = plots, nrow = 1)
+  class(plot) <- c("maraca_tte_components", class(plot))
 
   return(plot)
 }
+
+#' Generic to print the maraca_tte_component that is not a ggplot.
+#'
+#' @param x an object of S3 class 'maraca_tte_components'
+#' @param \dots not used
+#'
+#' @export
+print.maraca_tte_components <- function(x, ...) {
+  grid::grid.draw(x)
+}
+
 
 #' Generic function to plot the maraca object using plot().
 #'
 #' This will produce the plot_maraca plot.
 #'
-#' @param x an object of S3 class 'maraca::maraca'
+#' @param x an object of S3 class 'maraca'
 #' @param \dots not used
 #' @param continuous_grid_spacing_x The spacing of the x grid to use for the
 #'        continuous section of the plot.
