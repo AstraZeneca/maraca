@@ -228,7 +228,7 @@ plot_maraca <- function(
   labels <- lapply(
     minor_grid,
     function(x) {
-      s <- ifelse(scale > 0, 0, scale);
+      s <- ifelse(scale > 0, 0, scale)
       return(as.character(round(x, -s)))
     }
   )
