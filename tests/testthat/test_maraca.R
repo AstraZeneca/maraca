@@ -37,7 +37,7 @@ test_that("Maraca initialisation", {
     column_names,
     fixed_followup_days
     )
-  expect_s3_class(mar, "maraca::maraca")
+  expect_s3_class(mar, "maraca")
   expect_equal(mar$fixed_followup_days, fixed_followup_days)
   plot(mar)
   print(plot_tte_trellis(mar))
@@ -79,7 +79,7 @@ test_that("Initialisation without fixed_followup_days", {
   )
   mar <- maraca(data, tte_outcomes, continuous_outcome, arm_levels,
                 column_names = column_names)
-  expect_s3_class(mar, "maraca::maraca")
+  expect_s3_class(mar, "maraca")
   expect_true(is.null(mar$fixed_followup_days))
 })
 
