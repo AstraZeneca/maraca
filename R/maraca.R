@@ -375,7 +375,6 @@ plot_tte_components <- function(obj) {
 
   args <- lapply(fits, function(x) {
     ggplot2::autoplot(x, fun = "event") +
-    ggplot2::geom_hline(yintercept = 0.6) +
     ggplot2::ylab("Cumulative proportion") +
     ggplot2::theme(legend.position = "none") +
     ggplot2::scale_y_continuous(
