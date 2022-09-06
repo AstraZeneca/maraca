@@ -11,9 +11,7 @@ vignette: >
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
-library(dplyr)
 library(maraca)
-library(dplyr)
 ```
 
 # Introduction
@@ -125,7 +123,12 @@ mar$win_odds
 
 To create a maraca plot, simply pass the maraca object as the first argument to the `plot` function. In addition to the maraca object, the user can optionally supply input parameters for selecting the `continuous_grid_spacing`; transforming the x-axis using "sqrt" in the `trans` argument; selecting different representations of the continuous distribution density in the `density_plot_type`; and setting `vline_type` to "mean" or "median".
 
-The following types of plots that are available: "default", "violin", "box", "scatter". The default type is just a nested combination of violin and box plot.
+The following types of plots that are available: "default", "violin", "box",
+"scatter". The default type is just a nested combination of violin and box
+plot. Figure 1A-D in reference 1 below, can be recreated through applying the
+maraca function with subsequent plotting on each of the scenario A-D datasets
+provided in this package. As an example scenario A is shown in the following
+plot. 
 
 ```{r maraca8, eval = TRUE, fig.width = 7, fig.height = 6}
 plot(mar, continuous_grid_spacing_x = 20)
@@ -152,8 +155,17 @@ p +
 
 Additionally, there are a few supporting plots that can be used to look closer
 at the time-to-event outcomes.  `plot_tte_components` provides a one-row grid of
-the TTE outcomes Kaplan-Meier plots.  `plot_tte_composite` plots the
-Kaplan-Meier plot for the composite of all events.
+the TTE outcomes Kaplan-Meier plots.
+
+```{r maraca12, eval = TRUE, fig.width = 7, fig.height = 6, message=FALSE, warning=FALSE}
+plot_tte_components(mar)
+```
+
+`plot_tte_composite` plots the Kaplan-Meier plot for the composite of all specified events. The plot is also annotated with the hazard ratio (more info in `mar$survmod_complete`). 
+
+```{r maraca13, eval = TRUE, fig.width = 7, fig.height = 6, message=FALSE, warning=FALSE}
+plot_tte_composite(mar)
+```
 
 
 # References
