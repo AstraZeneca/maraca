@@ -208,19 +208,18 @@ plot_maraca <- function(
       ggplot2::geom_violin(
         data = continuous$data,
         aes(x = x, y = violiny, fill = factor(violiny)), alpha = 0.5
-      )
-  }
-
-  if (density_plot_type == "default" || density_plot_type == "box") {
-    plot <- plot +
-      ggplot2::geom_boxplot(
+      ) + ggplot2::geom_boxplot(
         data = continuous$data,
         aes(x = x, y = violiny, fill = factor(violiny)), alpha = 0.5,
         width = abs(diff(unique(continuous$data$violiny))) / 3
       )
-  }
-
-  if (density_plot_type == "scatter") {
+  } else if (density_plot_type == "box") {
+    plot <- plot +
+      ggplot2::geom_boxplot(
+        data = continuous$data,
+        aes(x = x, y = violiny, fill = factor(violiny)), alpha = 0.5
+      )
+  } else if (density_plot_type == "scatter") {
     plot <- plot +
       ggplot2::geom_jitter(data = continuous$data, aes(x = x, y = violiny))
   }
