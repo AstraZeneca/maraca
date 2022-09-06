@@ -1,7 +1,7 @@
 Package: maraca
-Version: 0.3.5
+Version: 0.3.6
 Type: Package
-Title: Maraca Plots
+Title: Creates Maraca Plots
 License: Apache License (>= 2)
 Authors@R: c(
     person("Martin Karpefors", "", email = "martin.karpefors@astrazeneca.com", role = "aut"),
@@ -29,5 +29,4 @@ Suggests:
     lintr (>= 3.0.0),
     withr (>= 2.5.0),
     testthat (>= 3.1)
-VignetteBuilder: knitr
 NeedsCompilation: no
