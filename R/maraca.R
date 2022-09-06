@@ -100,7 +100,7 @@ maraca <- function(
         continuous = continuous,
         win_odds = win_odds
       ),
-      class = c("maraca::maraca")
+      class = c("maraca")
     )
   )
 }
@@ -386,7 +386,7 @@ plot_tte_components <- function(obj) {
 #'        "median", "mean", "none".
 #'
 #' @export
-`plot.maraca::maraca` <- function(
+plot.maraca <- function(
     x, continuous_grid_spacing_x = 10, trans = "identity",
     density_plot_type = "default",
     vline_type = "median",
