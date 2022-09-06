@@ -14,6 +14,7 @@
 ^\.lintr$
 \.keepdir$
 ^tests/artifacts/$
+^doc$
 ^Meta$
 ^test_plots\.pdf$
 ^site$
