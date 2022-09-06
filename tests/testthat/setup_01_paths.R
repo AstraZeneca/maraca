@@ -14,6 +14,9 @@ artifacts_path <- function(...) {
   file.path(root_path(), "tests", "artifacts", ...)
 }
 
+if (!dir.exists(artifacts_path())) {
+  dir.create(artifacts_path(), recursive = TRUE)
+}
 
 pdf_device <- NULL
 if (generates_plots) {
