@@ -7,7 +7,5 @@ test_plots.pdf
 dist/
 foo.pdf
 maraca.Rcheck/
-/doc/
-/Meta/
 site
 x
