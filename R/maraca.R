@@ -711,14 +711,14 @@ plot.maraca <- function(
     dplyr::select(all_of(names(column_names)))
 
   # Check if the arm and outcome are strings, rather than factors.
-  if (class(HCE[, "arm"]) != "character") {
+  if (!inherits(HCE[, "arm"], "character")) {
     stop(paste(
       "The arm column must be characters.",
       "If you used read.csv, ensure you specify stringsAsFactors = FALSE."
     ))
   }
 
-  if (class(HCE[, "outcome"]) != "character") {
+  if (!inherits(HCE[, "outcome"], "character")) {
     stop(paste(
       "The outcome column must be characters.",
       "If you used read.csv, ensure you specify stringsAsFactors = FALSE."
