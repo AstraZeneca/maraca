@@ -1,7 +1,7 @@
 Package: maraca
 Version: 0.3.3
 Type: Package
-Title: Maracas Plots
+Title: Maraca Plots
 License: Apache License (>= 2)
 Authors@R: c(
     person("Martin Karpefors", "", email = "martin.karpefors@astrazeneca.com", role = "aut"),
