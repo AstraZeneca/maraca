@@ -1,4 +1,4 @@
-# maracas 0.3.1
+# maracas 0.3.2
 
 - First public release
 
