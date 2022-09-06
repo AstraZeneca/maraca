@@ -592,3 +592,14 @@ test_that("test hce focus function", {
   .hce_survival_focus(data, 4, tte_outcomes, fixed_followup_days)
   expect_true(TRUE)
 })
+
+test_that("test minor_grid", {
+  grid <- .minor_grid(c(-10, -2, 3, 27), 1, 5)
+  expect_equal(grid, c(-10, -5, 0, 5, 10, 15, 20, 25))
+
+  grid <- .minor_grid(c(-10, -7, -3, -2), 1, 5)
+  expect_equal(grid, c(-10, -5))
+
+  grid <- .minor_grid(c(2, 3, 7, 10, 14), 1, 5)
+  expect_equal(grid, c(5, 10))
+})
