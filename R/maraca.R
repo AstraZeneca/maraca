@@ -80,6 +80,13 @@ maraca <- function(
 
   # Calculate meta information from the entire HCE dataset needed for plotting
   meta <- .compute_metainfo(HCE)
+
+  if (is.null(fixed_followup_days)) {
+    # Use the largest value across the hard outcomes if
+    # fixed_followup_days is not specified
+    fixed_followup_days <- max(meta[meta$outcome %in% tte_outcomes, ]$maxday)
+  }
+
   survmod_by_outcome <- .compute_survmod_by_outcome(
     HCE, meta, tte_outcomes, continuous_outcome, arm_levels,
     fixed_followup_days
@@ -495,12 +502,6 @@ plot.maraca <- function(
   endpoints <- c(tte_outcomes, continuous_outcome)
   vars <- dplyr::vars
   `%>%` <- dplyr::`%>%`
-
-  if (is.null(fixed_followup_days)) {
-    # Use the largest value across the hard outcomes if
-    # fixed_followup_days is not specified
-    fixed_followup_days <- max(meta[meta$outcome %in% tte_outcomes, ]$maxday)
-  }
 
   Surv <- survival::Surv # nolint
 
