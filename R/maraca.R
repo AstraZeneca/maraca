@@ -141,11 +141,14 @@ plot_maraca <- function(
   start_continuous_endpoint <- meta[
     meta$outcome == obj$continuous_outcome, ]$startx
 
+  scale <- sign(log10(continuous_grid_spacing_x)) * ceiling(
+    abs(log10(continuous_grid_spacing_x))
+  )
+  minval <- min(continuous$data$value, na.rm = TRUE)
+  maxval <- max(continuous$data$value, na.rm = TRUE)
   minor_grid <- seq(
-    sign(min(continuous$data$value, na.rm = TRUE)) *
-      floor(abs(min(continuous$data$value, na.rm = TRUE)) / 10) * 10,
-    sign(max(continuous$data$value, na.rm = TRUE)) *
-      floor(abs(max(continuous$data$value, na.rm = TRUE)) / 10) * 10,
+    (10^scale) * ceiling(minval * 10^(-scale)),
+    (10^scale) * floor(maxval * 10^(-scale)),
     by = continuous_grid_spacing_x
   )
 
@@ -222,6 +225,13 @@ plot_maraca <- function(
       ggplot2::geom_jitter(data = continuous$data, aes(x = x, y = violiny))
   }
 
+  labels <- lapply(
+    minor_grid,
+    function(x) {
+      s <- ifelse(scale > 0, 0, scale);
+      return(as.character(round(x, -s)))
+    }
+  )
   plot <- plot +
     ggplot2::xlab("Type of endpoint") +
     ggplot2::ylab("Cumulative proportion") +
@@ -246,7 +256,8 @@ plot_maraca <- function(
         max(continuous$data$value, na.rm = TRUE)
         ),
       y = 0,
-      label = minor_grid, color = "grey60"
+      label = labels,
+      color = "grey60"
     )
 
   if (!is.null(win_odds)) {
