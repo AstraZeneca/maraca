@@ -1,5 +1,5 @@
 #' @description Creates the maraca analysis object as an S3 object of
-#' class 'maraca::maraca'.
+#' class 'maraca'.
 #'
 #' @param data A data frame with columns for the following information:
 #'             - outcome column, containing the time-to-event and continuous
@@ -26,6 +26,17 @@
 #' @param compute_win_odds If TRUE compute the win odds, otherwise (default)
 #'                         don't compute them.
 #'
+#' @return An object of class 'maraca'
+#' @examples
+#' data(hce_scenario_a)
+#' hcetest <- maraca(
+#'   data = hce_scenario_a,
+#'   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
+#'   continuous_outcome = "Continuous outcome",
+#'   column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
+#'   arm_levels = c(active = "Active", control = "Control"),
+#'   compute_win_odds = TRUE
+#' )
 #' @export
 maraca <- function(
     data,
