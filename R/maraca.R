@@ -152,15 +152,12 @@ plot_maraca <- function(
   start_continuous_endpoint <- meta[
     meta$outcome == obj$continuous_outcome, ]$startx
 
-  scale <- sign(log10(continuous_grid_spacing_x)) * ceiling(
+  scale <- sign(log10(continuous_grid_spacing_x)) * floor(
     abs(log10(continuous_grid_spacing_x))
   )
-  minval <- min(continuous$data$value, na.rm = TRUE)
-  maxval <- max(continuous$data$value, na.rm = TRUE)
-  minor_grid <- seq(
-    (10^scale) * ceiling(minval * 10^(-scale)),
-    (10^scale) * floor(maxval * 10^(-scale)),
-    by = continuous_grid_spacing_x
+
+  minor_grid <- .minor_grid(
+    continuous$data$value, scale, continuous_grid_spacing_x
   )
 
   zeroposition <- .to_rangeab(0,
@@ -750,4 +747,31 @@ plot.maraca <- function(
 
   return(HCE)
 
+}
+
+.minor_grid <- function(values, scale, continuous_grid_spacing_x) {
+  minval <- min(values, na.rm = TRUE)
+  maxval <- max(values, na.rm = TRUE)
+
+  minor_grid_left <- c(0)
+  if ((10^scale) * floor(minval * 10^(-scale)) < 0) {
+    minor_grid_left <- rev(seq(
+      0,
+      (10^scale) * floor(minval * 10^(-scale)),
+      by = -continuous_grid_spacing_x
+    ))
+  }
+
+  minor_grid_right <- c(0)
+  if ((10^scale) * ceiling(maxval * 10^(-scale)) > 0) {
+    minor_grid_right <- seq(
+      0,
+      (10^scale) * ceiling(maxval * 10^(-scale)),
+      by = continuous_grid_spacing_x
+    )
+  }
+  minor_grid <- unique(c(minor_grid_left, minor_grid_right))
+  minor_grid <- minor_grid[minor_grid >= minval & minor_grid <= maxval]
+
+  return(minor_grid)
 }
