@@ -79,7 +79,7 @@ test_that("Initialisation without fixed_followup_days", {
   mar <- maraca(data, tte_outcomes, continuous_outcome, arm_levels,
                 column_names = column_names)
   expect_s3_class(mar, "maraca")
-  expect_true(is.null(mar$fixed_followup_days))
+  expect_equal(mar$fixed_followup_days, 1074.68286)
 })
 
 test_that("Maraca wrong params", {
@@ -369,7 +369,7 @@ test_that("Test compute survmod", {
 })
 
 
-test_that("Test compute survmod no fixed_followup_days", {
+test_that("Test compute survmod", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
   tte_outcomes <- c(
@@ -383,8 +383,10 @@ test_that("Test compute survmod no fixed_followup_days", {
   data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
     arm_levels, column_names)
   meta <- .compute_metainfo(data)
+  fixed_followup_days <- max(meta[meta$outcome %in% tte_outcomes, ]$maxday)
   survmod <- .compute_survmod_by_outcome(
-    data, meta, tte_outcomes, continuous_outcome, arm_levels, NULL)
+    data, meta, tte_outcomes, continuous_outcome, arm_levels,
+    fixed_followup_days)
 
   expect_equal(sum(abs(survmod$data$time)), 222588.783)
   expect_equal(sum(abs(survmod$data$km.end)), 18689.4)

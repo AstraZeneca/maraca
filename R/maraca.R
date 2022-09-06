@@ -499,6 +499,7 @@ plot.maraca <- function(
     HCE, meta, tte_outcomes, continuous_outcome, arm_levels,
     fixed_followup_days
   ) {
+
   endpoints <- c(tte_outcomes, continuous_outcome)
   vars <- dplyr::vars
   `%>%` <- dplyr::`%>%`
@@ -615,7 +616,6 @@ plot.maraca <- function(
   HCE[tte_row_mask, "event"] <- 1
   HCE$kmday <- fixed_followup_days
   HCE[tte_row_mask, "kmday"] <- HCE[tte_row_mask, ]$value
-
 
   Surv <- survival::Surv # nolint
   # We need to relevel the factor to ensure that the first level
