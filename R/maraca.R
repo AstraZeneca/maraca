@@ -378,7 +378,6 @@ plot_tte_components <- function(obj) {
     ggplot2::ylab("Cumulative proportion") +
     ggplot2::theme(legend.position = "none") +
     ggplot2::scale_y_continuous(
-      limits = c(0.0, 1.0),
       labels = function(x) {
         paste0(as.character(x * 100), "%")
       }
