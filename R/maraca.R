@@ -107,7 +107,7 @@ maraca <- function(
 
 #' Creates and returns the plot of the maraca data.
 #'
-#' @param obj an object of S3 class 'maraca::maraca'
+#' @param obj an object of S3 class 'maraca'
 #' @param continuous_grid_spacing_x The spacing of the x grid to use for the
 #'        continuous section of the plot.
 #' @param trans the transformation to apply to the data before plotting.
@@ -125,7 +125,7 @@ plot_maraca <- function(
     obj, continuous_grid_spacing_x = 10, trans = "identity",
     density_plot_type = "default",
     vline_type = "median") {
-  checkmate::assert_class(obj, "maraca::maraca")
+  checkmate::assert_class(obj, "maraca")
   checkmate::assert_choice(
     density_plot_type, c("default", "violin", "box", "scatter")
   )
@@ -283,14 +283,14 @@ plot_maraca <- function(
 
 #' Creates and returns the tte trellis plot of the maraca data.
 #'
-#' @param obj an object of S3 class 'maraca::maraca'
+#' @param obj an object of S3 class 'maraca'
 #' @return a ggplot2 object of the data. This function
 #' will not render the plot immediately. You have to print() the returned
 #' object for it to be displayed.
 #'
 #' @export
 plot_tte_trellis <- function(obj) {
-  checkmate::assert_class(obj, "maraca::maraca")
+  checkmate::assert_class(obj, "maraca")
 
   aes <- ggplot2::aes
   vars <- dplyr::vars
@@ -313,7 +313,7 @@ plot_tte_trellis <- function(obj) {
 #'
 #' @export
 plot_tte_composite <- function(obj) {
-  checkmate::assert_class(obj, "maraca::maraca")
+  checkmate::assert_class(obj, "maraca")
 
   survmod <- obj$survmod_complete
   fit <- survmod$fit
