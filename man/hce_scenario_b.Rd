@@ -9,7 +9,7 @@ A data frame with 1000 rows.
 \describe{
   \item{X}{Row number}
   \item{SUBJID}{The patient identifier}
-  \item{GROUP}{Which group the row belongs to}
+  \item{GROUP}{Which type of outcome the row belongs to}
   \item{GROUPN}{Not required for computation.
                 The group as an arbitrary numerical value}
   \item{AVAL0}{Contains both the time-to-event data for hard outcomes
