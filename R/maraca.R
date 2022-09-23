@@ -26,7 +26,8 @@
 #' @param compute_win_odds If TRUE compute the win odds, otherwise (default)
 #'                         don't compute them.
 #'
-#' @return An object of class 'maraca'
+#' @return An object of class 'maraca'. The object information must be
+#'         considered private.
 #' @examples
 #' data(hce_scenario_a)
 #' hcetest <- maraca(
@@ -137,7 +138,17 @@ maraca <- function(
 #' @return a ggplot2 object of the data. This function
 #' will not render the plot immediately. You have to print() the returned
 #' object for it to be displayed.
-#'
+#' @examples
+#' data(hce_scenario_a)
+#' hcetest <- maraca(
+#'   data = hce_scenario_a,
+#'   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
+#'   continuous_outcome = "Continuous outcome",
+#'   column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
+#'   arm_levels = c(active = "Active", control = "Control"),
+#'   compute_win_odds = TRUE
+#' )
+#' plot <- plot_maraca(hce_test)
 #' @export
 plot_maraca <- function(
     obj, continuous_grid_spacing_x = 10, trans = "identity",
@@ -316,6 +327,17 @@ plot_maraca <- function(
 #' will not render the plot immediately. You have to print() the returned
 #' object for it to be displayed.
 #'
+#' @examples
+#' data(hce_scenario_a)
+#' hcetest <- maraca(
+#'   data = hce_scenario_a,
+#'   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
+#'   continuous_outcome = "Continuous outcome",
+#'   column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
+#'   arm_levels = c(active = "Active", control = "Control"),
+#'   compute_win_odds = TRUE
+#' )
+#' plot <- plot_tte_composite(hce_test)
 #' @export
 plot_tte_composite <- function(obj) {
   checkmate::assert_class(obj, "maraca")
@@ -355,6 +377,18 @@ plot_tte_composite <- function(obj) {
 #' will not render the plot immediately. You have to print() the returned
 #' object for it to be displayed.
 #'
+#' @examples
+#' data(hce_scenario_a)
+#' hcetest <- maraca(
+#'   data = hce_scenario_a,
+#'   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
+#'   continuous_outcome = "Continuous outcome",
+#'   column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
+#'   arm_levels = c(active = "Active", control = "Control"),
+#'   compute_win_odds = TRUE
+#' )
+#' plot <- plot_tte_components(hce_test)
+#'
 #' @export
 plot_tte_components <- function(obj) {
   checkmate::assert_class(obj, "maraca")
@@ -381,6 +415,20 @@ plot_tte_components <- function(obj) {
 #'
 #' @param x an object of S3 class 'maraca_tte_components'
 #' @param \dots not used
+#' @return Used for side effect. Plots the maraca_tte_components object.
+#'
+#' @examples
+#' data(hce_scenario_a)
+#' hcetest <- maraca(
+#'   data = hce_scenario_a,
+#'   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
+#'   continuous_outcome = "Continuous outcome",
+#'   column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
+#'   arm_levels = c(active = "Active", control = "Control"),
+#'   compute_win_odds = TRUE
+#' )
+#' plot <- plot_tte_components(hce_test)
+#' print(plot)
 #'
 #' @export
 print.maraca_tte_components <- function(x, ...) {
@@ -402,6 +450,19 @@ print.maraca_tte_components <- function(x, ...) {
 #'        Accepts "default", "violin", "box" and "scatter".
 #' @param vline_type what the vertical dashed line should represent. Accepts
 #'        "median", "mean", "none".
+#' @return Used for side effect. Plots the maraca object.
+#'
+#' @examples
+#' data(hce_scenario_a)
+#' hcetest <- maraca(
+#'   data = hce_scenario_a,
+#'   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
+#'   continuous_outcome = "Continuous outcome",
+#'   column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
+#'   arm_levels = c(active = "Active", control = "Control"),
+#'   compute_win_odds = TRUE
+#' )
+#' plot(hce_test)
 #'
 #' @export
 plot.maraca <- function(
