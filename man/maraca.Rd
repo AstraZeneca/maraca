@@ -48,7 +48,8 @@ largest value across the hard outcomes.}
 don't compute them.}
 }
 \value{
-An object of class 'maraca'
+An object of class 'maraca'. The object information must be
+        considered private.
 }
 \description{
 Creates the maraca analysis object as an S3 object of

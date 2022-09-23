@@ -17,3 +17,16 @@ object for it to be displayed.
 \description{
 Creates and returns the tte components plot of the maraca data.
 }
+\examples{
+data(hce_scenario_a)
+hcetest <- maraca(
+  data = hce_scenario_a,
+  tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
+  continuous_outcome = "Continuous outcome",
+  column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
+  arm_levels = c(active = "Active", control = "Control"),
+  compute_win_odds = TRUE
+)
+plot <- plot_tte_components(hce_test)
+
+}
