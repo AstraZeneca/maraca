@@ -30,7 +30,7 @@
 #'         considered private.
 #' @examples
 #' data(hce_scenario_a)
-#' hcetest <- maraca(
+#' hce_test <- maraca(
 #'   data = hce_scenario_a,
 #'   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
 #'   continuous_outcome = "Continuous outcome",
@@ -140,7 +140,7 @@ maraca <- function(
 #' object for it to be displayed.
 #' @examples
 #' data(hce_scenario_a)
-#' hcetest <- maraca(
+#' hce_test <- maraca(
 #'   data = hce_scenario_a,
 #'   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
 #'   continuous_outcome = "Continuous outcome",
@@ -329,7 +329,7 @@ plot_maraca <- function(
 #'
 #' @examples
 #' data(hce_scenario_a)
-#' hcetest <- maraca(
+#' hce_test <- maraca(
 #'   data = hce_scenario_a,
 #'   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
 #'   continuous_outcome = "Continuous outcome",
@@ -379,7 +379,7 @@ plot_tte_composite <- function(obj) {
 #'
 #' @examples
 #' data(hce_scenario_a)
-#' hcetest <- maraca(
+#' hce_test <- maraca(
 #'   data = hce_scenario_a,
 #'   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
 #'   continuous_outcome = "Continuous outcome",
@@ -419,7 +419,7 @@ plot_tte_components <- function(obj) {
 #'
 #' @examples
 #' data(hce_scenario_a)
-#' hcetest <- maraca(
+#' hce_test <- maraca(
 #'   data = hce_scenario_a,
 #'   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
 #'   continuous_outcome = "Continuous outcome",
@@ -454,7 +454,7 @@ print.maraca_tte_components <- function(x, ...) {
 #'
 #' @examples
 #' data(hce_scenario_a)
-#' hcetest <- maraca(
+#' hce_test <- maraca(
 #'   data = hce_scenario_a,
 #'   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
 #'   continuous_outcome = "Continuous outcome",
