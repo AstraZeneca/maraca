@@ -1,0 +1,26 @@
+---
+title: "Maraca Plots - Frequently Asked Questions"
+author: "Martin Karpefors, Stefano Borini"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Maraca Plots - Frequently Asked Questions}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
+library(maraca)
+```
+
+# I get a warning "Removed 1 rows containing missing values (geom_point)." when plotting using density_plot_type scatter.
+
+This happens because when using scatter, some points are jittered and may end up
+visually outside of the plotting range, so they can't be displayed.
+That warning informs you (in a cryptic way) of this fact. Given that the
+jittering is randomised, sometimes you might get that warning, sometimes you
+won't, even for the same input.
+
+If you want to silence the warning, use suppressWarning() when you print
+the plot for displaying.

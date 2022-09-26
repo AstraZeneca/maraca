@@ -33,5 +33,7 @@ Suggests:
     here (>= 1.0.1),
     lintr (>= 3.0.0),
     withr (>= 2.5.0),
-    testthat (>= 3.1)
+    testthat (>= 3.1),
+    rmarkdown
 NeedsCompilation: no
+VignetteBuilder: knitr
