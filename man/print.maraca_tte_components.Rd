@@ -19,7 +19,7 @@ Generic to print the maraca_tte_component that is not a ggplot.
 }
 \examples{
 data(hce_scenario_a)
-hcetest <- maraca(
+hce_test <- maraca(
   data = hce_scenario_a,
   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
   continuous_outcome = "Continuous outcome",

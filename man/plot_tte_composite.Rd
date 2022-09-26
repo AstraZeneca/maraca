@@ -19,7 +19,7 @@ Creates and returns the tte composite plot of the maraca data.
 }
 \examples{
 data(hce_scenario_a)
-hcetest <- maraca(
+hce_test <- maraca(
   data = hce_scenario_a,
   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
   continuous_outcome = "Continuous outcome",
