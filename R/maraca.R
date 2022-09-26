@@ -224,7 +224,7 @@ plot_maraca <- function(
       data = continuous$data,
       aes(x = violinx, y = violiny, color = arm)
     ) +
-    ggplot2::geom_line(
+    ggplot2::geom_step(
       data = survmod$data,
       aes(x = adjusted.time, y = km.y * 100, color = strata)
     )
