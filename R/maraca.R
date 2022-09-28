@@ -4,7 +4,7 @@
 #' @param data A data frame with columns for the following information:
 #'             - outcome column, containing the time-to-event and continuous
 #'               labels
-#'             - arm column, contaning the arm a given row belongs to.
+#'             - arm column, containing the arm a given row belongs to.
 #'             - value column, containing the values.
 #' @param tte_outcomes A vector of strings containing the time-to-event
 #'                     outcome labels. The order is kept for the plot.
@@ -478,14 +478,12 @@ plot.maraca <- function(
 
 # Computes the win odds from the internal data.
 .compute_win_odds <- function(HCE) {
+  HCE <- as.data.frame(HCE)
   HCE <- .with_ordered_column(HCE)
-  grp <- sanon::grp # nolint
-  fit <- sanon::sanon(
-    ordered ~ grp(arm, ref = "control"),
-    data = HCE)
-  CI0 <- stats::confint(fit)$ci
-  CI <- CI0 / (1 - CI0)
-  p <- fit$p
+  fit <- hce::calcWO(x = HCE, AVAL = "ordered", TRTP = "arm", ref = "control")
+
+  CI <- as.numeric(fit[, c("WO", "LCL", "UCL")])
+  p <- fit$Pvalue
 
   win_odds <- c(CI, p)
   names(win_odds) <- c("estimate", "lower", "upper", "p-value")

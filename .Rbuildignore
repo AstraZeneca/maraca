@@ -20,3 +20,5 @@
 ^site$
 ^x$
 ^tests$
+^.*\.Rproj$
+^\.Rproj\.user$

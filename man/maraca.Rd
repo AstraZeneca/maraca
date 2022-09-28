@@ -19,7 +19,7 @@ maraca(
 \item{data}{A data frame with columns for the following information:
 - outcome column, containing the time-to-event and continuous
   labels
-- arm column, contaning the arm a given row belongs to.
+- arm column, containing the arm a given row belongs to.
 - value column, containing the values.}
 
 \item{tte_outcomes}{A vector of strings containing the time-to-event
