@@ -25,7 +25,7 @@ Imports:
     ggplot2 (>= 3.3),
     gridExtra (>= 2.3),
     survival (>= 3.3),
-    sanon (>= 1.6),
+    hce (>= 0.0.2),
     checkmate (>= 2.1)
 RoxygenNote: 7.2.1
 Suggests:
