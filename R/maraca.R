@@ -478,20 +478,16 @@ plot.maraca <- function(
 
 # Computes the win odds from the internal data.
 .compute_win_odds <- function(HCE) {
+  HCE <- base::as.data.frame(HCE)
   HCE <- .with_ordered_column(HCE)
-  grp <- sanon::grp # nolint
-  fit <- sanon::sanon(
-    ordered ~ grp(arm, ref = "control"),
-    data = HCE)
-  CI0 <- stats::confint(fit)$ci
-  CI <- CI0 / (1 - CI0)
-  p <- fit$p
-
-  win_odds <- c(CI, p)
-  names(win_odds) <- c("estimate", "lower", "upper", "p-value")
-
+  fit <- hce::calcWO(x = HCE, AVAL = "ordered", TRTP = "arm", ref = "control")
+  CI <- base::as.numeric(fit[, base::c("WO", "LCL", "UCL")])
+  p <- fit$Pvalue
+  win_odds <- base::c(CI, p)
+  names(win_odds) <- base::c("estimate", "lower", "upper", "p-value")
   return(win_odds)
 }
+
 
 # This function does a bit of dirty magic to distribute the values
 # onto different "floors", each floor being a numeric offset that is higher
