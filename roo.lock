@@ -4,7 +4,7 @@ url = "https://cloud.r-project.org/"
 
 [[entry]]
 categories = []
-dependencies = [ "checkmate", "devtools", "dplyr", "ggfortify", "ggplot2", "gridExtra", "hce", "here", "lintr", "survival", "tidyr",]
+dependencies = [ "checkmate", "devtools", "dplyr", "ggfortify", "ggplot2", "gridExtra", "hce", "here", "lintr", "survival", "tidyr", "tidyselect",]
 type = "root"
 
 [[entry]]
@@ -1591,16 +1591,16 @@ md5 = "b7043faf842388496c796cddf267dc60"
 
 [[entry]]
 categories = [ "main",]
-dependencies = [ "cli", "glue", "lifecycle", "rlang", "vctrs", "withr",]
+dependencies = [ "ellipsis", "glue", "purrr", "rlang", "vctrs",]
 name = "tidyselect"
-version = "1.2.0"
+version = "1.1.2"
 source = "CRAN"
-r_constraint = ">=3.4"
+r_constraint = ">=3.2"
 type = "source"
 [[entry.files]]
-name = "tidyselect_1.2.0.tar.gz"
-hash = "sha256:538d26b727e37d618e2efd3b00836048f103112a03e6994bf07a02392e269e3b"
-md5 = "147069ee8d8bc42f63f253311f6c1806"
+name = "tidyselect_1.1.2.tar.gz"
+hash = "sha256:0389a3b15417954a30d6d692f6ebdd3d0f318cb94a5c9b05365df2f4ea1d8270"
+md5 = "d863d11e5c647e506888415c22a3dcd0"
 
 
 [[entry]]
@@ -1841,5 +1841,5 @@ md5 = "f7c6f3ac61079cb7cdc19ad05923b8f7"
 
 [metadata]
 version = 2
-content_hash = "7d1dcb327b9e889faefcf0849cd39df7f6ec73f179e8711c6b12b83c6a5f9845"
+content_hash = "b9240923f632857fe1d7192b397a95d68f9114d968cdb266a1a860de98ca07ea"
 conservative = false
