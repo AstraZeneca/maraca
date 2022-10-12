@@ -184,7 +184,7 @@ plot_maraca <- function(
     max(continuous$data$value, na.rm = TRUE)
   )
   # Plot the information in the Maraca plot
-  plot <- ggplot2::ggplot(survmod$data, aes(colour = arm)) +
+  plot <- ggplot2::ggplot(survmod$data) +
     ggplot2::geom_vline(
       xintercept = cumsum(c(0, meta$proportion)),
       color = "grey80"
@@ -232,21 +232,27 @@ plot_maraca <- function(
   plot <- plot +
     ggplot2::scale_color_discrete("Arm", labels = obj$arm_levels)
 
-  if (density_plot_type == "default" || density_plot_type == "violin") {
+  if (density_plot_type == "default") {
     plot <- plot +
       ggplot2::geom_violin(
         data = continuous$data,
-        aes(x = x, y = violiny, fill = factor(violiny)), alpha = 0.5
+        aes(x = x, y = violiny, colour = arm, fill = arm), alpha = 0.5
       ) + ggplot2::geom_boxplot(
         data = continuous$data,
-        aes(x = x, y = violiny, fill = factor(violiny)), alpha = 0.5,
+        aes(x = x, y = violiny, colour = arm, fill = arm), alpha = 0.5,
         width = abs(diff(unique(continuous$data$violiny))) / 3
+      )
+  } else if (density_plot_type == "violin") {
+    plot <- plot +
+      ggplot2::geom_violin(
+        data = continuous$data,
+        aes(x = x, y = violiny, colour = arm, fill = arm), alpha = 0.5
       )
   } else if (density_plot_type == "box") {
     plot <- plot +
       ggplot2::geom_boxplot(
         data = continuous$data,
-        aes(x = x, y = violiny, fill = factor(violiny)), alpha = 0.5
+        aes(x = x, y = violiny, colour = arm, fill = arm), alpha = 0.5
       )
   } else if (density_plot_type == "scatter") {
     plot <- plot +
