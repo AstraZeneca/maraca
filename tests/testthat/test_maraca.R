@@ -285,7 +285,7 @@ test_that("Test win odds", {
 
   expect_equal(class(win_odds), "numeric")
   expect_equal(
-    unname(win_odds), c(1.3143433745, 1.1377185801, 1.5227833918, 0.0001927074)
+    unname(win_odds), c(1.3143433745, 1.1364670136, 1.5200604024, 0.000191286)
   )
 
 })

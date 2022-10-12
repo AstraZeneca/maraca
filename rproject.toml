@@ -11,9 +11,10 @@ tidyr = ">=1.2,<2.0"
 ggplot2 = ">=3.3,<4.0"
 ggfortify = ">=0.4,<0.5"
 survival = ">=3.3,<4.0"
-sanon = ">=1.6,<2.0"
+hce = ">=0.0.2,<1.0"
 checkmate = ">=2.1,<3.0"
 gridExtra = ">=2.3,<3.0"
+tidyselect = "1.1.2"
 
 [tool.roo.dev-dependencies]
 here = ">=1.0,<2.0"
