@@ -479,6 +479,22 @@ plot.maraca <- function(
   print(plot_maraca(
     x, continuous_grid_spacing_x, trans, density_plot_type, vline_type))
 }
+plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
+                     density_plot_type = "default",
+                     vline_type = "median", compute_win_odds = TRUE, ...) {
+  x <- as.data.frame(x)
+  TTE <- sort(unique(x$GROUP)[unique(x$GROUP) != "C"])
+  hce_test <- maraca(
+    data = x,
+    tte_outcomes = TTE,
+    continuous_outcome = "C",
+    column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
+    arm_levels = c(active = "A", control = "P"),
+    compute_win_odds = compute_win_odds
+  )
+  print(plot_maraca(
+    hce_test, continuous_grid_spacing_x, trans, density_plot_type, vline_type))
+}
 
 ### Private functions
 
