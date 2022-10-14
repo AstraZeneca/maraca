@@ -507,7 +507,7 @@ plot.maraca <- function(
 #' @export
 plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
                      density_plot_type = "default",
-                     vline_type = "median", compute_win_odds = TRUE, ...) {
+                     vline_type = "median", compute_win_odds = FALSE, ...) {
   x <- as.data.frame(x)
   TTE <- sort(unique(x$GROUP)[unique(x$GROUP) != "C"])
   hce_test <- maraca(
