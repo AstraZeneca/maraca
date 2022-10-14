@@ -479,9 +479,35 @@ plot.maraca <- function(
   print(plot_maraca(
     x, continuous_grid_spacing_x, trans, density_plot_type, vline_type))
 }
+#' Generic function to plot the hce object using plot().
+#'
+#' This will produce the plot_maraca plot.
+#'
+#' @param x an object of S3 class 'hce'
+#' @param \dots not used
+#' @param continuous_grid_spacing_x The spacing of the x grid to use for the
+#'        continuous section of the plot.
+#' @param trans the transformation to apply to the data before plotting.
+#'        The accepted values are the same that ggplot2::scale_x_continuous
+#' @param density_plot_type The type of plot to use to represent the density.
+#'        Accepts "default", "violin", "box" and "scatter".
+#' @param vline_type what the vertical dashed line should represent. Accepts
+#'        "median", "mean", "none".
+#' @param compute_win_odds If TRUE compute the win odds, otherwise (default)
+#'                         don't compute them.
+#' @return Used for side effect. Plots the maraca object.
+#'
+#' @examples
+#' Rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
+#' Rates_P <- c(2.47, 2.24, 2.9, 4, 6)
+#' HCE <- hce::simHCE(n = 2500, TTE_A = Rates_A, TTE_P = Rates_P,
+#'              CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3)
+#' plot(HCE)
+#'
+#' @export
 plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
                      density_plot_type = "default",
-                     vline_type = "median", compute_win_odds = TRUE, ...) {
+                     vline_type = "median", compute_win_odds = FALSE, ...) {
   x <- as.data.frame(x)
   TTE <- sort(unique(x$GROUP)[unique(x$GROUP) != "C"])
   hce_test <- maraca(
