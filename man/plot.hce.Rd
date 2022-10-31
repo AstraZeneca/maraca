@@ -10,7 +10,7 @@
   trans = "identity",
   density_plot_type = "default",
   vline_type = "median",
-  compute_win_odds = TRUE,
+  compute_win_odds = FALSE,
   ...
 )
 }
