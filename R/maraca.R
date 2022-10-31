@@ -256,7 +256,7 @@ plot_maraca <- function(
       )
   } else if (density_plot_type == "scatter") {
     plot <- plot +
-      ggplot2::geom_jitter(data = continuous$data, aes(x = x, y = violiny))
+      ggplot2::geom_jitter(data = continuous$data, aes(x = x, y = violiny, color = "red"))
   }
 
   labels <- lapply(
