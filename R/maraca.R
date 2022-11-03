@@ -170,6 +170,8 @@ plot_maraca <- function(
   start_continuous_endpoint <- meta[
     meta$outcome == obj$continuous_outcome, ]$startx
 
+  x <- y <- NULL # to prohibit ggplot2 global variable warnings
+  
   plotdata_surv <- survmod$data[, c("outcome", "strata", "adjusted.time", "km.y")]
   plotdata_surv$type <- "tte"
   names(plotdata_surv) <- c("outcome", "arm", "x", "y", "type")
@@ -177,7 +179,7 @@ plot_maraca <- function(
   plotdata_cont$type <- "cont"
   names(plotdata_cont) <- c("outcome", "arm", "x", "y", "type")
   plotdata <- rbind(plotdata_surv, plotdata_cont)
-  
+
   scale <- sign(log10(continuous_grid_spacing_x)) * floor(
     abs(log10(continuous_grid_spacing_x))
   )
@@ -229,7 +231,7 @@ plot_maraca <- function(
 
   plot <- plot +
     ggplot2::geom_step(
- #     data = plotdata,
+    data = plotdata[plotdata$type == "tte", ],
       aes(x = x, y = y * 100, color = arm)
     )
 
@@ -239,29 +241,29 @@ plot_maraca <- function(
   if (density_plot_type == "default") {
     plot <- plot +
       ggplot2::geom_violin(
-        data = plotdata[plotdata$type == "cont",],
+        data = plotdata[plotdata$type == "cont", ],
         aes(x = x, y = y, colour = arm, fill = arm), alpha = 0.5
       ) + ggplot2::geom_boxplot(
-        data = plotdata[plotdata$type == "cont",],
+        data = plotdata[plotdata$type == "cont", ],
         aes(x = x, y = y, colour = arm, fill = arm), alpha = 0.5,
-        width = abs(diff(unique(plotdata[plotdata$type == "cont",]$y))) / 3
+        width = abs(diff(unique(plotdata[plotdata$type == "cont", ]$y))) / 3
       )
   } else if (density_plot_type == "violin") {
     plot <- plot +
       ggplot2::geom_violin(
-        data = plotdata[plotdata$type == "cont",],
+        data = plotdata[plotdata$type == "cont", ],
         aes(x = x, y = y, colour = arm, fill = arm), alpha = 0.5
       )
   } else if (density_plot_type == "box") {
     plot <- plot +
       ggplot2::geom_boxplot(
-        data = plotdata[plotdata$type == "cont",],
+        data = plotdata[plotdata$type == "cont", ],
         aes(x = x, y = y, colour = arm, fill = arm), alpha = 0.5
       )
   } else if (density_plot_type == "scatter") {
     plot <- plot +
       ggplot2::geom_jitter(
-        data = plotdata[plotdata$type == "cont",], 
+        data = plotdata[plotdata$type == "cont", ],
         aes(x = x, y = y, color = arm)
       )
   }
@@ -705,7 +707,7 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
     survmod_data,
     add_points
   )
-  # Add one additional point at x=100% to facilitate plotting 
+  # Add one additional point at x=100% to facilitate plotting
   # the horizontal line through the continuous distribution.
   # Note also that we add the point after we calculated the meta information.
   add_points$adjusted.time <- 100
@@ -713,7 +715,7 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
     survmod_data,
     add_points
   )
-  
+
   survmod_data <- survmod_data %>% dplyr::left_join(
     survmod_meta, by = c("strata", "outcome")
   )
