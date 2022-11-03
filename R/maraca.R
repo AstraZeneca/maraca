@@ -172,7 +172,7 @@ plot_maraca <- function(
 
   x <- y <- NULL # to prohibit ggplot2 global variable warnings
 
-  plotdata_surv <- survmod$data[, c("outcome", "strata", 
+  plotdata_surv <- survmod$data[, c("outcome", "strata",
                                     "adjusted.time", "km.y")]
   plotdata_surv$type <- "tte"
   names(plotdata_surv) <- c("outcome", "arm", "x", "y", "type")
