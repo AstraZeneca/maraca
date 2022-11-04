@@ -179,7 +179,7 @@ plot_maraca <- function(
   plotdata_cont <- continuous$data[, c("outcome", "arm", "x", "violiny")]
   plotdata_cont$type <- "cont"
   names(plotdata_cont) <- c("outcome", "arm", "x", "y", "type")
-  plotdata <- rbind(plotdata_surv, plotdata_cont)
+  plotdata <- as.data.frame(rbind(plotdata_surv, plotdata_cont))
 
   scale <- sign(log10(continuous_grid_spacing_x)) * floor(
     abs(log10(continuous_grid_spacing_x))
