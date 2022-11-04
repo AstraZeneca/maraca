@@ -412,7 +412,6 @@ test_that("Test compute continuous", {
   continuous <- .compute_continuous(
     data, meta, survmod, tte_outcomes, continuous_outcome, arm_levels)
   expect_equal(sum(abs(continuous$data$x)), 40828.387)
-  expect_equal(sum(abs(continuous$data$violinx)), 40711.95)
   expect_equal(sum(abs(continuous$data$violiny)), 24451)
 
   expect_equal(continuous$meta$n, c(298, 271))
