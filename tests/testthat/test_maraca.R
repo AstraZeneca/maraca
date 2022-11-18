@@ -351,7 +351,7 @@ test_that("Test compute survmod", {
   expect_equal(sum(abs(survmod$data$upper)), 354.3805911)
   expect_equal(sum(abs(survmod$data$lower)), 325.5440402)
   expect_equal(sum(abs(survmod$data$adjusted.time)), 9487.798376)
-  expect_equal(sum(abs(survmod$data$km.y)), 95.4)
+  expect_equal(sum(abs(survmod$data$km.y)), 9540)
   expect_equal(sum(abs(survmod$data$max)), 11902.4)
   expect_equal(sum(abs(survmod$data$sum.event)), 24209)
   expect_equal(sum(abs(survmod$data$km.end)), 18821.4)

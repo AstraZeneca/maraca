@@ -181,7 +181,7 @@ plot_maraca <- function(
   plotdata_cont$type <- "cont"
   names(plotdata_cont) <- c("outcome", "arm", "x", "y", "type")
   plotdata <- as.data.frame(rbind(plotdata_surv, plotdata_cont))
-  
+
   # Add points at (0, 0) on both curves so that they start from the origin
   add_points <- plotdata %>%
     dplyr::group_by(arm) %>%
@@ -729,7 +729,7 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
     survmod_data,
     add_points
   )
-  
+
   survmod_data <- survmod_data %>% dplyr::left_join(
     survmod_meta, by = c("strata", "outcome")
   )
