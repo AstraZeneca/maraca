@@ -260,7 +260,8 @@ plot_maraca <- function(
       ) + ggplot2::geom_boxplot(
         data = plotdata[plotdata$type == "cont", ],
         aes(x = x, y = y, colour = arm, fill = arm), alpha = 0.5,
-        width = abs(diff(as.numeric(unique(plotdata[plotdata$type == "cont", ]$y)))) / 3
+        width = abs(diff(as.numeric(unique(
+          plotdata[plotdata$type == "cont", ]$y)))) / 3
       )
   } else if (density_plot_type == "violin") {
     plot <- plot +
