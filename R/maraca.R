@@ -162,6 +162,7 @@ plot_maraca <- function(
     vline_type, c("median", "mean", "none")
   )
   aes <- ggplot2::aes
+  `%>%` <- dplyr::`%>%`
 
   meta <- obj$meta
   continuous <- obj$continuous
@@ -170,16 +171,28 @@ plot_maraca <- function(
   start_continuous_endpoint <- meta[
     meta$outcome == obj$continuous_outcome, ]$startx
 
-  YY <- as.numeric(NULL) # to prohibit ggplot2 global variable warnings
+  y <- as.numeric(NULL) # to prohibit ggplot2 global variable warnings
 
   plotdata_surv <- survmod$data[, c("outcome", "strata",
                                     "adjusted.time", "km.y")]
   plotdata_surv$type <- "tte"
-  names(plotdata_surv) <- c("outcome", "arm", "x", "YY", "type")
+  names(plotdata_surv) <- c("outcome", "arm", "x", "y", "type")
   plotdata_cont <- continuous$data[, c("outcome", "arm", "x", "violiny")]
   plotdata_cont$type <- "cont"
-  names(plotdata_cont) <- c("outcome", "arm", "x", "YY", "type")
+  names(plotdata_cont) <- c("outcome", "arm", "x", "y", "type")
   plotdata <- as.data.frame(rbind(plotdata_surv, plotdata_cont))
+  
+  # Add points at (0, 0) on both curves so that they start from the origin
+  add_points <- plotdata %>%
+    dplyr::group_by(arm) %>%
+    dplyr::slice_head(n = 1)
+
+  add_points$x <- 0
+  add_points$y <- 0
+  plotdata <- rbind(
+    add_points,
+    plotdata
+  )
 
   scale <- sign(log10(continuous_grid_spacing_x)) * floor(
     abs(log10(continuous_grid_spacing_x))
@@ -233,7 +246,7 @@ plot_maraca <- function(
   plot <- plot +
     ggplot2::geom_step(
     data = plotdata[plotdata$type == "tte", ],
-      aes(x = x, y = YY * 100, color = arm)
+      aes(x = x, y = y, color = arm)
     )
 
   plot <- plot +
@@ -243,29 +256,29 @@ plot_maraca <- function(
     plot <- plot +
       ggplot2::geom_violin(
         data = plotdata[plotdata$type == "cont", ],
-        aes(x = x, y = YY, colour = arm, fill = arm), alpha = 0.5
+        aes(x = x, y = y, colour = arm, fill = arm), alpha = 0.5
       ) + ggplot2::geom_boxplot(
         data = plotdata[plotdata$type == "cont", ],
-        aes(x = x, y = YY, colour = arm, fill = arm), alpha = 0.5,
-        width = abs(diff(unique(plotdata[plotdata$type == "cont", ]$YY))) / 3
+        aes(x = x, y = y, colour = arm, fill = arm), alpha = 0.5,
+        width = abs(diff(unique(plotdata[plotdata$type == "cont", ]$y))) / 3
       )
   } else if (density_plot_type == "violin") {
     plot <- plot +
       ggplot2::geom_violin(
         data = plotdata[plotdata$type == "cont", ],
-        aes(x = x, y = YY, colour = arm, fill = arm), alpha = 0.5
+        aes(x = x, y = y, colour = arm, fill = arm), alpha = 0.5
       )
   } else if (density_plot_type == "box") {
     plot <- plot +
       ggplot2::geom_boxplot(
         data = plotdata[plotdata$type == "cont", ],
-        aes(x = x, y = YY, colour = arm, fill = arm), alpha = 0.5
+        aes(x = x, y = y, colour = arm, fill = arm), alpha = 0.5
       )
   } else if (density_plot_type == "scatter") {
     plot <- plot +
       ggplot2::geom_jitter(
         data = plotdata[plotdata$type == "cont", ],
-        aes(x = x, y = YY, color = arm)
+        aes(x = x, y = y, color = arm)
       )
   }
 
@@ -681,7 +694,7 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
         meta[meta$outcome == entry, ]$proportion
   }
 
-  survmod_data <- survmod_data %>% dplyr::mutate(km.y = 1 - surv)
+  survmod_data <- survmod_data %>% dplyr::mutate(km.y = 100 * (1 - surv))
 
   survmod_meta <- survmod_data %>%
     dplyr::group_by(strata, outcome) %>%
@@ -716,7 +729,7 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
     survmod_data,
     add_points
   )
-
+  
   survmod_data <- survmod_data %>% dplyr::left_join(
     survmod_meta, by = c("strata", "outcome")
   )
