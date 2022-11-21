@@ -2,6 +2,7 @@
 utils::globalVariables("time")
 utils::globalVariables("n.event")
 utils::globalVariables("x")
+utils::globalVariables("y")
 utils::globalVariables("strata")
 utils::globalVariables("surv")
 utils::globalVariables("proportion")

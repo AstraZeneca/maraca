@@ -171,8 +171,6 @@ plot_maraca <- function(
   start_continuous_endpoint <- meta[
     meta$outcome == obj$continuous_outcome, ]$startx
 
-  y <- as.numeric(NULL) # to prohibit ggplot2 global variable warnings
-
   plotdata_surv <- survmod$data[, c("outcome", "strata",
                                     "adjusted.time", "km.y")]
   plotdata_surv$type <- "tte"
