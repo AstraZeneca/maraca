@@ -342,19 +342,19 @@ test_that("Test compute survmod", {
     data, meta, tte_outcomes, continuous_outcome, arm_levels, 3 * 365)
 
   # Checking the abssum along the columns to check that values remain the same.
-  expect_equal(sum(abs(survmod$data$time)), 223663.466)
-  expect_equal(sum(abs(survmod$data$n.risk)), 169664)
-  expect_equal(sum(abs(survmod$data$n.event)), 433)
+  expect_equal(sum(abs(survmod$data$time)), 225699.2035)
+  expect_equal(sum(abs(survmod$data$n.risk)), 170235)
+  expect_equal(sum(abs(survmod$data$n.event)), 435)
   expect_equal(sum(abs(survmod$data$n.censor)), 0)
-  expect_equal(sum(abs(survmod$data$surv)), 338.462)
-  expect_equal(sum(abs(survmod$data$std.err)), 10.0267145)
-  expect_equal(sum(abs(survmod$data$upper)), 353.152512)
-  expect_equal(sum(abs(survmod$data$lower)), 324.489494)
-  expect_equal(sum(abs(survmod$data$adjusted.time)), 9287.798376)
-  expect_equal(sum(abs(survmod$data$km.y)), 94.538)
-  expect_equal(sum(abs(survmod$data$max)), 11816.2)
-  expect_equal(sum(abs(survmod$data$sum.event)), 24132)
-  expect_equal(sum(abs(survmod$data$km.end)), 18735.2)
+  expect_equal(sum(abs(survmod$data$surv)), 339.6)
+  expect_equal(sum(abs(survmod$data$std.err)), 10.10464444)
+  expect_equal(sum(abs(survmod$data$upper)), 354.3805911)
+  expect_equal(sum(abs(survmod$data$lower)), 325.5440402)
+  expect_equal(sum(abs(survmod$data$adjusted.time)), 9487.798376)
+  expect_equal(sum(abs(survmod$data$km.y)), 9540)
+  expect_equal(sum(abs(survmod$data$max)), 11902.4)
+  expect_equal(sum(abs(survmod$data$sum.event)), 24209)
+  expect_equal(sum(abs(survmod$data$km.end)), 18821.4)
 
   expect_equal(
     survmod$meta$max,
@@ -388,8 +388,8 @@ test_that("Test compute survmod", {
     data, meta, tte_outcomes, continuous_outcome, arm_levels,
     fixed_followup_days)
 
-  expect_equal(sum(abs(survmod$data$time)), 222588.783)
-  expect_equal(sum(abs(survmod$data$km.end)), 18689.4)
+  expect_equal(sum(abs(survmod$data$time)), 224624.521)
+  expect_equal(sum(abs(survmod$data$km.end)), 18775.6)
 
 })
 
@@ -412,7 +412,6 @@ test_that("Test compute continuous", {
   continuous <- .compute_continuous(
     data, meta, survmod, tte_outcomes, continuous_outcome, arm_levels)
   expect_equal(sum(abs(continuous$data$x)), 40828.387)
-  expect_equal(sum(abs(continuous$data$violinx)), 40711.95)
   expect_equal(sum(abs(continuous$data$violiny)), 24451)
 
   expect_equal(continuous$meta$n, c(298, 271))
