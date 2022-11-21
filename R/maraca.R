@@ -155,6 +155,8 @@ plot_maraca <- function(
     density_plot_type = "default",
     vline_type = "median") {
   checkmate::assert_class(obj, "maraca")
+  checkmate::assert_int(continuous_grid_spacing_x)
+  checkmate::assert_string(trans)
   checkmate::assert_choice(
     density_plot_type, c("default", "violin", "box", "scatter")
   )
@@ -520,6 +522,7 @@ plot.maraca <- function(
 #' @return Used for side effect. Plots the maraca object.
 #'
 #' @examples
+#' set.seed(31337)
 #' Rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
 #' Rates_P <- c(2.47, 2.24, 2.9, 4, 6)
 #' HCE <- hce::simHCE(n = 2500, TTE_A = Rates_A, TTE_P = Rates_P,
@@ -530,6 +533,15 @@ plot.maraca <- function(
 plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
                      density_plot_type = "default",
                      vline_type = "median", compute_win_odds = FALSE, ...) {
+  checkmate::assert_int(continuous_grid_spacing_x)
+  checkmate::assert_string(trans)
+  checkmate::assert_choice(
+    density_plot_type, c("default", "violin", "box", "scatter"))
+  checkmate::assert_choice(
+    vline_type, c("median", "mean", "none")
+  )
+  checkmate::assert_flag(compute_win_odds)
+
   x <- as.data.frame(x)
   TTE <- sort(unique(x$GROUP)[unique(x$GROUP) != "C"])
   hce_test <- maraca(
