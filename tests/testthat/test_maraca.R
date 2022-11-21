@@ -606,6 +606,7 @@ test_that("test minor_grid", {
 })
 
 test_that("test minor_grid", {
+  set.seed(31337)
   rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
   rates_P <- c(2.47, 2.24, 2.9, 4, 6)
   HCE <- hce::simHCE(

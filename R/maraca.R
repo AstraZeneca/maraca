@@ -522,6 +522,7 @@ plot.maraca <- function(
 #' @return Used for side effect. Plots the maraca object.
 #'
 #' @examples
+#' set.seed(31337)
 #' Rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
 #' Rates_P <- c(2.47, 2.24, 2.9, 4, 6)
 #' HCE <- hce::simHCE(n = 2500, TTE_A = Rates_A, TTE_P = Rates_P,
