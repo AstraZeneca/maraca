@@ -16,6 +16,8 @@ document:
 build: clean document namespace
 	-mkdir dist
 	Rscript -e "devtools::build('.', path='dist/')"
+	echo "Delete username from package!"
+	exit 1
 
 namespace:
 	rm NAMESPACE
