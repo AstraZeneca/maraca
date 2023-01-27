@@ -42,28 +42,6 @@ test_that("Maraca initialisation", {
   plot(mar)
 })
 
-test_that("plot_tte_components", {
-  file <- fixture_path("hce_scenario_c.csv")
-  data <- read.csv(file, stringsAsFactors = FALSE)
-
-  tte_outcomes <- c(
-    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
-  )
-  continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(active = "Active", control = "Control")
-  column_names <- c(
-    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
-  )
-  fixed_followup_days <- 3 * 365
-  mar <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels,
-    column_names,
-    fixed_followup_days
-    )
-  print(plot_tte_components(mar))
-  expect_true(TRUE)
-})
-
 test_that("Initialisation without fixed_followup_days", {
   file <- fixture_path("hce_scenario_c.csv")
 
@@ -217,29 +195,6 @@ test_that("Maraca plotting", {
 })
 
 
-test_that("Test plot_tte_composite", {
-  file <- fixture_path("hce_scenario_a.csv")
-  data <- read.csv(file, stringsAsFactors = FALSE)
-
-  tte_outcomes <- c(
-    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
-  )
-  continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(active = "Active", control = "Control")
-  column_names <- c(
-    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
-  )
-  fixed_followup_days <- 3 * 365
-  mar <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels,
-    column_names,
-    fixed_followup_days
-    )
-  print(plot_tte_composite(mar))
-  expect_true(TRUE)
-})
-
-
 test_that("Test reformatting of data", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
@@ -322,7 +277,7 @@ test_that("Test compute metainfo", {
   expect_equal(metainfo$n_control, c(66, 60, 60, 43, 271))
 })
 
-test_that("Test compute survmod", {
+test_that("Test compute ecdf", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
   tte_outcomes <- c(
@@ -338,60 +293,27 @@ test_that("Test compute survmod", {
     column_names
   )
   meta <- .compute_metainfo(data)
-  survmod <- .compute_survmod_by_outcome(
+  HCE_ecdf <- .compute_ecdf_by_outcome(
     data, meta, tte_outcomes, continuous_outcome, arm_levels, 3 * 365)
 
   # Checking the abssum along the columns to check that values remain the same.
-  expect_equal(sum(abs(survmod$data$time)), 225699.2035)
-  expect_equal(sum(abs(survmod$data$n.risk)), 170235)
-  expect_equal(sum(abs(survmod$data$n.event)), 435)
-  expect_equal(sum(abs(survmod$data$n.censor)), 0)
-  expect_equal(sum(abs(survmod$data$surv)), 339.6)
-  expect_equal(sum(abs(survmod$data$std.err)), 10.10464444)
-  expect_equal(sum(abs(survmod$data$upper)), 354.3805911)
-  expect_equal(sum(abs(survmod$data$lower)), 325.5440402)
-  expect_equal(sum(abs(survmod$data$adjusted.time)), 9487.798376)
-  expect_equal(sum(abs(survmod$data$km.y)), 9540)
-  expect_equal(sum(abs(survmod$data$max)), 11902.4)
-  expect_equal(sum(abs(survmod$data$sum.event)), 24209)
-  expect_equal(sum(abs(survmod$data$km.end)), 18821.4)
+  expect_equal(sum(abs(HCE_ecdf$data$value)), 221627.7286)
+  expect_equal(sum(abs(HCE_ecdf$data$t_cdf)), 841397.7286)
+  expect_equal(sum(abs(HCE_ecdf$data$ecdf_values)), 9367.6)
+  expect_equal(sum(abs(HCE_ecdf$data$adjusted.time)), 9142.184244)
 
   expect_equal(
-    survmod$meta$max,
+    HCE_ecdf$meta$max,
     c(12.6, 23.6, 33.6, 40.4, 13.2, 25.2, 37.2, 45.8), tol = 1e-6)
-  expect_equal(survmod$meta$sum.event, c(
+  expect_equal(HCE_ecdf$meta$sum.event, c(
     63, 55, 50, 34, 66, 60, 60, 43
   ))
-  expect_equal(survmod$meta$km.end,
+  expect_equal(HCE_ecdf$meta$ecdf_end,
     c(40.4, 40.4, 40.4, 40.4, 45.8, 45.8, 45.8, 45.8), tol = 1e-6
   )
 
 })
 
-
-test_that("Test compute survmod", {
-  file <- fixture_path("hce_scenario_c.csv")
-  data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
-    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
-  )
-  continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(active = "Active", control = "Control")
-  column_names <- c(
-    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
-  )
-  data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
-    arm_levels, column_names)
-  meta <- .compute_metainfo(data)
-  fixed_followup_days <- max(meta[meta$outcome %in% tte_outcomes, ]$maxday)
-  survmod <- .compute_survmod_by_outcome(
-    data, meta, tte_outcomes, continuous_outcome, arm_levels,
-    fixed_followup_days)
-
-  expect_equal(sum(abs(survmod$data$time)), 224624.521)
-  expect_equal(sum(abs(survmod$data$km.end)), 18775.6)
-
-})
 
 test_that("Test compute continuous", {
   file <- fixture_path("hce_scenario_c.csv")
@@ -407,12 +329,12 @@ test_that("Test compute continuous", {
   data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
     arm_levels, column_names = column_names)
   meta <- .compute_metainfo(data)
-  survmod <- .compute_survmod_by_outcome(
+  HCE_ecdf <- .compute_ecdf_by_outcome(
     data, meta, tte_outcomes, continuous_outcome, arm_levels, 3 * 365)
   continuous <- .compute_continuous(
-    data, meta, survmod, tte_outcomes, continuous_outcome, arm_levels)
+    data, meta, HCE_ecdf, tte_outcomes, continuous_outcome, arm_levels)
   expect_equal(sum(abs(continuous$data$x)), 40828.387)
-  expect_equal(sum(abs(continuous$data$violiny)), 24451)
+  expect_equal(sum(abs(continuous$data$y_level)), 24451)
 
   expect_equal(continuous$meta$n, c(298, 271))
   expect_equal(continuous$meta$median, c(74.360287, 68.354528))
@@ -571,27 +493,6 @@ test_that("test ordered column", {
 
   # Verify against the ones we calculated in the fixture
   expect_equal(data$AVAL, hce$ordered, tol = 1e-7)
-})
-
-test_that("test hce focus function", {
-  file <- fixture_path("hce_scenario_a.csv")
-  data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
-    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
-  )
-  continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(active = "Active", control = "Control")
-  column_names <- c(
-    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
-  )
-  data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
-    arm_levels,
-    column_names
-  )
-  fixed_followup_days <- 3 * 365
-
-  .hce_survival_focus(data, 4, tte_outcomes, fixed_followup_days)
-  expect_true(TRUE)
 })
 
 test_that("test minor_grid", {

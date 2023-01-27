@@ -93,10 +93,6 @@ maraca <- function(
     fixed_followup_days
   )
 
-  survmod_complete <- .compute_survmod_complete(
-    HCE, meta, tte_outcomes, continuous_outcome, arm_levels,
-    fixed_followup_days
-  )
   continuous <- .compute_continuous(
     HCE, meta, ecdf_by_outcome, tte_outcomes, continuous_outcome, arm_levels
   )
@@ -116,7 +112,6 @@ maraca <- function(
         column_names = column_names,
         meta = meta,
         ecdf_by_outcome = ecdf_by_outcome,
-        survmod_complete = survmod_complete,
         continuous = continuous,
         win_odds = win_odds
       ),
@@ -178,7 +173,7 @@ plot_maraca <- function(
                                     "adjusted.time", "ecdf_values")]
   plotdata_ecdf$type <- "tte"
   names(plotdata_ecdf) <- c("outcome", "arm", "x", "y", "type")
-  plotdata_cont <- continuous$data[, c("outcome", "arm", "x", "violiny")]
+  plotdata_cont <- continuous$data[, c("outcome", "arm", "x", "y_level")]
   plotdata_cont$type <- "cont"
   names(plotdata_cont) <- c("outcome", "arm", "x", "y", "type")
 
@@ -362,81 +357,6 @@ plot_maraca <- function(
 
   return(plot)
 }
-
-#' Creates and returns the tte composite plot of the maraca data.
-#'
-#' @param obj an object of S3 class 'maraca'
-#' @return a ggplot2 object of the data. This function
-#' will not render the plot immediately. You have to print() the returned
-#' object for it to be displayed.
-#'
-#' @examples
-#' data(hce_scenario_a)
-#' hce_test <- maraca(
-#'   data = hce_scenario_a,
-#'   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
-#'   continuous_outcome = "Continuous outcome",
-#'   column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
-#'   arm_levels = c(active = "Active", control = "Control"),
-#'   compute_win_odds = TRUE
-#' )
-#' plot <- plot_tte_composite(hce_test)
-#' @export
-plot_tte_composite <- function(obj) {
-  checkmate::assert_class(obj, "maraca")
-
-  survmod <- obj$survmod_complete
-  fit <- survmod$fit
-  hr <- survmod$hr
-  hr_result <- round(hr$conf.int, 2)
-
-  plot <- ggplot2::autoplot(fit, fun = "event") +
-  ggplot2::xlab("Time") +
-  ggplot2::ylab("Cumulative proportion") +
-  ggplot2::scale_fill_discrete("Arm", labels = obj$arm_levels) +
-  ggplot2::scale_color_discrete("Arm", labels = obj$arm_levels) +
-  ggplot2::annotate(
-      geom = "label",
-      x = 0,
-      y = Inf,
-      label = paste(
-        "TTE composite HR: ",
-        hr_result[1], " (", hr_result[3], ", ", hr_result[4], ")",
-        sep = ""
-      ),
-      hjust = -0.2,
-      vjust = 1.4,
-      size = 3
-    )
-
-  return(plot)
-
-}
-
-#' Generic to print the maraca_tte_component that is not a ggplot.
-#'
-#' @param x an object of S3 class 'maraca_tte_components'
-#' @param \dots not used
-#' @return Used for side effect. Plots the maraca_tte_components object.
-#'
-#' @examples
-#' data(hce_scenario_a)
-#' hce_test <- maraca(
-#'   data = hce_scenario_a,
-#'   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
-#'   continuous_outcome = "Continuous outcome",
-#'   column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
-#'   arm_levels = c(active = "Active", control = "Control"),
-#'   compute_win_odds = TRUE
-#' )
-#' plot <- plot_tte_components(hce_test)
-#' print(plot)
-#'
-#' @export
-print.maraca_tte_components <- function(x, ...) {
-  grid::grid.draw(x)
-}
-
 
 #' Generic function to plot the maraca object using plot().
 #'
@@ -656,35 +576,6 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
   ))
 }  
 
-.compute_survmod_complete <- function(
-    HCE, meta, tte_outcomes, continuous_outcome, arm_levels,
-    fixed_followup_days
-) {
-  # In this case EVENT=1 for all TTE outcomes and AVALT=AVAL0.
-  # For continuous outcomes AVALT is set to fixed_followup_days.
-  HCE$event <- 0
-  tte_row_mask <- (HCE$outcome %in% tte_outcomes)
-  HCE[tte_row_mask, "event"] <- 1
-  HCE$kmday <- fixed_followup_days
-  HCE[tte_row_mask, "kmday"] <- HCE[tte_row_mask, ]$value
-
-  Surv <- survival::Surv # nolint
-  # We need to relevel the factor to ensure that the first level
-  # is the control, as this is the way coxph expects the control arm to be
-  # "named".
-  fit0 <- survival::coxph(Surv(kmday, event) ~ arm,
-    data = dplyr::mutate(HCE, arm = stats::relevel(arm, ref = "control"))
-  )
-  hr <- summary(fit0)
-  fit <- survival::survfit(Surv(kmday, event) ~ arm, data = HCE)
-
-  return(list(
-    fit = fit,
-    hr = hr
-  ))
-
-}
-
 # Support function for the range
 .to_rangeab <- function(x, start_continuous_endpoint, minval, maxval) {
   (100 - start_continuous_endpoint) * (x - minval) /
@@ -711,11 +602,11 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
     dplyr::summarise(n = n(), median = stats::median(x, na.rm = TRUE),
       average = base::mean(x, na.rm = TRUE))
 
-  continuous_data$violiny <- ecdf_mod$meta[
+  continuous_data$y_level <- ecdf_mod$meta[
     ecdf_mod$meta$arm == "active" &
     ecdf_mod$meta$outcome == utils::tail(tte_outcomes, 1),
     ]$ecdf_end
-  continuous_data[continuous_data$arm == "control", ]$violiny <- ecdf_mod$meta[
+  continuous_data[continuous_data$arm == "control", ]$y_level <- ecdf_mod$meta[
     ecdf_mod$meta$arm == "control" &
     ecdf_mod$meta$outcome == utils::tail(tte_outcomes, 1),
     ]$ecdf_end
