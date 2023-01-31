@@ -11,7 +11,7 @@ maraca(
   continuous_outcome,
   arm_levels = c(active = "active", control = "control"),
   column_names = c(outcome = "outcome", arm = "arm", value = "value"),
-  fixed_followup_days = NULL,
+  fixed_followup_days,
   compute_win_odds = FALSE
 )
 }
@@ -19,7 +19,7 @@ maraca(
 \item{data}{A data frame with columns for the following information:
 - outcome column, containing the time-to-event and continuous
   labels
-- arm column, contaning the arm a given row belongs to.
+- arm column, containing the arm a given row belongs to.
 - value column, containing the values.}
 
 \item{tte_outcomes}{A vector of strings containing the time-to-event
@@ -41,8 +41,8 @@ in the data. The vector names must match in order "outcome", "arm",
 and "value". Note that this parameter only need to be
 specified if you have column names different from the ones above.}
 
-\item{fixed_followup_days}{The followup days, or NULL. If NULL, use the
-largest value across the hard outcomes.}
+\item{fixed_followup_days}{A mandatory specification of the integer number
+of fixed follow-up days in the study.}
 
 \item{compute_win_odds}{If TRUE compute the win odds, otherwise (default)
 don't compute them.}
@@ -61,6 +61,7 @@ hce_test <- maraca(
   data = hce_scenario_a,
   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
   continuous_outcome = "Continuous outcome",
+  fixed_followup_days = 3 * 365,
   column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
   arm_levels = c(active = "Active", control = "Control"),
   compute_win_odds = TRUE

@@ -42,24 +42,6 @@ test_that("Maraca initialisation", {
   plot(mar)
 })
 
-test_that("Initialisation without fixed_followup_days", {
-  file <- fixture_path("hce_scenario_c.csv")
-
-  data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
-    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
-  )
-  continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(active = "Active", control = "Control")
-  column_names <- c(
-    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
-  )
-  mar <- maraca(data, tte_outcomes, continuous_outcome, arm_levels,
-                column_names = column_names)
-  expect_s3_class(mar, "maraca")
-  expect_equal(mar$fixed_followup_days, 1074.68286)
-})
-
 test_that("Maraca wrong params", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
@@ -355,7 +337,8 @@ test_that("Test error for missing outcome", {
   )
 
   expect_error(
-    maraca(data, tte_outcomes, continuous_outcome, arm_levels, column_names),
+    maraca(data, tte_outcomes, continuous_outcome, arm_levels,
+           column_names, 3 * 365),
     regexp = "Outcome Outcome XXX is not present in column GROUP"
   )
 })
@@ -373,7 +356,7 @@ test_that("Test compute win_odds flag", {
   )
 
   mar <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels, column_names,
+    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
     compute_win_odds = FALSE
   )
 
@@ -397,7 +380,7 @@ test_that("Test handle NA data", {
 
   data$AVAL0[[3]] <- NA
   mar <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels, column_names
+    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365
   )
 
   plot(mar)
@@ -412,7 +395,8 @@ test_that("Test modify continuous x grid", {
     args$tte_outcomes,
     args$continuous_outcome,
     args$arm_levels,
-    args$column_names
+    args$column_names,
+    3 * 365
   )
 
   expect_true(TRUE)
@@ -428,7 +412,8 @@ test_that("Test apply transformation to continuous scale", {
     args$tte_outcomes,
     args$continuous_outcome,
     args$arm_levels,
-    args$column_names
+    args$column_names,
+    3 * 365
   )
 
   expect_true(TRUE)
@@ -445,7 +430,8 @@ test_that("Test density plot selection", {
     args$tte_outcomes,
     args$continuous_outcome,
     args$arm_levels,
-    args$column_names
+    args$column_names,
+    3*365
   )
 
   expect_true(TRUE)
@@ -466,7 +452,8 @@ test_that("Test vline type", {
     args$tte_outcomes,
     args$continuous_outcome,
     args$arm_levels,
-    args$column_names
+    args$column_names,
+    3*365
   )
 
   expect_true(TRUE)
@@ -513,6 +500,6 @@ test_that("test minor_grid", {
   HCE <- hce::simHCE(
     n = 2500, TTE_A = rates_A, TTE_P = rates_P,
     CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3)
-  plot(HCE)
+  plot(HCE, fixed_followup_days = 3 * 365)
   expect_true(TRUE)
 })

@@ -4,7 +4,7 @@
 #' @param data A data frame with columns for the following information:
 #'             - outcome column, containing the time-to-event and continuous
 #'               labels
-#'             - arm column, contaning the arm a given row belongs to.
+#'             - arm column, containing the arm a given row belongs to.
 #'             - value column, containing the values.
 #' @param tte_outcomes A vector of strings containing the time-to-event
 #'                     outcome labels. The order is kept for the plot.
@@ -21,8 +21,8 @@
 #'        in the data. The vector names must match in order "outcome", "arm",
 #'        and "value". Note that this parameter only need to be
 #'        specified if you have column names different from the ones above.
-#' @param fixed_followup_days The followup days, or NULL. If NULL, use the
-#'        largest value across the hard outcomes.
+#' @param fixed_followup_days A mandatory specification of the integer number
+#'                            of fixed follow-up days in the study.
 #' @param compute_win_odds If TRUE compute the win odds, otherwise (default)
 #'                         don't compute them.
 #'
@@ -34,6 +34,7 @@
 #'   data = hce_scenario_a,
 #'   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
 #'   continuous_outcome = "Continuous outcome",
+#'   fixed_followup_days = 3 * 365,
 #'   column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
 #'   arm_levels = c(active = "Active", control = "Control"),
 #'   compute_win_odds = TRUE
@@ -52,7 +53,7 @@ maraca <- function(
       arm = "arm",
       value = "value"
     ),
-    fixed_followup_days = NULL,
+    fixed_followup_days,
     compute_win_odds = FALSE
     ) {
 
@@ -69,7 +70,7 @@ maraca <- function(
     names(column_names),
     identical.to = c("outcome", "arm", "value")
   )
-  checkmate::assert_int(fixed_followup_days, null.ok = TRUE)
+  checkmate::assert_int(fixed_followup_days)
   checkmate::assert_flag(compute_win_odds)
 
   # Remove unwanted outcomes and arm levels, and normalise column names
@@ -81,12 +82,6 @@ maraca <- function(
 
   # Calculate meta information from the entire HCE dataset needed for plotting
   meta <- .compute_metainfo(HCE)
-
-  if (is.null(fixed_followup_days)) {
-    # Use the largest value across the hard outcomes if
-    # fixed_followup_days is not specified
-    fixed_followup_days <- max(meta[meta$outcome %in% tte_outcomes, ]$maxday)
-  }
 
   ecdf_by_outcome <- .compute_ecdf_by_outcome(
     HCE, meta, tte_outcomes, continuous_outcome, arm_levels,
@@ -140,6 +135,7 @@ maraca <- function(
 #'   data = hce_scenario_a,
 #'   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
 #'   continuous_outcome = "Continuous outcome",
+#'   fixed_followup_days = 3 * 365,
 #'   column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
 #'   arm_levels = c(active = "Active", control = "Control"),
 #'   compute_win_odds = TRUE
@@ -380,6 +376,7 @@ plot_maraca <- function(
 #'   data = hce_scenario_a,
 #'   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
 #'   continuous_outcome = "Continuous outcome",
+#'   fixed_followup_days = 3 * 365,
 #'   column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
 #'   arm_levels = c(active = "Active", control = "Control"),
 #'   compute_win_odds = TRUE
@@ -400,6 +397,7 @@ plot.maraca <- function(
 #' This will produce the plot_maraca plot.
 #'
 #' @param x an object of S3 class 'hce'
+#' @param fixed_followup_days The fixed follow-up number of days in the study.
 #' @param \dots not used
 #' @param continuous_grid_spacing_x The spacing of the x grid to use for the
 #'        continuous section of the plot.
@@ -419,10 +417,10 @@ plot.maraca <- function(
 #' Rates_P <- c(2.47, 2.24, 2.9, 4, 6)
 #' HCE <- hce::simHCE(n = 2500, TTE_A = Rates_A, TTE_P = Rates_P,
 #'              CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3)
-#' plot(HCE)
+#' plot(HCE, fixed_followup_days = 3 * 365)
 #'
 #' @export
-plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
+plot.hce <- function(x, fixed_followup_days, continuous_grid_spacing_x = 10, trans = "identity",
                      density_plot_type = "default",
                      vline_type = "median", compute_win_odds = FALSE, ...) {
   checkmate::assert_int(continuous_grid_spacing_x)
@@ -442,6 +440,7 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
     continuous_outcome = "C",
     column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
     arm_levels = c(active = "A", control = "P"),
+    fixed_followup_days = fixed_followup_days,
     compute_win_odds = compute_win_odds
   )
   print(plot_maraca(

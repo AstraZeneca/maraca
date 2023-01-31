@@ -6,6 +6,7 @@
 \usage{
 \method{plot}{hce}(
   x,
+  fixed_followup_days,
   continuous_grid_spacing_x = 10,
   trans = "identity",
   density_plot_type = "default",
@@ -16,6 +17,8 @@
 }
 \arguments{
 \item{x}{an object of S3 class 'hce'}
+
+\item{fixed_followup_days}{The fixed follow-up number of days in the study.}
 
 \item{continuous_grid_spacing_x}{The spacing of the x grid to use for the
 continuous section of the plot.}
@@ -46,6 +49,6 @@ Rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
 Rates_P <- c(2.47, 2.24, 2.9, 4, 6)
 HCE <- hce::simHCE(n = 2500, TTE_A = Rates_A, TTE_P = Rates_P,
              CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3)
-plot(HCE)
+plot(HCE, fixed_followup_days = 3 * 365)
 
 }
