@@ -500,6 +500,6 @@ test_that("test minor_grid", {
   HCE <- hce::simHCE(
     n = 2500, TTE_A = rates_A, TTE_P = rates_P,
     CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3)
-  plot(HCE, fixed_followup_days = 3 * 365)
+  plot(HCE)
   expect_true(TRUE)
 })

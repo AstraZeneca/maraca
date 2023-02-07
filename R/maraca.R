@@ -354,6 +354,84 @@ plot_maraca <- function(
   return(plot)
 }
 
+#' Generic function to generate validation data for the maraca plot object.
+#'
+#' This will produce the 4 validation datasets.
+#'
+#' @param x an object of S3 class 'ggplot'
+#' @param \dots not used
+#' @return Creates a list of datasets for validation purposes.
+#'
+#' @examples
+#' data(hce_scenario_a)
+#' hce_test <- maraca(
+#'   data = hce_scenario_a,
+#'   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
+#'   continuous_outcome = "Continuous outcome",
+#'   fixed_followup_days = 3 * 365,
+#'   column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
+#'   arm_levels = c(active = "Active", control = "Control"),
+#'   compute_win_odds = TRUE
+#' )
+#' p <- plot(hce_test)
+#' validate.maraca(p)
+#'
+#' @export
+validate_maraca <- function(x,  ...) {
+  checkmate::assert_class(x, c("gg", "ggplot"))
+
+  `%>%` <- dplyr::`%>%`
+
+  pb <- ggplot_build(x)
+  plot_type <- class(as.list(x$layers[[5]])[["geom"]])[1]
+  annotation <- max(length(pb$data))
+
+  proportions <- diff(pb$data[[1]][, c("xintercept")])
+  tte_data <- tail(head(pb$data[[4]][, c("group", "x", "y")], -2), -2)
+  if (plot_type == "GeomPoint") {
+    scatter_data <- pb$data[[5]][, c("group", "x", "y")]
+    boxstat_data <- NULL
+    violin_data <- NULL
+  }
+  if (plot_type == "GeomBoxplot") {
+    boxstat_data <-
+    pb$data[[5]][, c("group", "xlower", "xmiddle", "xupper", "outliers")]
+    scatter_data <- NULL
+    violin_data <- NULL
+  }
+  if (plot_type == "GeomViolin") {
+    violin_data <- pb$data[[5]][, c("group", "x", "y", "density", "scaled",
+                                    "ndensity", "count", "width")] %>%
+      dplyr::group_by(group) %>%
+      dplyr::mutate(y_low = y-scaled*width/2,
+                    y_high = y+scaled*width/2)
+    if (class(as.list(x$layers[[6]])[["geom"]])[1] == "GeomBoxplot") {
+      boxstat_data <-
+        pb$data[[6]][, c("group", "xlower", "xmiddle", "xupper", "outliers")]
+    } else boxstat_data <- NULL
+    scatter_data = NULL
+  }
+  wo_label <- pb$data[[annotation]]$label
+  wo_stats <- c(winodds = as.numeric(substr(wo_label, 20, 23)),
+                lowerCI = as.numeric(substr(wo_label, 26, 29)),
+                upperCI = as.numeric(substr(wo_label, 32, 35)),
+                p_value = as.numeric(substr(wo_label, 48, 60))
+  )
+  
+  return(
+      list(
+        plot_type = plot_type,
+        proportions = proportions,
+        tte_data = tte_data,
+        scatter_data = scatter_data,
+        boxstat_data = boxstat_data,
+        violin_data = violin_data,
+        wo_label = wo_label,
+        wo_stats = wo_stats
+      )
+  )
+}
+
 #' Generic function to plot the maraca object using plot().
 #'
 #' This will produce the plot_maraca plot.
@@ -396,8 +474,7 @@ plot.maraca <- function(
 #'
 #' This will produce the plot_maraca plot.
 #'
-#' @param x an object of S3 class 'hce'
-#' @param fixed_followup_days The fixed follow-up number of days in the study.
+#' @param x an object of S3 class 'hce'. 
 #' @param \dots not used
 #' @param continuous_grid_spacing_x The spacing of the x grid to use for the
 #'        continuous section of the plot.
@@ -420,7 +497,7 @@ plot.maraca <- function(
 #' plot(HCE, fixed_followup_days = 3 * 365)
 #'
 #' @export
-plot.hce <- function(x, fixed_followup_days, continuous_grid_spacing_x = 10, trans = "identity",
+plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
                      density_plot_type = "default",
                      vline_type = "median", compute_win_odds = FALSE, ...) {
   checkmate::assert_int(continuous_grid_spacing_x)
@@ -434,6 +511,7 @@ plot.hce <- function(x, fixed_followup_days, continuous_grid_spacing_x = 10, tra
 
   x <- as.data.frame(x)
   TTE <- sort(unique(x$GROUP)[unique(x$GROUP) != "C"])
+  fixed_followup_days <- x$TTEfixed[1]
   hce_test <- maraca(
     data = x,
     tte_outcomes = TTE,
