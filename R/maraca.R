@@ -533,6 +533,7 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
 
   `%>%` <- dplyr::`%>%`
   n <- dplyr::n
+  . <- rlang::.data
 
   num_tte_outcomes <- length(tte_outcomes)
   HCE$t_cdf <- (num_tte_outcomes + 2) * fixed_followup_days
@@ -545,9 +546,8 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
 
   HCE_ecdf <- HCE %>%
     dplyr::group_by(arm) %>%
-    dplyr::do(data.frame(., ecdf_values = ecdf(.$t_cdf)(.$t_cdf))) %>%
-    dplyr::filter(outcome %in% tte_outcomes) %>%
-    dplyr::mutate(ecdf_values = 100 * ecdf_values)
+    dplyr::do(data.frame(., ecdf_values = 100 * ecdf(.$t_cdf)(.$t_cdf))) %>%
+    dplyr::filter(outcome %in% tte_outcomes)
 
   HCE_ecdf <- HCE_ecdf[order(HCE_ecdf$ecdf_values), ]
 
@@ -561,6 +561,7 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
       meta[meta$outcome == entry, ]$proportion
   }
 
+  # nolint start
   HCE_ecdf_meta <- HCE_ecdf %>%
     dplyr::group_by(arm, outcome) %>%
     dplyr::summarise(
@@ -569,8 +570,9 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
     dplyr::mutate(
       ecdf_end = utils::tail(max, 1)
     )
+  # nolint end
 
-    return(list(
+  return(list(
     data = HCE_ecdf,
     meta = HCE_ecdf_meta
   ))
@@ -663,6 +665,10 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
       ))
     }
   }
+
+  # Remove rows with missing values
+  HCE <- HCE %>%
+    dplyr::filter(!is.na(value))
 
   return(HCE)
 
