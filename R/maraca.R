@@ -666,7 +666,8 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
     }
   }
 
-  # Remove rows with missing values - previously done automatically by survival package
+  # Remove rows with missing values - previously done 
+  # automatically by survival package
   HCE <- HCE %>%
     dplyr::filter(!is.na(value))
 
