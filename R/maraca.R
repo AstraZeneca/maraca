@@ -531,7 +531,6 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
   fixed_followup_days
 ) {
 
-  endpoints <- c(tte_outcomes, continuous_outcome)
   `%>%` <- dplyr::`%>%`
   n <- dplyr::n
 
