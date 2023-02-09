@@ -534,22 +534,23 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
   endpoints <- c(tte_outcomes, continuous_outcome)
   `%>%` <- dplyr::`%>%`
   n <- dplyr::n
-  
-  num_tte_outcomes <- length(tte_outcomes) 
-  HCE$t_cdf <- (num_tte_outcomes+2)*fixed_followup_days
-  
-  for(i in 1:num_tte_outcomes) {
-    HCE[HCE$outcome == tte_outcomes[i],]$t_cdf <- 
-      HCE[HCE$outcome == tte_outcomes[i],]$value + fixed_followup_days*(i-1)
+
+  num_tte_outcomes <- length(tte_outcomes)
+  HCE$t_cdf <- (num_tte_outcomes + 2) * fixed_followup_days
+
+  for (i in 1:num_tte_outcomes) {
+    HCE[HCE$outcome == tte_outcomes[i], ]$t_cdf <-
+      HCE[HCE$outcome == tte_outcomes[i], ]$value +
+        fixed_followup_days * (i - 1)
   }
 
   HCE_ecdf <- HCE %>%
     dplyr::group_by(arm) %>%
     dplyr::do(data.frame(., ecdf_values = ecdf(.$t_cdf)(.$t_cdf))) %>%
     dplyr::filter(outcome %in% tte_outcomes) %>%
-    dplyr::mutate(ecdf_values = 100 * ecdf_values) 
+    dplyr::mutate(ecdf_values = 100 * ecdf_values)
 
-  HCE_ecdf <- HCE_ecdf[order(HCE_ecdf$ecdf_values),]
+  HCE_ecdf <- HCE_ecdf[order(HCE_ecdf$ecdf_values), ]
 
   HCE_ecdf$adjusted.time <- 0
   for (entry in tte_outcomes) {
@@ -574,7 +575,7 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
     data = HCE_ecdf,
     meta = HCE_ecdf_meta
   ))
-}  
+}
 
 # Support function for the range
 .to_rangeab <- function(x, start_continuous_endpoint, minval, maxval) {
