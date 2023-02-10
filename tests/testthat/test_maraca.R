@@ -431,7 +431,7 @@ test_that("Test density plot selection", {
     args$continuous_outcome,
     args$arm_levels,
     args$column_names,
-    3*365
+    3 * 365
   )
 
   expect_true(TRUE)
@@ -453,7 +453,7 @@ test_that("Test vline type", {
     args$continuous_outcome,
     args$arm_levels,
     args$column_names,
-    3*365
+    3 * 365
   )
 
   expect_true(TRUE)

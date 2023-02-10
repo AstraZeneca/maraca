@@ -382,7 +382,7 @@ validate_maraca <- function(x,  ...) {
 
   `%>%` <- dplyr::`%>%`
 
-  pb <- ggplot_build(x)
+  pb <- ggplot::ggplot_build(x)
   plot_type <- class(as.list(x$layers[[5]])[["geom"]])[1]
   annotation <- max(length(pb$data))
 
@@ -400,16 +400,19 @@ validate_maraca <- function(x,  ...) {
     violin_data <- NULL
   }
   if (plot_type == "GeomViolin") {
-    violin_data <- pb$data[[5]][, c("group", "x", "y", "density", "scaled",
-                                    "ndensity", "count", "width")] %>%
+    tmp <- pb$data[[5]][, c("group", "x", "y", "density", "scaled",
+                            "ndensity", "count", "width")]
+    violin_data <- tmp %>%
       dplyr::group_by(group) %>%
-      dplyr::mutate(y_low = y-scaled*width/2,
-                    y_high = y+scaled*width/2)
+      dplyr::mutate(y_low = y - scaled * width / 2,
+                    y_high = y + scaled * width / 2)
     if (class(as.list(x$layers[[6]])[["geom"]])[1] == "GeomBoxplot") {
       boxstat_data <-
         pb$data[[6]][, c("group", "xlower", "xmiddle", "xupper", "outliers")]
-    } else boxstat_data <- NULL
-    scatter_data = NULL
+    } else {
+      boxstat_data <- NULL
+      scatter_data <- NULL
+    }
   }
   wo_label <- pb$data[[annotation]]$label
   wo_stats <- c(winodds = as.numeric(substr(wo_label, 20, 23)),
@@ -417,7 +420,7 @@ validate_maraca <- function(x,  ...) {
                 upperCI = as.numeric(substr(wo_label, 32, 35)),
                 p_value = as.numeric(substr(wo_label, 48, 60))
   )
-  
+
   return(
       list(
         plot_type = plot_type,
@@ -474,7 +477,7 @@ plot.maraca <- function(
 #'
 #' This will produce the plot_maraca plot.
 #'
-#' @param x an object of S3 class 'hce'. 
+#' @param x an object of S3 class 'hce'.
 #' @param \dots not used
 #' @param continuous_grid_spacing_x The spacing of the x grid to use for the
 #'        continuous section of the plot.
@@ -608,25 +611,25 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
   fixed_followup_days
 ) {
 
-  endpoints <- c(tte_outcomes, continuous_outcome)
   `%>%` <- dplyr::`%>%`
   n <- dplyr::n
-  
-  num_tte_outcomes <- length(tte_outcomes) 
-  HCE$t_cdf <- (num_tte_outcomes+2)*fixed_followup_days
-  
-  for(i in 1:num_tte_outcomes) {
-    HCE[HCE$outcome == tte_outcomes[i],]$t_cdf <- 
-      HCE[HCE$outcome == tte_outcomes[i],]$value + fixed_followup_days*(i-1)
+
+  num_tte_outcomes <- length(tte_outcomes)
+  HCE$t_cdf <- (num_tte_outcomes + 2) * fixed_followup_days
+
+  for (i in 1:num_tte_outcomes) {
+    HCE[HCE$outcome == tte_outcomes[i], ]$t_cdf <-
+      HCE[HCE$outcome == tte_outcomes[i], ]$value +
+      fixed_followup_days * (i - 1)
   }
 
   HCE_ecdf <- HCE %>%
     dplyr::group_by(arm) %>%
     dplyr::do(data.frame(., ecdf_values = ecdf(.$t_cdf)(.$t_cdf))) %>%
     dplyr::filter(outcome %in% tte_outcomes) %>%
-    dplyr::mutate(ecdf_values = 100 * ecdf_values) 
+    dplyr::mutate(ecdf_values = 100 * ecdf_values)
 
-  HCE_ecdf <- HCE_ecdf[order(HCE_ecdf$ecdf_values),]
+  HCE_ecdf <- HCE_ecdf[order(HCE_ecdf$ecdf_values), ]
 
   HCE_ecdf$adjusted.time <- 0
   for (entry in tte_outcomes) {
@@ -651,7 +654,7 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
     data = HCE_ecdf,
     meta = HCE_ecdf_meta
   ))
-}  
+}
 
 # Support function for the range
 .to_rangeab <- function(x, start_continuous_endpoint, minval, maxval) {
