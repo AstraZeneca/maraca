@@ -533,7 +533,7 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
 
   `%>%` <- dplyr::`%>%`
   n <- dplyr::n
-  . <- rlang::.data
+  .data <- rlang::.data
 
   num_tte_outcomes <- length(tte_outcomes)
   HCE$t_cdf <- (num_tte_outcomes + 2) * fixed_followup_days
@@ -546,7 +546,8 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
 
   HCE_ecdf <- HCE %>%
     dplyr::group_by(arm) %>%
-    dplyr::do(data.frame(., ecdf_values = 100 * ecdf(.$t_cdf)(.$t_cdf))) %>%
+    dplyr::do(data.frame(.data, ecdf_values = 100 *
+                           ecdf(.data$t_cdf)(.data$t_cdf))) %>%
     dplyr::filter(outcome %in% tte_outcomes)
 
   HCE_ecdf <- HCE_ecdf[order(HCE_ecdf$ecdf_values), ]
@@ -561,16 +562,14 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
       meta[meta$outcome == entry, ]$proportion
   }
 
-  # nolint start
   HCE_ecdf_meta <- HCE_ecdf %>%
     dplyr::group_by(arm, outcome) %>%
     dplyr::summarise(
-      max = max(ecdf_values, na.rm = TRUE),
+      max = max(.data$ecdf_values, na.rm = TRUE),
       sum.event = n()) %>%
     dplyr::mutate(
       ecdf_end = utils::tail(max, 1)
     )
-  # nolint end
 
   return(list(
     data = HCE_ecdf,
