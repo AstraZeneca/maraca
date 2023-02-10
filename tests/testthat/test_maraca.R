@@ -494,12 +494,12 @@ test_that("test minor_grid", {
 })
 
 test_that("test minor_grid", {
-  set.seed(31337)
   rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
   rates_P <- c(2.47, 2.24, 2.9, 4, 6)
   HCE <- hce::simHCE(
     n = 2500, TTE_A = rates_A, TTE_P = rates_P,
-    CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3)
+    CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3,
+    seed = 31337)
   plot(HCE)
   expect_true(TRUE)
 })
