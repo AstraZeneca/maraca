@@ -381,6 +381,7 @@ validate_maraca <- function(x,  ...) {
   checkmate::assert_class(x, c("gg", "ggplot"))
 
   `%>%` <- dplyr::`%>%`
+  .data <- rlang::.data
 
   pb <- ggplot::ggplot_build(x)
   plot_type <- class(as.list(x$layers[[5]])[["geom"]])[1]
@@ -400,12 +401,11 @@ validate_maraca <- function(x,  ...) {
     violin_data <- NULL
   }
   if (plot_type == "GeomViolin") {
-    tmp <- pb$data[[5]][, c("group", "x", "y", "density", "scaled",
-                            "ndensity", "count", "width")]
-    violin_data <- tmp %>%
-      dplyr::group_by(group) %>%
-      dplyr::mutate(y_low = y - scaled * width / 2,
-                    y_high = y + scaled * width / 2)
+    violin_data <- pb$data[[5]][, c("group", "x", "y", "density", "scaled",
+                                    "ndensity", "count", "width")] %>%
+      dplyr::group_by(.data$group) %>%
+      dplyr::mutate(y_low = y - .data$scaled * .data$width / 2,
+                    y_high = y + .data$scaled * .data$width / 2)
     if (class(as.list(x$layers[[6]])[["geom"]])[1] == "GeomBoxplot") {
       boxstat_data <-
         pb$data[[6]][, c("group", "xlower", "xmiddle", "xupper", "outliers")]
