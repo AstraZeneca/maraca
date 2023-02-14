@@ -336,6 +336,18 @@ plot_maraca <- function(
       ),
       hjust = 0, vjust = 1.4, size = 3
     )
+
+    # Meta data on win odds will be added to plot
+    params <- list(
+      "win_odds" = win_odds[1],
+      "lower_ci" = win_odds[2],
+      "upper_ci" = win_odds[3],
+      "p_value" = win_odds[4]
+    )
+
+    # Add win odds meta data as attribute so retrievable
+    attr(plot, "win_odds_parameters") <- params
+
   }
 
   plot <- plot +
@@ -350,6 +362,9 @@ plot_maraca <- function(
       axis.title.x.bottom =  ggplot2::element_blank()
     ) +
     ggplot2::guides(fill = "none")
+
+  # Add label to plot - maracaPlot
+  attr(plot, "label") <- "maracaPlot"
 
   return(plot)
 }
@@ -378,12 +393,20 @@ plot_maraca <- function(
 #'
 #' @export
 validate_maraca <- function(x,  ...) {
+
   checkmate::assert_class(x, c("gg", "ggplot"))
+
+  if (!("label" %in% names(attributes(x))) ||
+      attr(x, "label") != "maracaPlot") {
+    stop(paste(
+      "validate_maraca function only applicable to maraca plots."
+    ))
+  }
 
   `%>%` <- dplyr::`%>%`
   .data <- rlang::.data
 
-  pb <- ggplot::ggplot_build(x)
+  pb <- ggplot2::ggplot_build(x)
   plot_type <- class(as.list(x$layers[[5]])[["geom"]])[1]
   annotation <- max(length(pb$data))
 
@@ -414,12 +437,17 @@ validate_maraca <- function(x,  ...) {
       scatter_data <- NULL
     }
   }
+
   wo_label <- pb$data[[annotation]]$label
-  wo_stats <- c(winodds = as.numeric(substr(wo_label, 20, 23)),
-                lowerCI = as.numeric(substr(wo_label, 26, 29)),
-                upperCI = as.numeric(substr(wo_label, 32, 35)),
-                p_value = as.numeric(substr(wo_label, 48, 60))
-  )
+  if ("win_odds_parameters" %in% names(attributes(x))) {
+    params <- attr(x, "win_odds_parameters")
+    wo_stats <- c(winodds = params$win_odds,
+                  lowerCI = params$lower_ci,
+                  upperCI = params$upper_ci,
+                  p_value = params$p_value)
+  } else {
+    wo_stats <- NULL
+  }
 
   return(
       list(
