@@ -6,7 +6,6 @@
 \usage{
 \method{plot}{hce}(
   x,
-  fixed_followup_days,
   continuous_grid_spacing_x = 10,
   trans = "identity",
   density_plot_type = "default",
@@ -16,9 +15,7 @@
 )
 }
 \arguments{
-\item{x}{an object of S3 class 'hce'}
-
-\item{fixed_followup_days}{The fixed follow-up number of days in the study.}
+\item{x}{an object of S3 class 'hce'.}
 
 \item{continuous_grid_spacing_x}{The spacing of the x grid to use for the
 continuous section of the plot.}

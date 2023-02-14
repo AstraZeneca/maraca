@@ -141,24 +141,6 @@ p +
   theme(axis.text.x.bottom = element_text(vjust = 0.5, hjust = 0.5))
 ```
 
-\newpage
-
-Additionally, there are a few supporting plots that can be used to look closer at the time-to-event outcomes. 
-`plot_tte_components` provides a one-row grid of the TTE outcomes Kaplan-Meier plots.
-
-```{r maraca12, eval = TRUE, fig.width = 7, fig.height = 6, message=FALSE, warning=FALSE}
-plot_tte_components(mar)
-```
-
-\newpage
-
-`plot_tte_composite` plots the Kaplan-Meier plot for the composite of all specified events. The plot is also annotated with the hazard ratio (more info in `mar$survmod_complete`).
-
-```{r maraca13, eval = TRUE, fig.width = 7, fig.height = 6, message=FALSE, warning=FALSE}
-plot_tte_composite(mar)
-```
-
-
 # References
 
 Martin Karpefors, Daniel Lindholm and Samvel B. Gasparyan, "The maraca plot -- a novel visualization of hierarchical composite endpoints", Clinical Trials (2022).
