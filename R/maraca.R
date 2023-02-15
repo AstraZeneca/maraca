@@ -73,6 +73,8 @@ maraca <- function(
   checkmate::assert_int(fixed_followup_days)
   checkmate::assert_flag(compute_win_odds)
 
+  `%>%` <- dplyr::`%>%`
+
   # Remove unwanted outcomes and arm levels, and normalise column names
   # in the internal data.
   # Note: We use HCE to refer to our internal, normalised data frame.
@@ -82,6 +84,13 @@ maraca <- function(
 
   # Calculate meta information from the entire HCE dataset needed for plotting
   meta <- .compute_metainfo(HCE)
+
+  # Remove rows with missing values - previously done
+  # automatically by survival package (should we done)
+  # after the meta data is collected to keep information
+  # on if missing data was removed
+  HCE <- HCE %>%
+    dplyr::filter(!is.na(value))
 
   ecdf_by_outcome <- .compute_ecdf_by_outcome(
     HCE, meta, tte_outcomes, continuous_outcome, arm_levels,
@@ -114,6 +123,35 @@ maraca <- function(
     )
   )
 }
+
+##' @export
+print.maraca <- function(x, ...) {
+
+  cat(paste("Maraca object for plotting maraca graph created for",
+            sum(x$meta$n), "patients.\n\n"))
+
+  if (sum(x$meta$missing) > 0) {
+    cat(paste(sum(x$meta$missing),
+              "patients removed because of missing values.\n\n"))
+  }
+
+  if (!is.null(x$win_odds)) {
+    cat(paste0("Win odds (95% CI): ", round(x$win_odds[1], 2),
+               " (", round(x$win_odds[2], 2), ", ",
+               round(x$win_odds[3], 2), ")", "\n",
+               "Win odds p-value: ",
+               format.pval(x$win_odds[4], digits = 3, eps = 0.001), "\n\n"))
+  } else {
+    cat("Win odds not calculated.\n\n")
+  }
+
+  tmp <- as.data.frame(x$meta[, c("outcome", "n", "proportion",
+                                  "n_active", "n_control", "missing")])
+  names(tmp) <- toupper(names(tmp))
+  print(tmp, row.names = FALSE)
+
+}
+
 
 #' Creates and returns the plot of the maraca data.
 #'
@@ -610,12 +648,20 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
   n <- dplyr::n
   `%>%` <- dplyr::`%>%`
 
-  meta1 <- HCE %>%
+  metaMissing <- HCE %>%
+    dplyr::group_by(outcome) %>%
+    dplyr::summarise(
+      missing = sum(is.na(value))
+    )
+
+  meta1 <- HCE  %>%
+    dplyr::filter(!is.na(value)) %>%
     dplyr::group_by(outcome) %>%
     dplyr::summarise(
       n = n(),
       proportion = n / dim(HCE)[1] * 100,
-      maxday = max(value, na.rm = TRUE)) %>%
+      maxday = max(value, na.rm = TRUE)
+    ) %>%
     dplyr::mutate(
       startx = c(0, cumsum(utils::head(proportion, -1))),
       endx = cumsum(proportion),
@@ -623,12 +669,14 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
       n.groups = length(unique(outcome))
     )
 
-  meta2 <- HCE %>%
+  meta2 <- HCE  %>%
+    dplyr::filter(!is.na(value)) %>%
     dplyr::group_by(outcome, arm) %>%
     dplyr::summarise(n = n(), proportion = n / dim(HCE)[1] * 100) %>%
     tidyr::pivot_wider(names_from = arm, values_from = c(n, proportion))
 
   meta <- dplyr::left_join(meta1, meta2, "outcome")
+  meta <- dplyr::left_join(meta, metaMissing, "outcome")
 
   return(meta)
 }
@@ -772,11 +820,6 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
       ))
     }
   }
-
-  # Remove rows with missing values - previously done
-  # automatically by survival package
-  HCE <- HCE %>%
-    dplyr::filter(!is.na(value))
 
   return(HCE)
 
