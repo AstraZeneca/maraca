@@ -85,6 +85,26 @@ maraca <- function(
   # Calculate meta information from the entire HCE dataset needed for plotting
   meta <- .compute_metainfo(HCE)
 
+  # In the current implementation of the package,
+  # the fixed follow-up days given cannot be smaller
+  # than the follow-up times for all tte-outcomes in the
+  # in the dataset - this has to do with the fact that
+  # we don't have information on patients that had multiple
+  # events of different severity - for example a patient
+  # having a myocardial infarction on day 300 and dies day
+  # 800 - if we now change follow-up time to 500, we will
+  # discard the death event for this patient (after 500)
+  # but will at the same time not include the MI since
+  # we don't know about it
+  if (fixed_followup_days <
+     max(meta[meta$outcome %in% tte_outcomes, "maxday"])) {
+    stop(paste("Time-to-event data contain events",
+               "after the fixed_followup_days - either",
+               "provide a longer follow-up time or",
+               "re-derive your input dataset for the",
+               "follow-up time provided."))
+  }
+
   # Remove rows with missing values - previously done
   # automatically by survival package (should we done)
   # after the meta data is collected to keep information
@@ -132,7 +152,7 @@ print.maraca <- function(x, ...) {
 
   if (sum(x$meta$missing) > 0) {
     cat(paste(sum(x$meta$missing),
-              "patients removed because of missing values.\n\n"))
+              "patient(s) removed because of missing values.\n\n"))
   }
 
   if (!is.null(x$win_odds)) {

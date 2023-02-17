@@ -83,20 +83,35 @@ test_that("Maraca wrong params", {
     maraca(
       data, tte_outcomes, continuous_outcome,
       c(active = "foo", control = "bar", whatever = "baz"),
+      column_names,
       fixed_followup_days), regexp = "Must have length 2"
   )
   expect_error(
     maraca(data, tte_outcomes, continuous_outcome, arm_levels,
+           column_names,
            fixed_followup_days = 12.3
           ),
     regexp = "single integerish value"
+  )
+  expect_error(
+    maraca(data, tte_outcomes, continuous_outcome, arm_levels,
+           column_names,
+           fixed_followup_days = NULL
+    )
+  )
+  expect_error(
+    maraca(data, tte_outcomes, continuous_outcome, arm_levels,
+           column_names,
+           fixed_followup_days = 12
+    ),
+    regexp = "Time-to-event data contain events after the fixed_followup_days"
   )
 
   expect_error(
     maraca(
       data, tte_outcomes, continuous_outcome, arm_levels,
       c("a"),
-      12
+      fixed_followup_days
     ),
     regexp = "Must have length 3"
   )
@@ -104,7 +119,7 @@ test_that("Maraca wrong params", {
     maraca(
       data, tte_outcomes, continuous_outcome, arm_levels,
       c("a", "b", "c"),
-      12
+      fixed_followup_days
     ),
     regexp = "Must have names"
   )
@@ -112,7 +127,7 @@ test_that("Maraca wrong params", {
     maraca(
       data, tte_outcomes, continuous_outcome, arm_levels,
       c(foo = "a", bar = "b", baz = "c"),
-      12
+      fixed_followup_days
     ),
     regexp = "Names must be a identical to"
   )
@@ -123,7 +138,7 @@ test_that("Maraca wrong params", {
       c(
         outcome = "GROUP", arm = "notexistent",
         value = "AVAL0"
-      ), 12
+      ), fixed_followup_days
     ),
     regexp = "Can't rename columns that don't exist"
   )
@@ -136,7 +151,7 @@ test_that("Maraca wrong params", {
       c(
         outcome = "GROUP", arm = "TRTP",
         value = "AVAL0"
-      ), 12
+      ), fixed_followup_days
     ),
     regexp = "The arm column must be characters"
   )
@@ -149,10 +164,101 @@ test_that("Maraca wrong params", {
       c(
         outcome = "GROUP", arm = "TRTP",
         value = "AVAL0"
-      ), 12
+      ), fixed_followup_days
     ),
     regexp = "The outcome column must be characters"
   )
+})
+
+test_that("Maraca printing", {
+  file <- fixture_path("hce_scenario_c.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
+  )
+  mar <- maraca(
+    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
+    compute_win_odds = TRUE
+  )
+  data_rf <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
+                                   arm_levels, column_names = column_names
+  )
+  win_odds <- .compute_win_odds(data_rf)
+
+  mar_no_win_odds <- maraca(
+    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
+    compute_win_odds = FALSE
+  )
+
+  data$AVAL0[[3]] <- NA
+  mar_na <- maraca(
+    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
+    compute_win_odds = TRUE
+  )
+  data_rf <- .reformat_and_check_data(data[!is.na(data$AVAL0), ], tte_outcomes,
+                                      continuous_outcome,
+                                      arm_levels, column_names = column_names
+  )
+  win_odds_na <- .compute_win_odds(data_rf)
+
+  expect_output(print(mar),
+                "Maraca object for plotting maraca graph created")
+  expect_output(print(mar), paste0(nrow(data)))
+
+  expect_output(print(mar_no_win_odds),
+                "Maraca object for plotting maraca graph created")
+  expect_output(print(mar_no_win_odds), paste0(nrow(data)))
+
+  expect_output(print(mar_na),
+                "Maraca object for plotting maraca graph created")
+  expect_output(print(mar_na), paste0(nrow(data) - 1))
+  expect_output(print(mar_na),
+                "1 patient\\(s\\) removed because of missing values.")
+
+  expect_output(print(mar),
+                "Maraca object for plotting maraca graph created")
+  expect_output(print(mar), paste0(nrow(data)))
+
+  expect_output(print(mar), paste(round(win_odds["estimate"], 2)))
+  expect_output(print(mar), paste(round(win_odds["lower"], 2)))
+  expect_output(print(mar), paste(round(win_odds["upper"], 2)))
+  expect_output(print(mar),
+                paste(format.pval(win_odds["p-value"],
+                                  digits = 3, eps = 0.001)))
+
+  expect_output(print(mar_na), paste(round(win_odds_na["estimate"], 2)))
+  expect_output(print(mar_na), paste(round(win_odds_na["lower"], 2)))
+  expect_output(print(mar_na), paste(round(win_odds_na["upper"], 2)))
+  expect_output(print(mar_na),
+                paste(format.pval(win_odds_na["p-value"],
+                                  digits = 3, eps = 0.001)))
+
+  expect_output(print(mar_no_win_odds), "Win odds not calculated.")
+
+  expect_output(print(mar), paste(mar$meta$n[1]))
+  expect_output(print(mar), paste(mar$meta$n[2]))
+  expect_output(print(mar), paste(mar$meta$n[3]))
+  expect_output(print(mar), paste(mar$meta$n[4]))
+
+  expect_output(print(mar_na), paste(mar_na$meta$proportion[1]))
+  expect_output(print(mar_na), paste(mar_na$meta$proportion[2]))
+  expect_output(print(mar_na), paste(mar_na$meta$proportion[3]))
+  expect_output(print(mar_na), paste(mar_na$meta$proportion[4]))
+
+  expect_output(print(mar_no_win_odds),
+                paste(mar_no_win_odds$meta$n_active[1]))
+  expect_output(print(mar_no_win_odds),
+                paste(mar_no_win_odds$meta$n_active[2]))
+  expect_output(print(mar_no_win_odds),
+                paste(mar_no_win_odds$meta$n_active[3]))
+  expect_output(print(mar_no_win_odds),
+                paste(mar_no_win_odds$meta$n_active[4]))
+
 })
 
 test_that("Maraca plotting", {
