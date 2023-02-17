@@ -176,6 +176,184 @@ test_that("Maraca plotting", {
   expect_true(TRUE)
 })
 
+test_that("Test plot functions only work with maraca objects", {
+  expect_error(plot_maraca(123), regexp = "Must inherit")
+})
+
+test_that("Validation function for  maraca plots", {
+  file <- fixture_path("hce_scenario_c.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  fixed_followup_days <- 3 * 365
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
+  )
+  mar <- maraca(
+    data, tte_outcomes, continuous_outcome, arm_levels,
+    column_names,
+    fixed_followup_days,
+    compute_win_odds = TRUE
+  )
+
+  a_def <- plot(mar, density_plot_type = "default")
+  a_violin <- plot(mar, density_plot_type = "violin")
+  a_box <- plot(mar, density_plot_type = "box")
+  a_scatter <- plot(mar, density_plot_type = "scatter")
+  val_res_def <- validate_maraca(a_def)
+  val_res_violin <- validate_maraca(a_violin)
+  val_res_box <- validate_maraca(a_box)
+  val_res_scatter <- validate_maraca(a_scatter)
+
+  expect_type(val_res_def, "list")
+  expect_type(val_res_violin, "list")
+  expect_type(val_res_box, "list")
+  expect_type(val_res_scatter, "list")
+
+  expected_names <- c("plot_type", "proportions",
+                      "tte_data", "scatter_data",
+                      "boxstat_data", "violin_data",
+                      "wo_stats")
+  expect_named(val_res_def, expected_names, ignore.order = TRUE)
+  expect_named(val_res_violin, expected_names, ignore.order = TRUE)
+  expect_named(val_res_box, expected_names, ignore.order = TRUE)
+  expect_named(val_res_scatter, expected_names, ignore.order = TRUE)
+
+  expect_equal(val_res_def$plot_type, "GeomViolin")
+  expect_equal(val_res_violin$plot_type, "GeomViolin")
+  expect_equal(val_res_box$plot_type, "GeomBoxplot")
+  expect_equal(val_res_scatter$plot_type, "GeomPoint")
+
+  expected_names <- c(tte_outcomes, continuous_outcome)
+  expect_named(val_res_def$proportions, expected_names, ignore.order = TRUE)
+  expect_named(val_res_violin$proportions, expected_names, ignore.order = TRUE)
+  expect_named(val_res_box$proportions, expected_names, ignore.order = TRUE)
+  expect_named(val_res_scatter$proportions, expected_names, ignore.order = TRUE)
+
+  expect_equal(unname(val_res_def$proportions), mar$meta$proportion)
+  expect_equal(unname(val_res_violin$proportions), mar$meta$proportion)
+  expect_equal(unname(val_res_box$proportions), mar$meta$proportion)
+  expect_equal(unname(val_res_scatter$proportions), mar$meta$proportion)
+
+  mar_tte_dat <- as.data.frame(mar$ecdf_by_outcome$data)
+  mar_tte_dat <- mar_tte_dat[order(mar_tte_dat$adjusted.time), ]
+  val_res_def$tte_data <- val_res_def$tte_data[order(val_res_def$tte_data$x), ]
+  val_res_violin$tte_data <-
+    val_res_violin$tte_data[order(val_res_violin$tte_data$x), ]
+  val_res_box$tte_data <- val_res_box$tte_data[order(val_res_box$tte_data$x), ]
+  val_res_scatter$tte_data <-
+    val_res_scatter$tte_data[order(val_res_scatter$tte_data$x), ]
+  expect_equal(val_res_def$tte_data$x, mar_tte_dat$adjusted.time)
+  expect_equal(val_res_violin$tte_data$x, mar_tte_dat$adjusted.time)
+  expect_equal(val_res_box$tte_data$x, mar_tte_dat$adjusted.time)
+  expect_equal(val_res_scatter$tte_data$x, mar_tte_dat$adjusted.time)
+  expect_equal(val_res_def$tte_data$y, mar_tte_dat$ecdf_values)
+  expect_equal(val_res_violin$tte_data$y, mar_tte_dat$ecdf_values)
+  expect_equal(val_res_box$tte_data$y, mar_tte_dat$ecdf_values)
+  expect_equal(val_res_scatter$tte_data$y, mar_tte_dat$ecdf_values)
+  expect_equal(val_res_def$tte_data$group, mar_tte_dat$arm)
+  expect_equal(val_res_violin$tte_data$group, mar_tte_dat$arm)
+  expect_equal(val_res_box$tte_data$group, mar_tte_dat$arm)
+  expect_equal(val_res_scatter$tte_data$group, mar_tte_dat$arm)
+
+  expect_null(val_res_def$scatter_data)
+  expect_null(val_res_violin$boxstat_data)
+  expect_null(val_res_violin$scatter_data)
+  expect_null(val_res_box$scatter_data)
+  expect_null(val_res_box$violin_data)
+  expect_null(val_res_scatter$violin_data)
+  expect_null(val_res_scatter$boxstat_data)
+
+  expect_equal(sort(val_res_scatter$scatter_data$x),
+               sort(mar$continuous$data$x))
+
+  y_values <- unique(mar$continuous$data[, c("arm", "y_level")])
+  jitter_means <- val_res_scatter$scatter_data %>%
+                        dplyr::group_by(group) %>%
+                        dplyr::summarize("y_level" = mean(y))
+  expect_equal(jitter_means$y_level, y_values$y_level, tolerance = 0.1)
+
+  boxplot_stats <- mar$continuous$data %>%
+    dplyr::group_by(arm) %>%
+    dplyr::summarize("perc_25th" = unname(quantile(x, probs = 0.25)),
+                     "median" = median(x),
+                     "perc_75th" = unname(quantile(x, probs = 0.75)))
+  expect_equal(val_res_def$boxstat_data$xlower, boxplot_stats$perc_25th)
+  expect_equal(val_res_def$boxstat_data$xmiddle, boxplot_stats$median)
+  expect_equal(val_res_def$boxstat_data$xupper, boxplot_stats$perc_75th)
+  expect_equal(val_res_box$boxstat_data$xlower, boxplot_stats$perc_25th)
+  expect_equal(val_res_box$boxstat_data$xmiddle, boxplot_stats$median)
+  expect_equal(val_res_box$boxstat_data$xupper, boxplot_stats$perc_75th)
+
+  y_values_violin <- unique(val_res_violin$violin_data$y)
+  violin_stats <- mar$continuous$data %>%
+    dplyr::group_by(arm) %>%
+    dplyr::summarize("mean" = mean(x))
+  violin_stats_from_plot <- val_res_violin$violin_data %>%
+    dplyr::group_by(group) %>%
+    dplyr::summarize("mean" = weighted.mean(x, density))
+  expect_equal(y_values_violin, y_values$y_level)
+  expect_equal(violin_stats_from_plot$mean, violin_stats$mean, tolerance = 0.1)
+
+})
+
+test_that("Test win odds extraction of validation function", {
+  file <- fixture_path("hce_scenario_c.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  fixed_followup_days <- 3 * 365
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
+  )
+  mar_with_win_odds <- maraca(
+    data, tte_outcomes, continuous_outcome, arm_levels,
+    column_names,
+    fixed_followup_days,
+    compute_win_odds = TRUE
+  )
+  mar_without_win_odds <- maraca(
+    data, tte_outcomes, continuous_outcome, arm_levels,
+    column_names,
+    fixed_followup_days,
+    compute_win_odds = FALSE
+  )
+  a_with_wo <- plot(mar_with_win_odds)
+  a_without_wo <- plot(mar_without_win_odds)
+  val_res_with_wo <- validate_maraca(a_with_wo)
+  val_res_without_wo <- validate_maraca(a_without_wo)
+
+  expect_type(val_res_with_wo$wo_stats, "double")
+  expect_named(val_res_with_wo$wo_stats,
+               c("winodds", "lowerCI", "upperCI", "p_value"),
+               ignore.order = TRUE)
+
+  data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
+                                   arm_levels, column_names = column_names
+                                   )
+  win_odds <- .compute_win_odds(data)
+  expect_equivalent(val_res_with_wo$wo_stats["winodds"], win_odds["estimate"])
+  expect_equivalent(val_res_with_wo$wo_stats["lowerCI"], win_odds["lower"])
+  expect_equivalent(val_res_with_wo$wo_stats["upperCI"], win_odds["upper"])
+  expect_equivalent(val_res_with_wo$wo_stats["p_value"], win_odds["p-value"])
+
+  expect_equal(val_res_without_wo$wo_stats, "Not calculated")
+})
+
+test_that("Validation function only works for maraca plot", {
+  tmp <- data.frame("a" = 1:10, "b" = 10:1)
+  plot <- ggplot2::ggplot(tmp, ggplot2::aes(a, b)) +
+    ggplot2::geom_point()
+
+  expect_error(validate_maraca(plot), regexp =
+                 "validate_maraca function only applicable to maraca plots.")
+})
 
 test_that("Test reformatting of data", {
   file <- fixture_path("hce_scenario_c.csv")
@@ -198,10 +376,6 @@ test_that("Test reformatting of data", {
   expect_equal(class(data$outcome), "factor")
   expect_equal(levels(data$outcome), c(tte_outcomes, continuous_outcome))
 
-})
-
-test_that("Test plot functions only work with maraca objects", {
-  expect_error(plot_maraca(123), regexp = "Must inherit")
 })
 
 test_that("Test win odds", {

@@ -321,7 +321,9 @@ plot_maraca <- function(
     plot <- plot +
       ggplot2::geom_jitter(
         data = plotdata[plotdata$type == "cont", ],
-        aes(x = x, y = y, color = arm)
+        aes(x = x, y = y, color = arm),
+        # Jittering only vertically, keep the correct x-value
+        width = 0
       )
   }
 
@@ -376,6 +378,7 @@ plot_maraca <- function(
     )
 
     # Meta data on win odds will be added to plot
+    win_odds <- unname(win_odds)
     params <- list(
       "win_odds" = win_odds[1],
       "lower_ci" = win_odds[2],
@@ -446,20 +449,27 @@ validate_maraca <- function(x,  ...) {
 
   pb <- ggplot2::ggplot_build(x)
   plot_type <- class(as.list(x$layers[[5]])[["geom"]])[1]
-  annotation <- max(length(pb$data))
 
   proportions <- diff(pb$data[[1]][, c("xintercept")])
+  names(proportions) <- levels(x$data$outcome)
+
+  arms <- levels(pb$plot$data[, pb$plot$labels$colour])
+
   tte_data <- tail(head(pb$data[[4]][, c("group", "x", "y")], -2), -2)
+  tte_data$group <- factor(tte_data$group, labels = arms)
+
+  scatter_data <- NULL
+  boxstat_data <- NULL
+  violin_data <- NULL
+
   if (plot_type == "GeomPoint") {
     scatter_data <- pb$data[[5]][, c("group", "x", "y")]
-    boxstat_data <- NULL
-    violin_data <- NULL
+    scatter_data$group <- factor(scatter_data$group, labels = arms)
   }
   if (plot_type == "GeomBoxplot") {
     boxstat_data <-
-    pb$data[[5]][, c("group", "xlower", "xmiddle", "xupper", "outliers")]
-    scatter_data <- NULL
-    violin_data <- NULL
+      pb$data[[5]][, c("group", "xlower", "xmiddle", "xupper", "outliers")]
+    boxstat_data$group <- factor(boxstat_data$group, labels = arms)
   }
   if (plot_type == "GeomViolin") {
     violin_data <- pb$data[[5]][, c("group", "x", "y", "density", "scaled",
@@ -467,16 +477,14 @@ validate_maraca <- function(x,  ...) {
       dplyr::group_by(.data$group) %>%
       dplyr::mutate(y_low = y - .data$scaled * .data$width / 2,
                     y_high = y + .data$scaled * .data$width / 2)
+    violin_data$group <- factor(violin_data$group, labels = arms)
     if (class(as.list(x$layers[[6]])[["geom"]])[1] == "GeomBoxplot") {
       boxstat_data <-
         pb$data[[6]][, c("group", "xlower", "xmiddle", "xupper", "outliers")]
-    } else {
-      boxstat_data <- NULL
-      scatter_data <- NULL
+      boxstat_data$group <- factor(boxstat_data$group, labels = arms)
     }
   }
 
-  wo_label <- pb$data[[annotation]]$label
   if ("win_odds_parameters" %in% names(attributes(x))) {
     params <- attr(x, "win_odds_parameters")
     wo_stats <- c(winodds = params$win_odds,
@@ -484,7 +492,7 @@ validate_maraca <- function(x,  ...) {
                   upperCI = params$upper_ci,
                   p_value = params$p_value)
   } else {
-    wo_stats <- NULL
+    wo_stats <- "Not calculated"
   }
 
   return(
@@ -495,7 +503,6 @@ validate_maraca <- function(x,  ...) {
         scatter_data = scatter_data,
         boxstat_data = boxstat_data,
         violin_data = violin_data,
-        wo_label = wo_label,
         wo_stats = wo_stats
       )
   )
