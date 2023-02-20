@@ -91,12 +91,18 @@ arm_levels = c(active = "Active", control = "Control")
 
 Finally, the `original` column must contain numerical values.
 
+We also need to specify the follow-up time for the time-to event outcomes.
+Note that there can be no observed events in the data after the follow-up
+time specified-
+
 All of the above can be aggregated in the call to create a maraca object from
 the given dataset
 
 ```{r maraca7, eval = TRUE}
 mar <- maraca(
-  data, tte_outcomes, continuous_outcome, arm_levels, column_names, compute_win_odds = TRUE
+  data, tte_outcomes, continuous_outcome, arm_levels, column_names, 
+  fixed_followup_days = 3*365,
+  compute_win_odds = TRUE
 )
 ```
 

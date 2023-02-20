@@ -386,13 +386,31 @@ test_that("Validation function for  maraca plots", {
     dplyr::group_by(arm) %>%
     dplyr::summarize("perc_25th" = unname(quantile(x, probs = 0.25)),
                      "median" = median(x),
-                     "perc_75th" = unname(quantile(x, probs = 0.75)))
-  expect_equal(val_res_def$boxstat_data$xlower, boxplot_stats$perc_25th)
-  expect_equal(val_res_def$boxstat_data$xmiddle, boxplot_stats$median)
-  expect_equal(val_res_def$boxstat_data$xupper, boxplot_stats$perc_75th)
-  expect_equal(val_res_box$boxstat_data$xlower, boxplot_stats$perc_25th)
-  expect_equal(val_res_box$boxstat_data$xmiddle, boxplot_stats$median)
-  expect_equal(val_res_box$boxstat_data$xupper, boxplot_stats$perc_75th)
+                     "perc_75th" = unname(quantile(x, probs = 0.75)),
+                     "lower_whisker" = min(x[x >= (perc_25th - (perc_75th -
+                                                      perc_25th) * 1.5)]),
+                     "upper_whisker" = max(x[x <= (perc_75th + (perc_75th -
+                                                      perc_25th) * 1.5)]),
+                     "x_lowest" = min(x),
+                     "x_highest" = max(x))
+  expect_equal(val_res_def$boxstat_data$x_lowest, boxplot_stats$x_lowest)
+  expect_equal(val_res_def$boxstat_data$whisker_lower,
+               boxplot_stats$lower_whisker)
+  expect_equal(val_res_def$boxstat_data$hinge_lower, boxplot_stats$perc_25th)
+  expect_equal(val_res_def$boxstat_data$median, boxplot_stats$median)
+  expect_equal(val_res_def$boxstat_data$hinge_upper, boxplot_stats$perc_75th)
+  expect_equal(val_res_def$boxstat_data$whisker_upper,
+               boxplot_stats$upper_whisker)
+  expect_equal(val_res_def$boxstat_data$x_highest, boxplot_stats$x_highest)
+  expect_equal(val_res_box$boxstat_data$x_lowest, boxplot_stats$x_lowest)
+  expect_equal(val_res_box$boxstat_data$whisker_lower,
+               boxplot_stats$lower_whisker)
+  expect_equal(val_res_box$boxstat_data$hinge_lower, boxplot_stats$perc_25th)
+  expect_equal(val_res_box$boxstat_data$median, boxplot_stats$median)
+  expect_equal(val_res_box$boxstat_data$hinge_upper, boxplot_stats$perc_75th)
+  expect_equal(val_res_box$boxstat_data$whisker_upper,
+               boxplot_stats$upper_whisker)
+  expect_equal(val_res_box$boxstat_data$x_highest, boxplot_stats$x_highest)
 
   y_values_violin <- unique(val_res_violin$violin_data$y)
   violin_stats <- mar$continuous$data %>%

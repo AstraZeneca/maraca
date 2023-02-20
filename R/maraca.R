@@ -234,7 +234,8 @@ plot_maraca <- function(
   # Add points at (0, 0) on both curves so that they start from the origin
   add_points <- plotdata_ecdf %>%
     dplyr::group_by(arm) %>%
-    dplyr::slice_head(n = 1)
+    dplyr::slice_head(n = 1) %>%
+    dplyr::ungroup()
 
   add_points$x <- 0
   add_points$y <- 0
@@ -246,7 +247,8 @@ plot_maraca <- function(
   # Add points at (100, y) on both curves so that they end at x=100%
   add_points <- plotdata_ecdf %>%
     dplyr::group_by(arm) %>%
-    dplyr::slice_tail(n = 1)
+    dplyr::slice_tail(n = 1) %>%
+    dplyr::ungroup()
 
   add_points$x <- 100
   plotdata_ecdf <- rbind(
@@ -487,20 +489,26 @@ validate_maraca <- function(x,  ...) {
     scatter_data$group <- factor(scatter_data$group, labels = arms)
   }
   if (plot_type == "GeomBoxplot") {
-    boxstat_data <-
-      pb$data[[5]][, c("group", "xlower", "xmiddle", "xupper", "outliers")]
+    boxstat_data <- pb$data[[5]] %>%
+      dplyr::select(.data$group, "x_lowest" = .data$xmin_final,
+                    "whisker_lower" = .data$xmin,
+             "hinge_lower" = .data$xlower, "median" = .data$xmiddle,
+             "hinge_upper" = .data$xupper, "whisker_upper" = .data$xmax,
+             "x_highest" = .data$xmax_final, .data$outliers)
+    boxstat_data$outliers <- lapply(boxstat_data$outliers, sort)
     boxstat_data$group <- factor(boxstat_data$group, labels = arms)
   }
   if (plot_type == "GeomViolin") {
-    violin_data <- pb$data[[5]][, c("group", "x", "y", "density", "scaled",
-                                    "ndensity", "count", "width")] %>%
-      dplyr::group_by(.data$group) %>%
-      dplyr::mutate(y_low = y - .data$scaled * .data$width / 2,
-                    y_high = y + .data$scaled * .data$width / 2)
+    violin_data <- pb$data[[5]][, c("group", "x", "y", "density", "width")]
     violin_data$group <- factor(violin_data$group, labels = arms)
     if (class(as.list(x$layers[[6]])[["geom"]])[1] == "GeomBoxplot") {
-      boxstat_data <-
-        pb$data[[6]][, c("group", "xlower", "xmiddle", "xupper", "outliers")]
+      boxstat_data <- pb$data[[6]] %>%
+        dplyr::select(.data$group, "x_lowest" = .data$xmin_final,
+                      "whisker_lower" = .data$xmin,
+               "hinge_lower" = .data$xlower, "median" = .data$xmiddle,
+               "hinge_upper" = .data$xupper, "whisker_upper" = .data$xmax,
+               "x_highest" = .data$xmax_final, .data$outliers)
+      boxstat_data$outliers <- lapply(boxstat_data$outliers, sort)
       boxstat_data$group <- factor(boxstat_data$group, labels = arms)
     }
   }
@@ -731,7 +739,8 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
     dplyr::group_by(arm) %>%
     dplyr::do(data.frame(.data, ecdf_values = 100 *
                            ecdf(.data$t_cdf)(.data$t_cdf))) %>%
-    dplyr::filter(outcome %in% tte_outcomes)
+    dplyr::filter(outcome %in% tte_outcomes) %>%
+    dplyr::ungroup()
 
   HCE_ecdf <- HCE_ecdf[order(HCE_ecdf$ecdf_values), ]
 
