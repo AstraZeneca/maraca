@@ -377,6 +377,7 @@ test_that("Validation function for  maraca plots", {
                sort(mar$continuous$data$x))
 
   y_values <- unique(mar$continuous$data[, c("arm", "y_level")])
+  y_values <- y_values[order(y_values$arm), ]
   jitter_means <- val_res_scatter$scatter_data %>%
                         dplyr::group_by(group) %>%
                         dplyr::summarize("y_level" = mean(y))

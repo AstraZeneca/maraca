@@ -12,6 +12,7 @@ vignette: >
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
 library(dplyr)
+library(ggplot2)
 library(maraca)
 ```
 
@@ -93,7 +94,7 @@ Finally, the `original` column must contain numerical values.
 
 We also need to specify the follow-up time for the time-to event outcomes.
 Note that there can be no observed events in the data after the follow-up
-time specified-
+time specified.
 
 All of the above can be aggregated in the call to create a maraca object from
 the given dataset

@@ -2,10 +2,13 @@
 
 ## New features
 
-- Print function for maraca objects that summarizes key information.
+- `print()` function for maraca objects that summarizes key information.
 - New `validate_maraca()` function that extracts key information from a maraca plot
   object. This can be used to validate the plot against independently coded 
   versions (for example using a different programming language).
+- The `maraca()` function now requires an input for the parameter
+  `fixed_followup_days`. Note that there can be no observed events in the
+  data after the follow-up time specified.
 
 ## Bug fixes
 
