@@ -29,6 +29,6 @@ hce_test <- maraca(
   compute_win_odds = TRUE
 )
 p <- plot(hce_test)
-validate.maraca(p)
+validate_maraca(p)
 
 }

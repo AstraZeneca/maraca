@@ -452,7 +452,7 @@ plot_maraca <- function(
 #'   compute_win_odds = TRUE
 #' )
 #' p <- plot(hce_test)
-#' validate.maraca(p)
+#' validate_maraca(p)
 #'
 #' @export
 validate_maraca <- function(x,  ...) {
@@ -477,7 +477,8 @@ validate_maraca <- function(x,  ...) {
 
   arms <- levels(pb$plot$data[, pb$plot$labels$colour])
 
-  tte_data <- tail(head(pb$data[[4]][, c("group", "x", "y")], -2), -2)
+  tte_data <- utils::tail(
+    utils::head(pb$data[[4]][, c("group", "x", "y")], -2), -2)
   tte_data$group <- factor(tte_data$group, labels = arms)
 
   scatter_data <- NULL
@@ -738,7 +739,7 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
   HCE_ecdf <- HCE %>%
     dplyr::group_by(arm) %>%
     dplyr::do(data.frame(.data, ecdf_values = 100 *
-                           ecdf(.data$t_cdf)(.data$t_cdf))) %>%
+                           stats::ecdf(.data$t_cdf)(.data$t_cdf))) %>%
     dplyr::filter(outcome %in% tte_outcomes) %>%
     dplyr::ungroup()
 
