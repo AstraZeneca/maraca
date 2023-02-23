@@ -18,6 +18,14 @@
   ))
 }
 
+expect_text_equal <- function(result, expected) {
+  expect_equal(length(result), length(expected))
+
+  for (i in seq_along(expected)) {
+    expect_equal(result[[i]], expected[[i]])
+  }
+
+}
 
 test_that("Maraca initialisation", {
   file <- fixture_path("hce_scenario_c.csv")
@@ -185,10 +193,6 @@ test_that("Maraca printing", {
     data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
     compute_win_odds = TRUE
   )
-  data_rf <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
-                                   arm_levels, column_names = column_names
-  )
-  win_odds <- .compute_win_odds(data_rf)
 
   mar_no_win_odds <- maraca(
     data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
@@ -200,64 +204,48 @@ test_that("Maraca printing", {
     data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
     compute_win_odds = TRUE
   )
-  data_rf <- .reformat_and_check_data(data[!is.na(data$AVAL0), ], tte_outcomes,
-                                      continuous_outcome,
-                                      arm_levels, column_names = column_names
-  )
-  win_odds_na <- .compute_win_odds(data_rf)
 
-  expect_output(print(mar),
-                "Maraca object for plotting maraca graph created")
-  expect_output(print(mar), paste0(nrow(data)))
+  res <- capture.output(mar)
+  exp <- list(
+    "Maraca object for plotting maraca graph created for 1000 patients.",
+    "", "Win odds (95% CI): 1.31 (1.14, 1.52)",
+    "Win odds p-value: <0.001", "",
+    "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
+    "          Outcome I 129       12.9       63        66       0",
+    "         Outcome II 115       11.5       55        60       0",
+    "        Outcome III 110       11.0       50        60       0",
+    "         Outcome IV  77        7.7       34        43       0",
+    " Continuous outcome 569       56.9      298       271       0")
 
-  expect_output(print(mar_no_win_odds),
-                "Maraca object for plotting maraca graph created")
-  expect_output(print(mar_no_win_odds), paste0(nrow(data)))
+  expect_text_equal(res, exp)
 
-  expect_output(print(mar_na),
-                "Maraca object for plotting maraca graph created")
-  expect_output(print(mar_na), paste0(nrow(data) - 1))
-  expect_output(print(mar_na),
-                "1 patient\\(s\\) removed because of missing values.")
+  res <- capture.output(mar_no_win_odds)
+  exp <- list(
+    "Maraca object for plotting maraca graph created for 1000 patients.",
+    "", "Win odds not calculated.", "",
+    "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
+    "          Outcome I 129       12.9       63        66       0",
+    "         Outcome II 115       11.5       55        60       0",
+    "        Outcome III 110       11.0       50        60       0",
+    "         Outcome IV  77        7.7       34        43       0",
+    " Continuous outcome 569       56.9      298       271       0")
 
-  expect_output(print(mar),
-                "Maraca object for plotting maraca graph created")
-  expect_output(print(mar), paste0(nrow(data)))
+  expect_text_equal(res, exp)
 
-  expect_output(print(mar), paste(round(win_odds["estimate"], 2)))
-  expect_output(print(mar), paste(round(win_odds["lower"], 2)))
-  expect_output(print(mar), paste(round(win_odds["upper"], 2)))
-  expect_output(print(mar),
-                paste(format.pval(win_odds["p-value"],
-                                  digits = 3, eps = 0.001)))
+  res <- capture.output(mar_na)
+  exp <- list(
+    "Maraca object for plotting maraca graph created for 999 patients.",
+    "", "1 patient(s) removed because of missing values.", "",
+    "Win odds (95% CI): 1.32 (1.14, 1.52)",
+    "Win odds p-value: <0.001", "",
+    "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
+    "          Outcome I 129       12.9       63        66       0",
+    "         Outcome II 115       11.5       55        60       0",
+    "        Outcome III 110       11.0       50        60       0",
+    "         Outcome IV  76        7.6       33        43       1",
+    " Continuous outcome 569       56.9      298       271       0")
 
-  expect_output(print(mar_na), paste(round(win_odds_na["estimate"], 2)))
-  expect_output(print(mar_na), paste(round(win_odds_na["lower"], 2)))
-  expect_output(print(mar_na), paste(round(win_odds_na["upper"], 2)))
-  expect_output(print(mar_na),
-                paste(format.pval(win_odds_na["p-value"],
-                                  digits = 3, eps = 0.001)))
-
-  expect_output(print(mar_no_win_odds), "Win odds not calculated.")
-
-  expect_output(print(mar), paste(mar$meta$n[1]))
-  expect_output(print(mar), paste(mar$meta$n[2]))
-  expect_output(print(mar), paste(mar$meta$n[3]))
-  expect_output(print(mar), paste(mar$meta$n[4]))
-
-  expect_output(print(mar_na), paste(mar_na$meta$proportion[1]))
-  expect_output(print(mar_na), paste(mar_na$meta$proportion[2]))
-  expect_output(print(mar_na), paste(mar_na$meta$proportion[3]))
-  expect_output(print(mar_na), paste(mar_na$meta$proportion[4]))
-
-  expect_output(print(mar_no_win_odds),
-                paste(mar_no_win_odds$meta$n_active[1]))
-  expect_output(print(mar_no_win_odds),
-                paste(mar_no_win_odds$meta$n_active[2]))
-  expect_output(print(mar_no_win_odds),
-                paste(mar_no_win_odds$meta$n_active[3]))
-  expect_output(print(mar_no_win_odds),
-                paste(mar_no_win_odds$meta$n_active[4]))
+  expect_text_equal(res, exp)
 
 })
 

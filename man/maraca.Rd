@@ -3,6 +3,7 @@
 \docType{package}
 \name{maraca}
 \alias{maraca}
+\alias{print.maraca}
 \title{maraca package.}
 \usage{
 maraca(
@@ -14,6 +15,8 @@ maraca(
   fixed_followup_days,
   compute_win_odds = FALSE
 )
+
+\method{print}{maraca}(x, ...)
 }
 \arguments{
 \item{data}{A data frame with columns for the following information:
@@ -46,6 +49,8 @@ of fixed follow-up days in the study.}
 
 \item{compute_win_odds}{If TRUE compute the win odds, otherwise (default)
 don't compute them.}
+
+\item{x}{an object of class maraca}
 }
 \value{
 An object of class 'maraca'. The object information must be

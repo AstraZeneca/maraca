@@ -144,6 +144,9 @@ maraca <- function(
   )
 }
 
+#' @param x an object of class maraca
+#' @method print maraca
+#' @rdname maraca
 ##' @export
 print.maraca <- function(x, ...) {
 
@@ -676,12 +679,6 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
   n <- dplyr::n
   `%>%` <- dplyr::`%>%`
 
-  metaMissing <- HCE %>%
-    dplyr::group_by(outcome) %>%
-    dplyr::summarise(
-      missing = sum(is.na(value))
-    )
-
   meta1 <- HCE  %>%
     dplyr::filter(!is.na(value)) %>%
     dplyr::group_by(outcome) %>%
@@ -703,6 +700,12 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
     dplyr::summarise(n = n(), proportion = n / dim(HCE)[1] * 100) %>%
     tidyr::pivot_wider(names_from = arm, values_from = c(n, proportion))
 
+  metaMissing <- HCE %>%
+    dplyr::group_by(outcome) %>%
+    dplyr::summarise(
+      missing = sum(is.na(value))
+    )
+
   meta <- dplyr::left_join(meta1, meta2, "outcome")
   meta <- dplyr::left_join(meta, metaMissing, "outcome")
 
@@ -722,7 +725,7 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
   num_tte_outcomes <- length(tte_outcomes)
   HCE$t_cdf <- (num_tte_outcomes + 2) * fixed_followup_days
 
-  for (i in 1:num_tte_outcomes) {
+  for (i in seq_len(num_tte_outcomes)) {
     HCE[HCE$outcome == tte_outcomes[i], ]$t_cdf <-
       HCE[HCE$outcome == tte_outcomes[i], ]$value +
         fixed_followup_days * (i - 1)
