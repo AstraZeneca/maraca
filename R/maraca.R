@@ -700,14 +700,14 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
     dplyr::summarise(n = n(), proportion = n / dim(HCE)[1] * 100) %>%
     tidyr::pivot_wider(names_from = arm, values_from = c(n, proportion))
 
-  metaMissing <- HCE %>%
+  meta_missing <- HCE %>%
     dplyr::group_by(outcome) %>%
     dplyr::summarise(
       missing = sum(is.na(value))
     )
 
   meta <- dplyr::left_join(meta1, meta2, "outcome")
-  meta <- dplyr::left_join(meta, metaMissing, "outcome")
+  meta <- dplyr::left_join(meta, meta_missing, "outcome")
 
   return(meta)
 }
