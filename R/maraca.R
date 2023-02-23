@@ -408,9 +408,8 @@ plot_maraca <- function(
       "p_value" = win_odds[4]
     )
 
-    # Add win odds meta data as attribute so retrievable
-    attr(plot, "win_odds_parameters") <- params
-
+    # Add win odds meta data as a label so retrievable
+    plot$labels$win.odds <- params
   }
 
   plot <- plot +
@@ -427,7 +426,7 @@ plot_maraca <- function(
     ggplot2::guides(fill = "none")
 
   # Add label to plot - maracaPlot
-  attr(plot, "label") <- "maracaPlot"
+  attr(plot, "class") <- c(attr(plot, "class"), "maracaPlot")
 
   return(plot)
 }
@@ -457,17 +456,10 @@ plot_maraca <- function(
 #' @export
 validate_maraca <- function(x,  ...) {
 
-  checkmate::assert_class(x, c("gg", "ggplot"))
-
-  if (!("label" %in% names(attributes(x))) ||
-      attr(x, "label") != "maracaPlot") {
-    stop(paste(
-      "validate_maraca function only applicable to maraca plots."
-    ))
-  }
+  checkmate::assert_class(x, c("gg", "ggplot",
+                               "maracaPlot"), ordered = FALSE)
 
   `%>%` <- dplyr::`%>%`
-  .data <- rlang::.data
 
   pb <- ggplot2::ggplot_build(x)
   plot_type <- class(as.list(x$layers[[5]])[["geom"]])[1]
@@ -491,11 +483,11 @@ validate_maraca <- function(x,  ...) {
   }
   if (plot_type == "GeomBoxplot") {
     boxstat_data <- pb$data[[5]] %>%
-      dplyr::select(.data$group, "x_lowest" = .data$xmin_final,
-                    "whisker_lower" = .data$xmin,
-             "hinge_lower" = .data$xlower, "median" = .data$xmiddle,
-             "hinge_upper" = .data$xupper, "whisker_upper" = .data$xmax,
-             "x_highest" = .data$xmax_final, .data$outliers)
+      dplyr::select(group, "x_lowest" = xmin_final,
+                    "whisker_lower" = xmin,
+             "hinge_lower" = xlower, "median" = xmiddle,
+             "hinge_upper" = xupper, "whisker_upper" = xmax,
+             "x_highest" = xmax_final, outliers)
     boxstat_data$outliers <- lapply(boxstat_data$outliers, sort)
     boxstat_data$group <- factor(boxstat_data$group, labels = arms)
   }
@@ -504,24 +496,24 @@ validate_maraca <- function(x,  ...) {
     violin_data$group <- factor(violin_data$group, labels = arms)
     if (class(as.list(x$layers[[6]])[["geom"]])[1] == "GeomBoxplot") {
       boxstat_data <- pb$data[[6]] %>%
-        dplyr::select(.data$group, "x_lowest" = .data$xmin_final,
-                      "whisker_lower" = .data$xmin,
-               "hinge_lower" = .data$xlower, "median" = .data$xmiddle,
-               "hinge_upper" = .data$xupper, "whisker_upper" = .data$xmax,
-               "x_highest" = .data$xmax_final, .data$outliers)
+        dplyr::select(group, "x_lowest" = xmin_final,
+                      "whisker_lower" = xmin,
+               "hinge_lower" = xlower, "median" = xmiddle,
+               "hinge_upper" = xupper, "whisker_upper" = xmax,
+               "x_highest" = xmax_final, outliers)
       boxstat_data$outliers <- lapply(boxstat_data$outliers, sort)
       boxstat_data$group <- factor(boxstat_data$group, labels = arms)
     }
   }
 
-  if ("win_odds_parameters" %in% names(attributes(x))) {
-    params <- attr(x, "win_odds_parameters")
+  if ("win.odds" %in% names(x$labels)) {
+    params <- x$labels$win.odds
     wo_stats <- c(winodds = params$win_odds,
                   lowerCI = params$lower_ci,
                   upperCI = params$upper_ci,
                   p_value = params$p_value)
   } else {
-    wo_stats <- "Not calculated"
+    wo_stats <- NULL
   }
 
   return(
@@ -725,7 +717,7 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
 
   `%>%` <- dplyr::`%>%`
   n <- dplyr::n
-  .data <- rlang::.data
+  . <- rlang::.data
 
   num_tte_outcomes <- length(tte_outcomes)
   HCE$t_cdf <- (num_tte_outcomes + 2) * fixed_followup_days
@@ -738,8 +730,8 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
 
   HCE_ecdf <- HCE %>%
     dplyr::group_by(arm) %>%
-    dplyr::do(data.frame(.data, ecdf_values = 100 *
-                           stats::ecdf(.data$t_cdf)(.data$t_cdf))) %>%
+    dplyr::do(data.frame(., ecdf_values = 100 *
+                         stats::ecdf(.$t_cdf)(.$t_cdf))) %>%
     dplyr::filter(outcome %in% tte_outcomes) %>%
     dplyr::ungroup()
 
@@ -758,7 +750,7 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
   HCE_ecdf_meta <- HCE_ecdf %>%
     dplyr::group_by(arm, outcome) %>%
     dplyr::summarise(
-      max = max(.data$ecdf_values, na.rm = TRUE),
+      max = max(ecdf_values, na.rm = TRUE),
       sum.event = n()) %>%
     dplyr::mutate(
       ecdf_end = utils::tail(max, 1)

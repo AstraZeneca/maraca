@@ -468,7 +468,7 @@ test_that("Test win odds extraction of validation function", {
   expect_equivalent(val_res_with_wo$wo_stats["upperCI"], win_odds["upper"])
   expect_equivalent(val_res_with_wo$wo_stats["p_value"], win_odds["p-value"])
 
-  expect_equal(val_res_without_wo$wo_stats, "Not calculated")
+  expect_null(val_res_without_wo$wo_stats)
 })
 
 test_that("Validation function only works for maraca plot", {
@@ -477,7 +477,7 @@ test_that("Validation function only works for maraca plot", {
     ggplot2::geom_point()
 
   expect_error(validate_maraca(plot), regexp =
-                 "validate_maraca function only applicable to maraca plots.")
+              "Must inherit from class")
 })
 
 test_that("Test reformatting of data", {
