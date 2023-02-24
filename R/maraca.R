@@ -145,9 +145,11 @@ maraca <- function(
 }
 
 #' @param x an object of class maraca
+#' @param ... further arguments passed to or
+#' from other methods.
 #' @method print maraca
 #' @rdname maraca
-##' @export
+#' @export
 print.maraca <- function(x, ...) {
 
   cat(paste("Maraca object for plotting maraca graph created for",
@@ -720,7 +722,6 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
 
   `%>%` <- dplyr::`%>%`
   n <- dplyr::n
-  . <- rlang::.data
 
   num_tte_outcomes <- length(tte_outcomes)
   HCE$t_cdf <- (num_tte_outcomes + 2) * fixed_followup_days
@@ -731,12 +732,13 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
         fixed_followup_days * (i - 1)
   }
 
-  HCE_ecdf <- HCE %>%
-    dplyr::group_by(arm) %>%
-    dplyr::do(data.frame(., ecdf_values = 100 *
-                         stats::ecdf(.$t_cdf)(.$t_cdf))) %>%
-    dplyr::filter(outcome %in% tte_outcomes) %>%
-    dplyr::ungroup()
+  HCE_ecdf <-
+    do.call("rbind", lapply(unique(HCE$arm), function(a) {
+      tmp <- HCE %>% dplyr::filter(arm == a)
+      tmp$ecdf_values <- 100 *
+        stats::ecdf(tmp$t_cdf)(tmp$t_cdf)
+      tmp %>% dplyr::filter(outcome %in% tte_outcomes)
+  }))
 
   HCE_ecdf <- HCE_ecdf[order(HCE_ecdf$ecdf_values), ]
 

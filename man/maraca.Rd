@@ -51,6 +51,9 @@ of fixed follow-up days in the study.}
 don't compute them.}
 
 \item{x}{an object of class maraca}
+
+\item{...}{further arguments passed to or
+from other methods.}
 }
 \value{
 An object of class 'maraca'. The object information must be
