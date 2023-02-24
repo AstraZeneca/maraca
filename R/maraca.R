@@ -733,12 +733,13 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
   }
 
   HCE_ecdf <-
-    do.call("rbind", lapply(unique(HCE$arm), function(a) {
-      tmp <- HCE %>% dplyr::filter(arm == a)
+    do.call("rbind",
+            lapply(unique(HCE$arm), function(a, df, outcomes) {
+      tmp <- df %>% dplyr::filter(arm == a)
       tmp$ecdf_values <- 100 *
         stats::ecdf(tmp$t_cdf)(tmp$t_cdf)
-      tmp %>% dplyr::filter(outcome %in% tte_outcomes)
-  }))
+      tmp %>% dplyr::filter(outcome %in% outcomes)
+  }, df = HCE, outcomes = tte_outcomes))
 
   HCE_ecdf <- HCE_ecdf[order(HCE_ecdf$ecdf_values), ]
 
