@@ -297,10 +297,10 @@ test_that("Validation function for  maraca plots", {
   a_violin <- plot(mar, density_plot_type = "violin")
   a_box <- plot(mar, density_plot_type = "box")
   a_scatter <- plot(mar, density_plot_type = "scatter")
-  val_res_def <- validate_maraca(a_def)
-  val_res_violin <- validate_maraca(a_violin)
-  val_res_box <- validate_maraca(a_box)
-  val_res_scatter <- validate_maraca(a_scatter)
+  val_res_def <- validate_maraca_plot(a_def)
+  val_res_violin <- validate_maraca_plot(a_violin)
+  val_res_box <- validate_maraca_plot(a_box)
+  val_res_scatter <- validate_maraca_plot(a_scatter)
 
   expect_type(val_res_def, "list")
   expect_type(val_res_violin, "list")
@@ -439,8 +439,8 @@ test_that("Test win odds extraction of validation function", {
   )
   a_with_wo <- plot(mar_with_win_odds)
   a_without_wo <- plot(mar_without_win_odds)
-  val_res_with_wo <- validate_maraca(a_with_wo)
-  val_res_without_wo <- validate_maraca(a_without_wo)
+  val_res_with_wo <- validate_maraca_plot(a_with_wo)
+  val_res_without_wo <- validate_maraca_plot(a_without_wo)
 
   expect_type(val_res_with_wo$wo_stats, "double")
   expect_named(val_res_with_wo$wo_stats,
@@ -464,7 +464,7 @@ test_that("Validation function only works for maraca plot", {
   plot <- ggplot2::ggplot(tmp, ggplot2::aes(a, b)) +
     ggplot2::geom_point()
 
-  expect_error(validate_maraca(plot), regexp =
+  expect_error(validate_maraca_plot(plot), regexp =
               "Must inherit from class")
 })
 

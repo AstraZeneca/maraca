@@ -38,7 +38,7 @@ don't compute them.}
 Used for side effect. Plots the maraca object.
 }
 \description{
-This will produce the plot_maraca plot.
+Generic function to plot the hce object using plot().
 }
 \examples{
 set.seed(31337)

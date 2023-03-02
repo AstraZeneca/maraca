@@ -431,7 +431,7 @@ plot_maraca <- function(
     ggplot2::guides(fill = "none")
 
   # Add label to plot - maracaPlot
-  attr(plot, "class") <- c(attr(plot, "class"), "maracaPlot")
+  class(plot) <- c("maracaPlot", class(plot))
 
   return(plot)
 }
@@ -440,8 +440,8 @@ plot_maraca <- function(
 #'
 #' This will produce the 4 validation datasets.
 #'
-#' @param x an object of S3 class 'ggplot'
-#' @param \dots not used
+#' @param x An object of S3 class 'maracaPlot'.
+#' @param \dots Not used.
 #' @return Creates a list of datasets for validation purposes.
 #'
 #' @examples
@@ -456,13 +456,11 @@ plot_maraca <- function(
 #'   compute_win_odds = TRUE
 #' )
 #' p <- plot(hce_test)
-#' validate_maraca(p)
+#' validate_maraca_plot(p)
 #'
 #' @export
-validate_maraca <- function(x,  ...) {
-
-  checkmate::assert_class(x, c("gg", "ggplot",
-                               "maracaPlot"), ordered = FALSE)
+validate_maraca_plot <- function(x,  ...) {
+  checkmate::assert_class(x, "maracaPlot")
 
   `%>%` <- dplyr::`%>%`
 
@@ -485,8 +483,7 @@ validate_maraca <- function(x,  ...) {
   if (plot_type == "GeomPoint") {
     scatter_data <- pb$data[[5]][, c("group", "x", "y")]
     scatter_data$group <- factor(scatter_data$group, labels = arms)
-  }
-  if (plot_type == "GeomBoxplot") {
+  } else if (plot_type == "GeomBoxplot") {
     boxstat_data <- pb$data[[5]] %>%
       dplyr::select(group, "x_lowest" = xmin_final,
                     "whisker_lower" = xmin,
@@ -495,8 +492,7 @@ validate_maraca <- function(x,  ...) {
              "x_highest" = xmax_final, outliers)
     boxstat_data$outliers <- lapply(boxstat_data$outliers, sort)
     boxstat_data$group <- factor(boxstat_data$group, labels = arms)
-  }
-  if (plot_type == "GeomViolin") {
+  } else if (plot_type == "GeomViolin") {
     violin_data <- pb$data[[5]][, c("group", "x", "y", "density", "width")]
     violin_data$group <- factor(violin_data$group, labels = arms)
     if (class(as.list(x$layers[[6]])[["geom"]])[1] == "GeomBoxplot") {
@@ -509,6 +505,8 @@ validate_maraca <- function(x,  ...) {
       boxstat_data$outliers <- lapply(boxstat_data$outliers, sort)
       boxstat_data$group <- factor(boxstat_data$group, labels = arms)
     }
+  } else {
+    stop(paste0("Unrecognised plot type ", plot_type))
   }
 
   if ("win.odds" %in% names(x$labels)) {
@@ -522,23 +520,21 @@ validate_maraca <- function(x,  ...) {
   }
 
   return(
-      list(
-        plot_type = plot_type,
-        proportions = proportions,
-        tte_data = tte_data,
-        scatter_data = scatter_data,
-        boxstat_data = boxstat_data,
-        violin_data = violin_data,
-        wo_stats = wo_stats
-      )
+    list(
+      plot_type = plot_type,
+      proportions = proportions,
+      tte_data = tte_data,
+      scatter_data = scatter_data,
+      boxstat_data = boxstat_data,
+      violin_data = violin_data,
+      wo_stats = wo_stats
+    )
   )
 }
 
 #' Generic function to plot the maraca object using plot().
 #'
-#' This will produce the plot_maraca plot.
-#'
-#' @param x an object of S3 class 'maraca'
+#' @param x An object of S3 class 'maraca'.
 #' @param \dots not used
 #' @param continuous_grid_spacing_x The spacing of the x grid to use for the
 #'        continuous section of the plot.
@@ -573,8 +569,6 @@ plot.maraca <- function(
     x, continuous_grid_spacing_x, trans, density_plot_type, vline_type))
 }
 #' Generic function to plot the hce object using plot().
-#'
-#' This will produce the plot_maraca plot.
 #'
 #' @param x an object of S3 class 'hce'.
 #' @param \dots not used
