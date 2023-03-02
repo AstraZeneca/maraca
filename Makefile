@@ -1,5 +1,5 @@
-PACKAGE_NAME =maraca
-PACKAGE_VERSION = 0.4.0
+PACKAGE_NAME = $(shell grep Package: DESCRIPTION | awk '{print $$2}')
+PACKAGE_VERSION = $(shell grep Version: DESCRIPTION | awk '{print $$2}')
 
 .PHONY: help test unittest build document namespace vignettes
 help:
@@ -18,6 +18,8 @@ document:
 
 build: clean document namespace
 	-mkdir dist
+	@echo "** Building ${PACKAGE_NAME} ${PACKAGE_VERSION}"
+
 	Rscript -e "devtools::build('.', path='dist/')"
 	# Ensure that we don't leave our username in the description file
 	TMPDIR=`mktemp -d` && \
@@ -44,7 +46,7 @@ vignettes:
 	Rscript -e "devtools::build_vignettes(keep_md=FALSE)"
 
 check: build
-	R CMD check --as-cran dist/$${PACKAGE_NAME}_$${PACKAGE_VERSION}.tar.gz
+	R CMD check --as-cran dist/${PACKAGE_NAME}_${PACKAGE_VERSION}.tar.gz
 
 clean:
 	-rm -rf dist
