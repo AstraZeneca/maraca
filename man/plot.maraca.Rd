@@ -14,7 +14,7 @@
 )
 }
 \arguments{
-\item{x}{an object of S3 class 'maraca'}
+\item{x}{An object of S3 class 'maraca'.}
 
 \item{continuous_grid_spacing_x}{The spacing of the x grid to use for the
 continuous section of the plot.}
@@ -34,7 +34,7 @@ Accepts "default", "violin", "box" and "scatter".}
 Used for side effect. Plots the maraca object.
 }
 \description{
-This will produce the plot_maraca plot.
+Generic function to plot the maraca object using plot().
 }
 \examples{
 data(hce_scenario_a)
@@ -42,6 +42,7 @@ hce_test <- maraca(
   data = hce_scenario_a,
   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
   continuous_outcome = "Continuous outcome",
+  fixed_followup_days = 3 * 365,
   column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
   arm_levels = c(active = "Active", control = "Control"),
   compute_win_odds = TRUE

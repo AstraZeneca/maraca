@@ -15,7 +15,7 @@
 )
 }
 \arguments{
-\item{x}{an object of S3 class 'hce'}
+\item{x}{an object of S3 class 'hce'.}
 
 \item{continuous_grid_spacing_x}{The spacing of the x grid to use for the
 continuous section of the plot.}
@@ -38,7 +38,7 @@ don't compute them.}
 Used for side effect. Plots the maraca object.
 }
 \description{
-This will produce the plot_maraca plot.
+Generic function to plot the hce object using plot().
 }
 \examples{
 set.seed(31337)
@@ -46,6 +46,6 @@ Rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
 Rates_P <- c(2.47, 2.24, 2.9, 4, 6)
 HCE <- hce::simHCE(n = 2500, TTE_A = Rates_A, TTE_P = Rates_P,
              CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3)
-plot(HCE)
+plot(HCE, fixed_followup_days = 3 * 365)
 
 }

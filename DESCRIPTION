@@ -11,20 +11,18 @@ Description: Library that supports visual interpretation of hierarchical composi
     endpoints (HCEs). HCEs are complex constructs used as primary endpoints in
     clinical trials, combining outcomes of different types into ordinal endpoints,
     in which each patient contributes the most clinically important event (one and
-    only one) to the analysis. 
+    only one) to the analysis.
 URL: https://github.com/AstraZeneca/maraca
 BugReports: https://github.com/AstraZeneca/maraca/issues
 Encoding: UTF-8
 LazyData: true
 Depends:
-    R (>= 3.5),
-    ggfortify (>= 0.4)
+    R (>= 3.5)
 Imports:
     dplyr (>= 1.0),
     tidyr (>= 1.2),
     ggplot2 (>= 3.3),
     gridExtra (>= 2.3),
-    survival (>= 3.3),
     hce (>= 0.0.2),
     checkmate (>= 2.1)
 RoxygenNote: 7.2.1

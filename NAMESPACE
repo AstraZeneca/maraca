@@ -2,9 +2,7 @@
 
 S3method(plot,hce)
 S3method(plot,maraca)
-S3method(print,maraca_tte_components)
+S3method(print,maraca)
 export(maraca)
 export(plot_maraca)
-export(plot_tte_components)
-export(plot_tte_composite)
-import(ggfortify)
+export(validate_maraca_plot)

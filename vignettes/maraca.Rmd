@@ -12,6 +12,7 @@ vignette: >
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
 library(dplyr)
+library(ggplot2)
 library(maraca)
 ```
 
@@ -91,12 +92,18 @@ arm_levels = c(active = "Active", control = "Control")
 
 Finally, the `original` column must contain numerical values.
 
+We also need to specify the follow-up time for the time-to event outcomes.
+Note that there can be no observed events in the data after the follow-up
+time specified.
+
 All of the above can be aggregated in the call to create a maraca object from
 the given dataset
 
 ```{r maraca7, eval = TRUE}
 mar <- maraca(
-  data, tte_outcomes, continuous_outcome, arm_levels, column_names, compute_win_odds = TRUE
+  data, tte_outcomes, continuous_outcome, arm_levels, column_names, 
+  fixed_followup_days = 3*365,
+  compute_win_odds = TRUE
 )
 ```
 
@@ -140,24 +147,6 @@ p +
   theme_bw() + scale_color_manual(values=c("#999999", "#E69F00")) + 
   theme(axis.text.x.bottom = element_text(vjust = 0.5, hjust = 0.5))
 ```
-
-\newpage
-
-Additionally, there are a few supporting plots that can be used to look closer at the time-to-event outcomes. 
-`plot_tte_components` provides a one-row grid of the TTE outcomes Kaplan-Meier plots.
-
-```{r maraca12, eval = TRUE, fig.width = 7, fig.height = 6, message=FALSE, warning=FALSE}
-plot_tte_components(mar)
-```
-
-\newpage
-
-`plot_tte_composite` plots the Kaplan-Meier plot for the composite of all specified events. The plot is also annotated with the hazard ratio (more info in `mar$survmod_complete`).
-
-```{r maraca13, eval = TRUE, fig.width = 7, fig.height = 6, message=FALSE, warning=FALSE}
-plot_tte_composite(mar)
-```
-
 
 # References
 

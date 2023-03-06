@@ -4,35 +4,35 @@ url = "https://cloud.r-project.org/"
 
 [[entry]]
 categories = []
-dependencies = [ "checkmate", "devtools", "dplyr", "ggfortify", "ggplot2", "gridExtra", "hce", "here", "lintr", "survival", "tidyr", "tidyselect",]
+dependencies = [ "checkmate", "devtools", "dplyr", "ggplot2", "gridExtra", "hce", "here", "lintr", "tidyr", "tidyselect",]
 type = "root"
 
 [[entry]]
 categories = [ "main",]
 dependencies = [ "grDevices", "graphics", "methods", "stats", "utils",]
 name = "MASS"
-version = "7.3-58.1"
+version = "7.3-58.2"
 source = "CRAN"
 r_constraint = ">=3.3.0"
 type = "source"
 [[entry.files]]
-name = "MASS_7.3-58.1.tar.gz"
-hash = "sha256:f704e4e2fb131740d023ae1755c925c2e684886a3061b08e26397135f1231420"
-md5 = "ac20a20a32975f4dd46ab294deef7642"
+name = "MASS_7.3-58.2.tar.gz"
+hash = "sha256:b5c09d5368ca432bb21ebb4997433dbefb28e19174851e2d8358bab02add784b"
+md5 = "7d50a5a5fa3674318e7e7f972423409f"
 
 
 [[entry]]
 categories = [ "main",]
 dependencies = [ "graphics", "grid", "lattice", "methods", "stats", "utils",]
 name = "Matrix"
-version = "1.5-1"
+version = "1.5-3"
 source = "CRAN"
 r_constraint = ">=3.5.0"
 type = "source"
 [[entry.files]]
-name = "Matrix_1.5-1.tar.gz"
-hash = "sha256:557dba0358172d67dc63eb5db90841915bb5ce1528f941a8005ae808d635575d"
-md5 = "e63294ce1817a8dda8a7ba7ebd9d6baa"
+name = "Matrix_1.5-3.tar.gz"
+hash = "sha256:4e720f4edc97b1c09646a445851b1ce955caf6b1de8306a2283328b526fee00d"
+md5 = "a589071a4c35ea46779d936d4b745912"
 
 
 [[entry]]
@@ -67,14 +67,14 @@ md5 = "9b687595bbe02a7e43fc195ba33f065c"
 categories = [ "dev",]
 dependencies = [ "methods", "utils",]
 name = "Rcpp"
-version = "1.0.9"
+version = "1.0.10"
 source = "CRAN"
 r_constraint = "*"
 type = "source"
 [[entry.files]]
-name = "Rcpp_1.0.9.tar.gz"
-hash = "sha256:807cec06dc4a96d54904360f6144466f084a7ed411ce5d2eea486a9b3c229176"
-md5 = "5c239588657c9970e0f8ed9192abb563"
+name = "Rcpp_1.0.10.tar.gz"
+hash = "sha256:1e65e24a9981251ab5fc4f9fd65fe4eab4ba0255be3400a8c5abe20b62b5d546"
+md5 = "32f9331801336420cae8a04d8c3c9e17"
 
 
 [[entry]]
@@ -155,44 +155,44 @@ md5 = "33560fedf56bcd9507892631a527507a"
 
 [[entry]]
 categories = [ "dev",]
-dependencies = [ "cachem", "grDevices", "htmltools", "jquerylib", "jsonlite", "memoise", "rlang", "sass",]
+dependencies = [ "base64enc", "cachem", "grDevices", "htmltools", "jquerylib", "jsonlite", "memoise", "mime", "rlang", "sass",]
 name = "bslib"
-version = "0.4.0"
+version = "0.4.2"
 source = "CRAN"
 r_constraint = ">=2.10"
 type = "source"
 [[entry.files]]
-name = "bslib_0.4.0.tar.gz"
-hash = "sha256:fbea4ecec726f23618e825624f1d9c03939f765ca5a490b171ebf95b815475c2"
-md5 = "f87443166da11799c80befce0d09b3ea"
+name = "bslib_0.4.2.tar.gz"
+hash = "sha256:9a40b7a1bbe409af273e1e940d921ab198ea576548f06f055f552f70ff822f19"
+md5 = "78fe16c2a74c4f3a9c10f9670d147eb5"
 
 
 [[entry]]
 categories = [ "dev",]
 dependencies = [ "fastmap", "rlang",]
 name = "cachem"
-version = "1.0.6"
+version = "1.0.7"
 source = "CRAN"
 r_constraint = "*"
 type = "source"
 [[entry.files]]
-name = "cachem_1.0.6.tar.gz"
-hash = "sha256:9a9452f7bcf3f79436c418b3c3290449fb8fd338714d9b992153754d112f1864"
-md5 = "dda8ecf0d6c2b287134bb926824f3551"
+name = "cachem_1.0.7.tar.gz"
+hash = "sha256:234fad2a947d1e1fb87d3fa92abf9197877772e31bc81ae5991ae69689b6320a"
+md5 = "b5ee13e64fda42100a535e5dddd6d014"
 
 
 [[entry]]
 categories = [ "dev",]
 dependencies = [ "R6", "processx", "utils",]
 name = "callr"
-version = "3.7.2"
+version = "3.7.3"
 source = "CRAN"
 r_constraint = ">=3.4"
 type = "source"
 [[entry.files]]
-name = "callr_3.7.2.tar.gz"
-hash = "sha256:12da8a212679e450d8d43c3c6e61ed09b82047f376f316f6f6392f1638580307"
-md5 = "7600b8a0c102980ab40154bfdfeb2878"
+name = "callr_3.7.3.tar.gz"
+hash = "sha256:567bfedf073a1d4c5785f0553341608a214938110567b9a6495ff20ebb2fd04e"
+md5 = "12151339c31433137a1534c2f5656206"
 
 
 [[entry]]
@@ -213,14 +213,14 @@ md5 = "474d4e31514d17fc48c1673f6ad3392c"
 categories = [ "dev", "main",]
 dependencies = [ "utils",]
 name = "cli"
-version = "3.4.1"
+version = "3.6.0"
 source = "CRAN"
 r_constraint = ">=3.4"
 type = "source"
 [[entry.files]]
-name = "cli_3.4.1.tar.gz"
-hash = "sha256:1c585efbfd8b8685c66fac34bcb60f28c351691bb4b9931df214e6e47fd9744e"
-md5 = "82dbedde9ce898654259d7884694887e"
+name = "cli_3.6.0.tar.gz"
+hash = "sha256:b6078131803043d53d4e670aa3a0506f614e0b40fda8e0102afd48a6188ab896"
+md5 = "ad8b39abb8cf564407a40f457031fb0e"
 
 
 [[entry]]
@@ -241,56 +241,56 @@ md5 = "558ddf145114bbc0272e6aed05b8e5fe"
 categories = [ "dev",]
 dependencies = []
 name = "codetools"
-version = "0.2-18"
+version = "0.2-19"
 source = "CRAN"
 r_constraint = ">=2.1"
 type = "source"
 [[entry.files]]
-name = "codetools_0.2-18.tar.gz"
-hash = "sha256:1a9ea6b9792dbd1688078455929385acc3a5e4bef945c77bec1261fa4a084c28"
-md5 = "2603f5eea6378e889b198f8af5cb5985"
+name = "codetools_0.2-19.tar.gz"
+hash = "sha256:c4b7e567c87f33dad85de92f79641e5e5b5deede6d19a9dfa47133d191782dab"
+md5 = "16c3cf3d257b9aaa706f4467ec64c864"
 
 
 [[entry]]
 categories = [ "main",]
 dependencies = [ "grDevices", "graphics", "methods", "stats",]
 name = "colorspace"
-version = "2.0-3"
+version = "2.1-0"
 source = "CRAN"
 r_constraint = ">=3.0.0"
 type = "source"
 [[entry.files]]
-name = "colorspace_2.0-3.tar.gz"
-hash = "sha256:e75681cc4dd6e4b70303fd96a6d4597065dc6bffcaa4ae4244b73ff19016857f"
-md5 = "9e8ca3d4343ce80c0decfc5d02b9105c"
+name = "colorspace_2.1-0.tar.gz"
+hash = "sha256:04078abb6b54119c90dc7085d62916bf292ccb163e213f9ea70567d1be82614c"
+md5 = "e386fecdf186c037558e2e73b1f151e8"
 
 
 [[entry]]
 categories = [ "dev",]
 dependencies = []
 name = "commonmark"
-version = "1.8.0"
+version = "1.8.1"
 source = "CRAN"
 r_constraint = "*"
 type = "source"
 [[entry.files]]
-name = "commonmark_1.8.0.tar.gz"
-hash = "sha256:7d07e72937b1cf158e69f183722bf79dbb91b8967a9dd29f4fa145500c2be668"
-md5 = "c0a423af12c676209d054cb8c7d0c5a5"
+name = "commonmark_1.8.1.tar.gz"
+hash = "sha256:96adcb093de3d2e48811af402da70e7222a313b97f1e979e0cbe84dd59bd5cbe"
+md5 = "befd4d1261c898b147a75da4b91e4232"
 
 
 [[entry]]
 categories = [ "dev", "main",]
 dependencies = []
 name = "cpp11"
-version = "0.4.2"
+version = "0.4.3"
 source = "CRAN"
 r_constraint = "*"
 type = "source"
 [[entry.files]]
-name = "cpp11_0.4.2.tar.gz"
-hash = "sha256:403ce0bf82358d237176053b0fb1e958cb6bfa4d0fb3555bf5801db6a6939b99"
-md5 = "fa9215674c16c4740f02fb1f780bdfa9"
+name = "cpp11_0.4.3.tar.gz"
+hash = "sha256:f1a60e4971a86dbbcf6a16bbd739b59bb66d9c45d93cfd8dedc2a87e302598f1"
+md5 = "af41a95ad71f4179f680c8e3138d5ba5"
 
 
 [[entry]]
@@ -325,14 +325,14 @@ md5 = "cd41107f631771258b8cca3a1bfa3556"
 categories = [ "dev",]
 dependencies = []
 name = "curl"
-version = "4.3.3"
+version = "5.0.0"
 source = "CRAN"
 r_constraint = ">=3.0.0"
 type = "source"
 [[entry.files]]
-name = "curl_4.3.3.tar.gz"
-hash = "sha256:3567b6acad40dad68acfe07511c853824839d451a50219a96dd6d125ed617c9e"
-md5 = "a1c03176bb842c83104bb101ecf40a33"
+name = "curl_5.0.0.tar.gz"
+hash = "sha256:d7f3cac9b513914ffa8f6f64e6fa5dd96c8273378ace6b0c16b71bc6ba59c9b2"
+md5 = "cae7a80c8d94d435b39bee5457f78ab6"
 
 
 [[entry]]
@@ -367,14 +367,14 @@ md5 = "99d01929865e08ea01627e9c3bbcff3f"
 categories = [ "dev",]
 dependencies = [ "cli", "desc", "ellipsis", "fs", "lifecycle", "memoise", "miniUI", "pkgbuild", "pkgdown", "pkgload", "profvis", "rcmdcheck", "remotes", "rlang", "roxygen2", "rversions", "sessioninfo", "stats", "testthat", "tools", "urlchecker", "usethis", "utils", "withr",]
 name = "devtools"
-version = "2.4.4"
+version = "2.4.5"
 source = "CRAN"
 r_constraint = ">=3.0.2"
 type = "source"
 [[entry.files]]
-name = "devtools_2.4.4.tar.gz"
-hash = "sha256:acd6759d269f30893eda173a738b1ce6537a11313c8e8e12e116452c4296934d"
-md5 = "8dfa437d3573cbc66b8820471bb17af8"
+name = "devtools_2.4.5.tar.gz"
+hash = "sha256:38160ebd839acdec7ebf0699a085b4ab1ebd5500d3c57a9fa7ae484f1909904b"
+md5 = "1ed0f5c335c961d5681a31698088468b"
 
 
 [[entry]]
@@ -392,17 +392,17 @@ md5 = "dffa0a111b1f8766d0b64a2cd7138d09"
 
 
 [[entry]]
-categories = [ "dev", "main",]
+categories = [ "dev",]
 dependencies = [ "utils",]
 name = "digest"
-version = "0.6.29"
+version = "0.6.31"
 source = "CRAN"
 r_constraint = ">=3.3.0"
 type = "source"
 [[entry.files]]
-name = "digest_0.6.29.tar.gz"
-hash = "sha256:792c1f14a4c8047745152f5e45ce7351978af8d770c29d2ea39c7acd5d619cd9"
-md5 = "90c3726bf088f74df10a4e724c358e50"
+name = "digest_0.6.31.tar.gz"
+hash = "sha256:5a284f490eaca6750f695f00a584cfca3f180ca1046ac1107202141149d431b9"
+md5 = "9c4e79ef10ce71b9f2773c97291589e5"
 
 
 [[entry]]
@@ -451,28 +451,28 @@ md5 = "c453b4514da3717af5d5b97f0e3d2415"
 categories = [ "dev",]
 dependencies = [ "methods",]
 name = "evaluate"
-version = "0.17"
+version = "0.20"
 source = "CRAN"
 r_constraint = ">=3.0.2"
 type = "source"
 [[entry.files]]
-name = "evaluate_0.17.tar.gz"
-hash = "sha256:49c743c94cb967911af0e5555861a3762cd840b98578882671b583cff86ba963"
-md5 = "bef2ef204ffbfb5e1d5e854e33fdf6ab"
+name = "evaluate_0.20.tar.gz"
+hash = "sha256:35f5d9e85603600b58960923d591c5ca1115153febba7c612867d8b5598afff0"
+md5 = "1fa61f12119ef1f1d3441b368d6ce70b"
 
 
 [[entry]]
 categories = [ "dev", "main",]
 dependencies = [ "grDevices", "utils",]
 name = "fansi"
-version = "1.0.3"
+version = "1.0.4"
 source = "CRAN"
 r_constraint = ">=3.1.0"
 type = "source"
 [[entry.files]]
-name = "fansi_1.0.3.tar.gz"
-hash = "sha256:86a7b83d8c9d28baebbde310cd0b459d0950a9c7ff1a6276ce5858f6a89bc06a"
-md5 = "2485d507e99ef05314f873a486a7723d"
+name = "fansi_1.0.4.tar.gz"
+hash = "sha256:3163214e6c40922bbb495229259ed8ce1bebd98b77098a6936d234e43da9c49f"
+md5 = "cb7018ddfb0602db4fdeb41f693643fe"
 
 
 [[entry]]
@@ -493,42 +493,42 @@ md5 = "8a6b2956ba4d30911c3f2e8593eac362"
 categories = [ "dev",]
 dependencies = []
 name = "fastmap"
-version = "1.1.0"
+version = "1.1.1"
 source = "CRAN"
 r_constraint = "*"
 type = "source"
 [[entry.files]]
-name = "fastmap_1.1.0.tar.gz"
-hash = "sha256:9113e526b4c096302cfeae660a06de2c4c82ae4e2d3d6ef53af6de812d4c822b"
-md5 = "0a13d52751d2f910ab907d3b44756108"
+name = "fastmap_1.1.1.tar.gz"
+hash = "sha256:3623809dd016ae8abd235200ba7834effc4b916915a059deb76044137c5c7173"
+md5 = "57a70be74ce88c5dc7e97c5547526f9f"
 
 
 [[entry]]
 categories = [ "dev",]
 dependencies = [ "htmltools", "rlang",]
 name = "fontawesome"
-version = "0.3.0"
+version = "0.5.0"
 source = "CRAN"
 r_constraint = ">=3.3.0"
 type = "source"
 [[entry.files]]
-name = "fontawesome_0.3.0.tar.gz"
-hash = "sha256:4deefcf4d4580d84213f863351c2a23c39adbd2f8762d7477ec2faa8235a1a31"
-md5 = "bd3e7d1f767aa88ee80821a2d30896e9"
+name = "fontawesome_0.5.0.tar.gz"
+hash = "sha256:4117b417a33e82d626881d7059eb54e7534cba202e75dae7e27021cb3796e90b"
+md5 = "8930df3ea6e74fbd3bd24832c205b97e"
 
 
 [[entry]]
 categories = [ "dev",]
 dependencies = [ "methods",]
 name = "fs"
-version = "1.5.2"
+version = "1.6.1"
 source = "CRAN"
-r_constraint = ">=3.1"
+r_constraint = ">=3.4"
 type = "source"
 [[entry.files]]
-name = "fs_1.5.2.tar.gz"
-hash = "sha256:35cad1781d6d17c1feb56adc4607079c6844b63794d0ce1e74bb18dbc11e1987"
-md5 = "ede4b1754cafa17e91fbafb4a80a4184"
+name = "fs_1.6.1.tar.gz"
+hash = "sha256:faf1e421a2c270c60c0a30c74e1a48faad45b339163716102d77d64d23d76732"
+md5 = "5d234f9465d9df5a0f9feb2f42a18103"
 
 
 [[entry]]
@@ -549,56 +549,42 @@ md5 = "655261e97ea23c9193b047a27eee5d0e"
 categories = [ "dev",]
 dependencies = [ "askpass", "credentials", "openssl", "rstudioapi", "sys", "zip",]
 name = "gert"
-version = "1.9.1"
+version = "1.9.2"
 source = "CRAN"
 r_constraint = "*"
 type = "source"
 [[entry.files]]
-name = "gert_1.9.1.tar.gz"
-hash = "sha256:751d18760a08ae00b8de73dc3e564cf4e76b1f47c7179101320e1b70152e1fdd"
-md5 = "90f40dab166eab65827256c7fed30ace"
+name = "gert_1.9.2.tar.gz"
+hash = "sha256:42ca1b4bcafb1fdbbc7f54df0ee4476ecd19e9e7d563b53fe7064e0086ab665e"
+md5 = "9a9ec6677a1e0a975bd405d1a7c3ad40"
 
 
 [[entry]]
 categories = [ "main",]
-dependencies = [ "dplyr", "ggplot2", "grid", "gridExtra", "methods", "scales", "stringr", "tibble", "tidyr",]
-name = "ggfortify"
-version = "0.4.14"
-source = "CRAN"
-r_constraint = "*"
-type = "source"
-[[entry.files]]
-name = "ggfortify_0.4.14.tar.gz"
-hash = "sha256:5c5ad3d94ee43c39635419d1ae622a7906ba3a37d187ae924183f8fb1539150d"
-md5 = "2ba46b707bddcb92fb8f677b58dfc765"
-
-
-[[entry]]
-categories = [ "main",]
-dependencies = [ "MASS", "digest", "glue", "grDevices", "grid", "gtable", "isoband", "mgcv", "rlang", "scales", "stats", "tibble", "withr",]
+dependencies = [ "MASS", "cli", "glue", "grDevices", "grid", "gtable", "isoband", "lifecycle", "mgcv", "rlang", "scales", "stats", "tibble", "vctrs", "withr",]
 name = "ggplot2"
-version = "3.3.6"
+version = "3.4.1"
 source = "CRAN"
 r_constraint = ">=3.3"
 type = "source"
 [[entry.files]]
-name = "ggplot2_3.3.6.tar.gz"
-hash = "sha256:bfcb4eb92a0fcd3fab713aca4bb25e916e05914f2540271a45522ad7e43943a9"
-md5 = "292f91cb575f0b456f56a2167add7236"
+name = "ggplot2_3.4.1.tar.gz"
+hash = "sha256:041bc333f90d6026702c8bd5140a1c8ddd270b15742badf8ca5c53f0e02c6d84"
+md5 = "e61ebac1cb4fae0acb3b781b779eea0f"
 
 
 [[entry]]
 categories = [ "dev",]
-dependencies = [ "cli", "gitcreds", "httr", "ini", "jsonlite",]
+dependencies = [ "cli", "gitcreds", "httr2", "ini", "jsonlite", "rlang",]
 name = "gh"
-version = "1.3.1"
+version = "1.4.0"
 source = "CRAN"
 r_constraint = ">=3.4"
 type = "source"
 [[entry.files]]
-name = "gh_1.3.1.tar.gz"
-hash = "sha256:fbaea2abdeceb03d28839fd0e58c2eea01092f9ef92dcc044718ef0d298612ef"
-md5 = "b060d7d19457418f797ec869eec093a2"
+name = "gh_1.4.0.tar.gz"
+hash = "sha256:68c69fcd18429b378e639a09652465a4e92b7b5b5704804d0c5b1ca2b9b58b71"
+md5 = "78490c84c3c83fac51a707a0e51fafed"
 
 
 [[entry]]
@@ -679,14 +665,14 @@ md5 = "eb8514fe9ed922814a1d250844dabac5"
 categories = [ "main",]
 dependencies = [ "base", "stats",]
 name = "hce"
-version = "0.0.2"
+version = "0.5.0"
 source = "CRAN"
 r_constraint = ">=2.10"
 type = "source"
 [[entry.files]]
-name = "hce_0.0.2.tar.gz"
-hash = "sha256:33a2d9d8a4f9201002429a9c2766dd22614c4d3ab30a47bf63efa43e92eb11c1"
-md5 = "9d24073c3978ffa7b6ceca406407429c"
+name = "hce_0.5.0.tar.gz"
+hash = "sha256:7e3af8bb4191c6363f142c7459e9ccabe8d402a114e27f7cadc93c120079823b"
+md5 = "0e18273412e384c3e2e95fd89636ed36"
 
 
 [[entry]]
@@ -707,70 +693,84 @@ md5 = "67367162e286ae95c06abb6e7d70dd75"
 categories = [ "dev",]
 dependencies = [ "xfun",]
 name = "highr"
-version = "0.9"
+version = "0.10"
 source = "CRAN"
-r_constraint = ">=3.2.3"
+r_constraint = ">=3.3.0"
 type = "source"
 [[entry.files]]
-name = "highr_0.9.tar.gz"
-hash = "sha256:beff11390d936c90fdcc00e7ed0eb72220f3de403a51b56659e3d3e0b6d8ed4d"
-md5 = "74b31b4b2b8ac835d261c4faf6f600b7"
+name = "highr_0.10.tar.gz"
+hash = "sha256:ec55bc1ff66390ed66806dc2a7b6c17dbfd089b3d73fe2e369017f8cb4bc347b"
+md5 = "75ac8d38e8c9b56e40220daebb00c4ea"
 
 
 [[entry]]
 categories = [ "dev",]
-dependencies = [ "base64enc", "digest", "fastmap", "grDevices", "rlang", "utils",]
+dependencies = [ "base64enc", "digest", "ellipsis", "fastmap", "grDevices", "rlang", "utils",]
 name = "htmltools"
-version = "0.5.3"
+version = "0.5.4"
 source = "CRAN"
 r_constraint = ">=2.14.1"
 type = "source"
 [[entry.files]]
-name = "htmltools_0.5.3.tar.gz"
-hash = "sha256:2c451b369ea8918358e2b280f548816664fe0143222c609e6bfb1f9cd2f7324f"
-md5 = "bd17e78a113d081a42e30de276f3fac4"
+name = "htmltools_0.5.4.tar.gz"
+hash = "sha256:008228a8690d39d8ae2716bc614e76337fdbe2bac4e96258c10245fdf24f327e"
+md5 = "efca924584babe0d4ea19c3bc4bdae8c"
 
 
 [[entry]]
 categories = [ "dev",]
-dependencies = [ "grDevices", "htmltools", "jsonlite", "yaml",]
+dependencies = [ "grDevices", "htmltools", "jsonlite", "knitr", "rmarkdown", "yaml",]
 name = "htmlwidgets"
-version = "1.5.4"
+version = "1.6.1"
 source = "CRAN"
 r_constraint = "*"
 type = "source"
 [[entry.files]]
-name = "htmlwidgets_1.5.4.tar.gz"
-hash = "sha256:1a3fc60f40717de7f1716b754fd1c31a132e489a2560a278636ee78eba46ffc1"
-md5 = "848e70649e90133fb3aa1c1f41d05e0f"
+name = "htmlwidgets_1.6.1.tar.gz"
+hash = "sha256:42533cbcbefcfe5978c66d7f10f28d294c344e606aa75323c797d5a1dd960e43"
+md5 = "5e3fdd4a80131a58a872ebb7d82b14eb"
 
 
 [[entry]]
 categories = [ "dev",]
 dependencies = [ "R6", "Rcpp", "later", "promises", "utils",]
 name = "httpuv"
-version = "1.6.6"
+version = "1.6.9"
 source = "CRAN"
 r_constraint = ">=2.15.1"
 type = "source"
 [[entry.files]]
-name = "httpuv_1.6.6.tar.gz"
-hash = "sha256:41395fd324c5cb884d4f2a8060744758904119db22eeb312f2ea1e7ad7711293"
-md5 = "86ff16fe5624168ea90e4245df1637fa"
+name = "httpuv_1.6.9.tar.gz"
+hash = "sha256:8d77f25b22fa7473b45007c2048e9a38d3792d59b2716e1fcdf9e99bd585d95d"
+md5 = "49f79f246251a7fc5ce3b23d1f1e9b89"
 
 
 [[entry]]
 categories = [ "dev",]
 dependencies = [ "R6", "curl", "jsonlite", "mime", "openssl",]
 name = "httr"
-version = "1.4.4"
+version = "1.4.5"
 source = "CRAN"
-r_constraint = ">=3.2"
+r_constraint = ">=3.5"
 type = "source"
 [[entry.files]]
-name = "httr_1.4.4.tar.gz"
-hash = "sha256:41d82523f3ee260d409a7b5ae4136190cbc5aecbc270b40ed7064f83e7f5435d"
-md5 = "b8f5827c0b236e6d8872629f66149c68"
+name = "httr_1.4.5.tar.gz"
+hash = "sha256:f93bac7f882b0df099abca47dd5aae3686fb3cd2d3e9926fcd639bcddff76f6c"
+md5 = "02768dc7c700cff05f7ffbee922c8631"
+
+
+[[entry]]
+categories = [ "dev",]
+dependencies = [ "R6", "cli", "curl", "glue", "magrittr", "openssl", "rappdirs", "rlang", "withr",]
+name = "httr2"
+version = "0.2.2"
+source = "CRAN"
+r_constraint = ">=3.4"
+type = "source"
+[[entry.files]]
+name = "httr2_0.2.2.tar.gz"
+hash = "sha256:5d1ab62541f7817112519f0f9d00d6a2555bab5b2da7f5c6d579b0c307d7f2bf"
+md5 = "c5805dc5a3cd4c325a042c0d36f58f88"
 
 
 [[entry]]
@@ -791,14 +791,14 @@ md5 = "b0e2d7388fc69327d3c4bbaab9067f3d"
 categories = [ "main",]
 dependencies = [ "grid", "utils",]
 name = "isoband"
-version = "0.2.6"
+version = "0.2.7"
 source = "CRAN"
 r_constraint = "*"
 type = "source"
 [[entry.files]]
-name = "isoband_0.2.6.tar.gz"
-hash = "sha256:27e460945753f6710649563dc817e2f314392ef6d1f8b6af2b1bf9447fab43a3"
-md5 = "e56cf4c4e6bd2c7859afa0fab7cc0972"
+name = "isoband_0.2.7.tar.gz"
+hash = "sha256:7693223343b45b86de2b5b638ff148f0dafa6d7b1237e822c5272902f79cdf61"
+md5 = "7241f95bafb46b44aa380b9a71b10467"
 
 
 [[entry]]
@@ -819,28 +819,28 @@ md5 = "3607a34ac45ff420bc325d84eab4b0cb"
 categories = [ "dev",]
 dependencies = [ "methods",]
 name = "jsonlite"
-version = "1.8.2"
+version = "1.8.4"
 source = "CRAN"
 r_constraint = "*"
 type = "source"
 [[entry.files]]
-name = "jsonlite_1.8.2.tar.gz"
-hash = "sha256:677b645c081a7e004b71f0c48a1d46c1be9715163ccb6b419fbb0342a6c9cc3a"
-md5 = "413ec7d225645926a2a482c2938cc8f4"
+name = "jsonlite_1.8.4.tar.gz"
+hash = "sha256:79eaabe042226b0918aa828cc63d54fee8be67ae7c67f5e0d3010f468efb1278"
+md5 = "2eaa62ab9c269c8db6009135e2f5f4b7"
 
 
 [[entry]]
 categories = [ "dev",]
-dependencies = [ "evaluate", "highr", "methods", "stringr", "tools", "xfun", "yaml",]
+dependencies = [ "evaluate", "highr", "methods", "tools", "xfun", "yaml",]
 name = "knitr"
-version = "1.40"
+version = "1.42"
 source = "CRAN"
 r_constraint = ">=3.3.0"
 type = "source"
 [[entry.files]]
-name = "knitr_1.40.tar.gz"
-hash = "sha256:9b8f95ff367a0e52f024bda30315ec7cdd6a5b82371a1aaed95ab4eea78535bc"
-md5 = "245b4f9568d1dd22cd5b2a7bc98ed908"
+name = "knitr_1.42.tar.gz"
+hash = "sha256:9344f1a0089e4da101def54aee38d7cfe3b2022d75c560141d8cc22ac65130f3"
+md5 = "26beb465af3da73e153a5314c10bbced"
 
 
 [[entry]]
@@ -917,14 +917,14 @@ md5 = "023bff9f9b99ca56ed01b705a41a8bed"
 categories = [ "dev",]
 dependencies = [ "backports", "codetools", "crayon", "cyclocomp", "digest", "glue", "jsonlite", "knitr", "rex", "stats", "utils", "xml2", "xmlparsedata",]
 name = "lintr"
-version = "3.0.1"
+version = "3.0.2"
 source = "CRAN"
 r_constraint = ">=3.2"
 type = "source"
 [[entry.files]]
-name = "lintr_3.0.1.tar.gz"
-hash = "sha256:cfb816bc3a8f47cedd0460396f93d5b19165b4abb3be31194a346a8204e7f9a2"
-md5 = "fdbd2612347e5cbf57e883d6c9be7a3a"
+name = "lintr_3.0.2.tar.gz"
+hash = "sha256:9f6a70affea78d2092f40a7ba8961615d48b0c4ae8044ec72a1422a4342d34c9"
+md5 = "acdb1a9c30fa2157494dd839f811735f"
 
 
 [[entry]]
@@ -965,14 +965,14 @@ type = "core"
 categories = [ "main",]
 dependencies = [ "Matrix", "graphics", "methods", "nlme", "splines", "stats", "utils",]
 name = "mgcv"
-version = "1.8-40"
+version = "1.8-42"
 source = "CRAN"
 r_constraint = ">=3.6.0"
 type = "source"
 [[entry.files]]
-name = "mgcv_1.8-40.tar.gz"
-hash = "sha256:dbe627266c3b339232e2d4228d5370ba88c86540319e6891d161242efba7e4a5"
-md5 = "9cb478b15a6fe0a43036867bd3141a0d"
+name = "mgcv_1.8-42.tar.gz"
+hash = "sha256:087fc38b64ad06f2149eafc54f2679dd8840cf6fc488e66cf131e3c1de2db6c7"
+md5 = "17d87182c5166f6f4823bbd8eb3d1e03"
 
 
 [[entry]]
@@ -1021,28 +1021,28 @@ md5 = "b287f380a958399cfa12f665232e7f34"
 categories = [ "main",]
 dependencies = [ "graphics", "lattice", "stats", "utils",]
 name = "nlme"
-version = "3.1-160"
+version = "3.1-162"
 source = "CRAN"
 r_constraint = ">=3.5.0"
 type = "source"
 [[entry.files]]
-name = "nlme_3.1-160.tar.gz"
-hash = "sha256:d4454623194876b083774c662fd223bc3b9e8325824cb758b8adecd5dc0d8a08"
-md5 = "789c162cc69f2aaea04502969537d63d"
+name = "nlme_3.1-162.tar.gz"
+hash = "sha256:ba6da2575554afa2614c4cba9971f8a9f8a07622d201284cb78899f3d6a2dc67"
+md5 = "9f6bdb4b9cb210656a6aa9bdd4781f9f"
 
 
 [[entry]]
 categories = [ "dev",]
 dependencies = [ "askpass",]
 name = "openssl"
-version = "2.0.3"
+version = "2.0.5"
 source = "CRAN"
 r_constraint = "*"
 type = "source"
 [[entry.files]]
-name = "openssl_2.0.3.tar.gz"
-hash = "sha256:7cde98520bec857f043fb6aae92334e2ae0dcd86108adc9b18ca298ec16286aa"
-md5 = "4c62e0912be65cc8a03d592e4fea7aa3"
+name = "openssl_2.0.5.tar.gz"
+hash = "sha256:8ac2140d59f9b4c642970736b08579bc8d59874ee72e1efca1826420b00786d3"
+md5 = "b3e18194e611d152c16cf178fd4b4ae4"
 
 
 [[entry]]
@@ -1061,16 +1061,16 @@ md5 = "f6fe56e1875fd314344148c59807531f"
 
 [[entry]]
 categories = [ "dev",]
-dependencies = [ "R6", "callr", "cli", "crayon", "desc", "prettyunits", "rprojroot", "withr",]
+dependencies = [ "R6", "callr", "cli", "crayon", "desc", "prettyunits", "processx", "rprojroot", "withr",]
 name = "pkgbuild"
-version = "1.3.1"
+version = "1.4.0"
 source = "CRAN"
-r_constraint = ">=3.1"
+r_constraint = ">=3.4"
 type = "source"
 [[entry.files]]
-name = "pkgbuild_1.3.1.tar.gz"
-hash = "sha256:7c6a82d1e6b19e136a7d16095743c50cd7b6340eeda594e4a8e14d74972ddb48"
-md5 = "16b79497d39185e7aa0dc088153b2b6d"
+name = "pkgbuild_1.4.0.tar.gz"
+hash = "sha256:357f3c40c99650eaa8a715991ff1355a553acb165f217ed204712f698ba55ed6"
+md5 = "8c26542a8ceb156e93b39087b812bfd9"
 
 
 [[entry]]
@@ -1091,28 +1091,28 @@ md5 = "7b9ca1d45d941238381cb55d13ff4d68"
 categories = [ "dev",]
 dependencies = [ "bslib", "callr", "cli", "desc", "digest", "downlit", "fs", "httr", "jsonlite", "magrittr", "memoise", "purrr", "ragg", "rlang", "rmarkdown", "tibble", "whisker", "withr", "xml2", "yaml",]
 name = "pkgdown"
-version = "2.0.6"
+version = "2.0.7"
 source = "CRAN"
 r_constraint = ">=3.1.0"
 type = "source"
 [[entry.files]]
-name = "pkgdown_2.0.6.tar.gz"
-hash = "sha256:d29a65c8a5b189fd89842e769f58f8c2369a55406269eabfb66d41d0fe1c7f69"
-md5 = "758d3295e3b340c4ac69d6ddc3d29962"
+name = "pkgdown_2.0.7.tar.gz"
+hash = "sha256:f33872869dfa8319182d87e90eab3245ff69293b3b791471bf9538afb81b356a"
+md5 = "921aa30f4ce3f89b4ab9f5a41e41562a"
 
 
 [[entry]]
 categories = [ "dev",]
 dependencies = [ "cli", "crayon", "desc", "fs", "glue", "methods", "rlang", "rprojroot", "utils", "withr",]
 name = "pkgload"
-version = "1.3.0"
+version = "1.3.2"
 source = "CRAN"
 r_constraint = ">=3.4.0"
 type = "source"
 [[entry.files]]
-name = "pkgload_1.3.0.tar.gz"
-hash = "sha256:5af653c901662260cc221971cc968355428cc6183b61c15be80aa9545f9f4228"
-md5 = "b896b4d3202c490ce3e6e79ed592341b"
+name = "pkgload_1.3.2.tar.gz"
+hash = "sha256:35d19a032bfeeefcab92d76a768b4a420c2ede0920badaf48cca878592b46b2f"
+md5 = "7d46ab67942b30fc8c04a45a152c6794"
 
 
 [[entry]]
@@ -1147,14 +1147,14 @@ md5 = "0585a928696b8b7c259d2aaf8125762f"
 categories = [ "dev",]
 dependencies = [ "R6", "ps", "utils",]
 name = "processx"
-version = "3.7.0"
+version = "3.8.0"
 source = "CRAN"
 r_constraint = ">=3.4.0"
 type = "source"
 [[entry.files]]
-name = "processx_3.7.0.tar.gz"
-hash = "sha256:de6a8d4135fc53ec35043fbaf6b000dc9597719345595d8479662a39dad55ed3"
-md5 = "830b0e37bebb8a9709504217418e5bdf"
+name = "processx_3.8.0.tar.gz"
+hash = "sha256:9270d9d26c4314151062801a5c1fc57556b4fcb41dbf3558cb5bd230b18ffb0b"
+md5 = "6ced8df912eefa88ee6c3e2f053ba194"
 
 
 [[entry]]
@@ -1189,42 +1189,42 @@ md5 = "adba783866d5496080f8a4e77576817b"
 categories = [ "dev",]
 dependencies = [ "utils",]
 name = "ps"
-version = "1.7.1"
+version = "1.7.2"
 source = "CRAN"
 r_constraint = ">=3.4"
 type = "source"
 [[entry.files]]
-name = "ps_1.7.1.tar.gz"
-hash = "sha256:9c458a377d47cc972d3cd0b2a17d0b7ad3cf3b62226410803072089a57a55ef1"
-md5 = "eb922022e8e8977c740381ce11875a9b"
+name = "ps_1.7.2.tar.gz"
+hash = "sha256:9225ebdedb5c1b245bb38b01ce88084c0fc7eafcff6c4fda2e299003ace6b21a"
+md5 = "645518ebc2cca679190ced0d3f24ad66"
 
 
 [[entry]]
 categories = [ "dev", "main",]
-dependencies = [ "magrittr", "rlang",]
+dependencies = [ "cli", "lifecycle", "magrittr", "rlang", "vctrs",]
 name = "purrr"
-version = "0.3.5"
+version = "1.0.1"
 source = "CRAN"
-r_constraint = ">=3.2"
+r_constraint = ">=3.4.0"
 type = "source"
 [[entry.files]]
-name = "purrr_0.3.5.tar.gz"
-hash = "sha256:a2386cd7e78a043cb9c14703023fff15ab1c879bf648816879d2c0c4a554fcef"
-md5 = "96e6d7b4d4d2fd38e1fbad18b1257dc0"
+name = "purrr_1.0.1.tar.gz"
+hash = "sha256:0a7911be3539355a4c40d136f2602befcaaad5a3f7222078500bfb969a6f2ba2"
+md5 = "9ce0a80d435467488214cf4aca250e9b"
 
 
 [[entry]]
 categories = [ "dev",]
 dependencies = [ "systemfonts", "textshaping",]
 name = "ragg"
-version = "1.2.3"
+version = "1.2.5"
 source = "CRAN"
 r_constraint = "*"
 type = "source"
 [[entry.files]]
-name = "ragg_1.2.3.tar.gz"
-hash = "sha256:976da0007ef0d4dbadda4734727b539671b65c1eff4ff392d734f4e2c846f2b2"
-md5 = "7e133fa76252fd6ddb243abbcab0b297"
+name = "ragg_1.2.5.tar.gz"
+hash = "sha256:936f4d75e0e01cdeefb9f57d121cdd7812d0de5a9e1a3a8315f92ce1c84da8f9"
+md5 = "036a14c8b00767c65f2e69629d31d2b4"
 
 
 [[entry]]
@@ -1315,28 +1315,28 @@ md5 = "907bc04039194b0c7edc19e9084b14fc"
 categories = [ "dev",]
 dependencies = [ "bslib", "evaluate", "htmltools", "jquerylib", "jsonlite", "knitr", "methods", "stringr", "tinytex", "tools", "utils", "xfun", "yaml",]
 name = "rmarkdown"
-version = "2.17"
+version = "2.20"
 source = "CRAN"
 r_constraint = ">=3.0"
 type = "source"
 [[entry.files]]
-name = "rmarkdown_2.17.tar.gz"
-hash = "sha256:aa576c458ec4c2e8468aaa4e3f60202d8d9c7ef54fa01d6b2d243bffee08c4be"
-md5 = "237b347af755c8ce471d29e4e275f359"
+name = "rmarkdown_2.20.tar.gz"
+hash = "sha256:d7f7059bfcb43e4b92432d69ba0e0c74ad10a20f153689262a3e848adb60159d"
+md5 = "ae67e12424b15f342c5c8d48694db82e"
 
 
 [[entry]]
 categories = [ "dev",]
-dependencies = [ "R6", "brew", "cli", "commonmark", "cpp11", "desc", "digest", "knitr", "methods", "pkgload", "purrr", "rlang", "stringi", "stringr", "utils", "withr", "xml2",]
+dependencies = [ "R6", "brew", "cli", "commonmark", "cpp11", "desc", "knitr", "methods", "pkgload", "purrr", "rlang", "stringi", "stringr", "utils", "withr", "xml2",]
 name = "roxygen2"
-version = "7.2.1"
+version = "7.2.3"
 source = "CRAN"
 r_constraint = ">=3.3"
 type = "source"
 [[entry.files]]
-name = "roxygen2_7.2.1.tar.gz"
-hash = "sha256:d2f0342591dc2b561fad8f6cf6fb3001e5e0bdd02be68bb2c6315f6bb82cda21"
-md5 = "bd1ef8d6852a3ad2604cf389e0a60d9c"
+name = "roxygen2_7.2.3.tar.gz"
+hash = "sha256:d844fab977d2575ab942fa1309ac7ff67f35f099a75d8b41c79efe6ea10416da"
+md5 = "1595c6b700996049f5f0bdee2cecfd5d"
 
 
 [[entry]]
@@ -1385,14 +1385,14 @@ md5 = "94a7f22e8be08c8693537a6b9ba10f50"
 categories = [ "dev",]
 dependencies = [ "R6", "fs", "htmltools", "rappdirs", "rlang",]
 name = "sass"
-version = "0.4.2"
+version = "0.4.5"
 source = "CRAN"
 r_constraint = "*"
 type = "source"
 [[entry.files]]
-name = "sass_0.4.2.tar.gz"
-hash = "sha256:b409049d0de9fae853f46c19d353226c8e9244ce847bdada033d8669fc2c9646"
-md5 = "4ad5eb3594b4df84bd36b29fc33adee2"
+name = "sass_0.4.5.tar.gz"
+hash = "sha256:eba161d982d2db108c8c0b61ec6b41a20d3adec430c7cc39537ab388c1007a90"
+md5 = "2e78de0099780252d03f404c0d6967cd"
 
 
 [[entry]]
@@ -1427,28 +1427,28 @@ md5 = "b373f83a971b68402825e699fce7cb4d"
 categories = [ "dev",]
 dependencies = [ "R6", "bslib", "cachem", "commonmark", "crayon", "ellipsis", "fastmap", "fontawesome", "glue", "grDevices", "htmltools", "httpuv", "jsonlite", "later", "lifecycle", "methods", "mime", "promises", "rlang", "sourcetools", "tools", "utils", "withr", "xtable",]
 name = "shiny"
-version = "1.7.2"
+version = "1.7.4"
 source = "CRAN"
 r_constraint = ">=3.0.2"
 type = "source"
 [[entry.files]]
-name = "shiny_1.7.2.tar.gz"
-hash = "sha256:23b5bfee8d597b4147e07c89391a735361cd9f69abeecfd9bd38a14d35fe6252"
-md5 = "2d27730142eabf804175aafb0f238ee8"
+name = "shiny_1.7.4.tar.gz"
+hash = "sha256:bbfcdd7375013b8f59248b3f3f4e752acd445feb25179f3f7f65cd69614da4b5"
+md5 = "cb09d415caf498e9055aa896f8422e3c"
 
 
 [[entry]]
 categories = [ "dev",]
 dependencies = []
 name = "sourcetools"
-version = "0.1.7"
+version = "0.1.7-1"
 source = "CRAN"
 r_constraint = ">=3.0.2"
 type = "source"
 [[entry.files]]
-name = "sourcetools_0.1.7.tar.gz"
-hash = "sha256:47984406efb3b3face133979ccbae9fefb7360b9a6ca1a1c11473681418ed2ca"
-md5 = "04284c2d78a9626fe5f219942836c530"
+name = "sourcetools_0.1.7-1.tar.gz"
+hash = "sha256:96812bdb7a0dd99690d84e4b0a3def91389e4290f53f01919ef28a50554e31d1"
+md5 = "dd4a9af00de6e874802f6e6622b774fb"
 
 
 [[entry]]
@@ -1464,59 +1464,45 @@ name = "stats"
 type = "core"
 
 [[entry]]
-categories = [ "dev", "main",]
+categories = [ "dev",]
 dependencies = [ "stats", "tools", "utils",]
 name = "stringi"
-version = "1.7.8"
+version = "1.7.12"
 source = "CRAN"
 r_constraint = ">=3.1"
 type = "source"
 [[entry.files]]
-name = "stringi_1.7.8.tar.gz"
-hash = "sha256:538918b1cd6ed1d8a2dd5ab146ba800a088e99f93c52dcd82615b6e127478b1c"
-md5 = "821da53021629a0490618459a33f4ac2"
+name = "stringi_1.7.12.tar.gz"
+hash = "sha256:efe8ac2900001f986a75db5641fbb24587a6d23de274a6a85c39dfa58921e009"
+md5 = "311f929662e309f508e0a3d33e2ecd0e"
 
 
 [[entry]]
-categories = [ "dev", "main",]
-dependencies = [ "glue", "magrittr", "stringi",]
+categories = [ "dev",]
+dependencies = [ "cli", "glue", "lifecycle", "magrittr", "rlang", "stringi", "vctrs",]
 name = "stringr"
-version = "1.4.1"
+version = "1.5.0"
 source = "CRAN"
-r_constraint = ">=3.1"
+r_constraint = ">=3.3"
 type = "source"
 [[entry.files]]
-name = "stringr_1.4.1.tar.gz"
-hash = "sha256:ec0d8e90caa3e107f18c188ed313dea8bfd12a738011b0be09ef5362360ddcb1"
-md5 = "6de497c8eb6b21c018778b13e5e04106"
-
-
-[[entry]]
-categories = [ "main",]
-dependencies = [ "Matrix", "graphics", "methods", "splines", "stats", "utils",]
-name = "survival"
-version = "3.4-0"
-source = "CRAN"
-r_constraint = ">=3.5.0"
-type = "source"
-[[entry.files]]
-name = "survival_3.4-0.tar.gz"
-hash = "sha256:1921ca14e137334e764b83f62407800239af79a88cee3be9d1b173c98b8a4f5c"
-md5 = "f7f74048aa0aa54b34d2e53080bf2eeb"
+name = "stringr_1.5.0.tar.gz"
+hash = "sha256:52b159d7700a139111b4caf939e7c9c6ab3e01185181400d70a74c552826633a"
+md5 = "e17661377c0c9f97f0ef154ef891a523"
 
 
 [[entry]]
 categories = [ "dev",]
 dependencies = []
 name = "sys"
-version = "3.4"
+version = "3.4.1"
 source = "CRAN"
 r_constraint = "*"
 type = "source"
 [[entry.files]]
-name = "sys_3.4.tar.gz"
-hash = "sha256:17f88fbaf222f1f8fd07919461093dac0e7175ae3c3b3264b88470617afd0487"
-md5 = "8648c35f0ff460481f88fc5e2c81ab8f"
+name = "sys_3.4.1.tar.gz"
+hash = "sha256:324e6d8fde58264e62bc04867b719c5fd16296de1542689801b8cb13621ecf52"
+md5 = "e1a9e105f826b3a87d2b29a0baa9d3a7"
 
 
 [[entry]]
@@ -1537,14 +1523,14 @@ md5 = "b099fee0892289e48b34cd412dacc535"
 categories = [ "dev",]
 dependencies = [ "R6", "brio", "callr", "cli", "desc", "digest", "ellipsis", "evaluate", "jsonlite", "lifecycle", "magrittr", "methods", "pkgload", "praise", "processx", "ps", "rlang", "utils", "waldo", "withr",]
 name = "testthat"
-version = "3.1.5"
+version = "3.1.6"
 source = "CRAN"
 r_constraint = ">=3.1"
 type = "source"
 [[entry.files]]
-name = "testthat_3.1.5.tar.gz"
-hash = "sha256:a8f56b9426206ddfc30b550c82ff2f042ebe1c2f5bfd4184aec8facac8f5b7fc"
-md5 = "3fe4b89018b51cc911c25e9a0a7456e9"
+name = "testthat_3.1.6.tar.gz"
+hash = "sha256:a7cb8c416475c182c4faaa32c3a12fc5d8ead77196d3c9811a3d39b3f994cdae"
+md5 = "1c644630dd1f20dd46c9a38025236e24"
 
 
 [[entry]]
@@ -1607,18 +1593,18 @@ md5 = "d863d11e5c647e506888415c22a3dcd0"
 categories = [ "dev",]
 dependencies = [ "xfun",]
 name = "tinytex"
-version = "0.42"
+version = "0.44"
 source = "CRAN"
 r_constraint = "*"
 type = "source"
 [[entry.files]]
-name = "tinytex_0.42.tar.gz"
-hash = "sha256:205f7a1978118aa38b6d9f7d3e1667c635da262b43967d1a879520284c2e22b1"
-md5 = "364a0fbef980aaaddc5e6924198059fa"
+name = "tinytex_0.44.tar.gz"
+hash = "sha256:afa14c1274593f0f980b12c4a27b5d0f6cad0c28ed9b4062d59e42562a33620e"
+md5 = "3e38304617baddcb250c6aad3a3e3221"
 
 
 [[entry]]
-categories = [ "dev", "main",]
+categories = [ "dev",]
 dependencies = []
 name = "tools"
 type = "core"
@@ -1655,14 +1641,14 @@ md5 = "21b827324e3504966805b2ad197574b4"
 categories = [ "dev", "main",]
 dependencies = []
 name = "utf8"
-version = "1.2.2"
+version = "1.2.3"
 source = "CRAN"
 r_constraint = ">=2.10"
 type = "source"
 [[entry.files]]
-name = "utf8_1.2.2.tar.gz"
-hash = "sha256:a71aee87d43a9bcf29249c7a5a2e9ca1d2a836e8d5ee3a264d3062f25378d8f4"
-md5 = "e7aa5fa292e3ca271e6573677f6a9c6f"
+name = "utf8_1.2.3.tar.gz"
+hash = "sha256:c0a88686591f4ad43b52917d0964e9df4c62d8858fe25135a1bf357dfcbd6347"
+md5 = "9ac7c6e4062e30a371c15dbb3d8bbeaa"
 
 
 [[entry]]
@@ -1673,16 +1659,16 @@ type = "core"
 
 [[entry]]
 categories = [ "dev", "main",]
-dependencies = [ "cli", "glue", "rlang",]
+dependencies = [ "cli", "glue", "lifecycle", "rlang",]
 name = "vctrs"
-version = "0.4.2"
+version = "0.5.2"
 source = "CRAN"
 r_constraint = ">=3.3"
 type = "source"
 [[entry.files]]
-name = "vctrs_0.4.2.tar.gz"
-hash = "sha256:5414d1d6977163b4e85efa40d6facdd98089d6ffd460daaba729d4200942d815"
-md5 = "a533f3d40056d305d44cfcee4db46b88"
+name = "vctrs_0.5.2.tar.gz"
+hash = "sha256:76bf10243b9b31e23f56ffdaa1677a01767699e2098487f86bd42cb801d8c047"
+md5 = "3227f1e045063d1dec2b82345e8d790c"
 
 
 [[entry]]
@@ -1717,14 +1703,14 @@ md5 = "86c5349c22a8ee831ebd186e999aba85"
 categories = [ "dev",]
 dependencies = []
 name = "whisker"
-version = "0.4"
+version = "0.4.1"
 source = "CRAN"
 r_constraint = "*"
 type = "source"
 [[entry.files]]
-name = "whisker_0.4.tar.gz"
-hash = "sha256:7a86595be4f1029ec5d7152472d11b16175737e2777134e296ae97341bf8fba8"
-md5 = "ad148fdbb613eea8d5ec5981d5881d90"
+name = "whisker_0.4.1.tar.gz"
+hash = "sha256:bf5151494508032f68ac41e211bda80da9087c65c7068ffdd12f16669bf1f2bc"
+md5 = "eda4d778ea813e892c86511d355ee26c"
 
 
 [[entry]]
@@ -1745,14 +1731,14 @@ md5 = "26006b3833199a6b6db70fda04126b87"
 categories = [ "dev",]
 dependencies = [ "stats", "tools",]
 name = "xfun"
-version = "0.33"
+version = "0.37"
 source = "CRAN"
 r_constraint = "*"
 type = "source"
 [[entry.files]]
-name = "xfun_0.33.tar.gz"
-hash = "sha256:45fbc2d252867b69bbde64d4a4e3d2e049ad1d3a84984e9cfb242d8d1f41ee6c"
-md5 = "efcd34dccc01c3bb886dc8329dbc1c26"
+name = "xfun_0.37.tar.gz"
+hash = "sha256:3b619ff0b2aea36a1d422d1f7ca2e5cef0102e1d127c94c87acf5e6e8358e1f9"
+md5 = "26ca74583e94c97054e906c0e6f45b29"
 
 
 [[entry]]
@@ -1815,31 +1801,31 @@ md5 = "0a7da6c3b34b2974110a7d00fe9afa79"
 categories = [ "dev",]
 dependencies = []
 name = "yaml"
-version = "2.3.5"
+version = "2.3.7"
 source = "CRAN"
 r_constraint = "*"
 type = "source"
 [[entry.files]]
-name = "yaml_2.3.5.tar.gz"
-hash = "sha256:3edf6c0554a0e184a25e8bec5721a2e66b4ab0dceb3737428e22705e52eb5140"
-md5 = "cad17b63b4751da5321e74b3c54cb80d"
+name = "yaml_2.3.7.tar.gz"
+hash = "sha256:d20cb219e0f9c48aba02f132f81cfa9ecda5e22c925e36726840218ed56680ab"
+md5 = "38607c0b966d0b3b6c4f00419d251c8d"
 
 
 [[entry]]
 categories = [ "dev",]
 dependencies = []
 name = "zip"
-version = "2.2.1"
+version = "2.2.2"
 source = "CRAN"
 r_constraint = "*"
 type = "source"
 [[entry.files]]
-name = "zip_2.2.1.tar.gz"
-hash = "sha256:14873d0874813139411c120d8b209af71e4e087871eeb963f235411eb1061422"
-md5 = "f7c6f3ac61079cb7cdc19ad05923b8f7"
+name = "zip_2.2.2.tar.gz"
+hash = "sha256:e16cde23bb283efbe9b6bce19575c716c371d09033b42514471ccb444c0a8ea4"
+md5 = "f4c02a28bd7cb498e6131775bcb5e67b"
 
 
 [metadata]
 version = 2
-content_hash = "b9240923f632857fe1d7192b397a95d68f9114d968cdb266a1a860de98ca07ea"
+content_hash = "1e5fdd4b65123f10f7543e21b5a19429128f5d4241f20831f40d69022327458a"
 conservative = false

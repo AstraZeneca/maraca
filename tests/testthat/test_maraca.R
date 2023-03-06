@@ -18,6 +18,14 @@
   ))
 }
 
+expect_text_equal <- function(result, expected) {
+  expect_equal(length(result), length(expected))
+
+  for (i in seq_along(expected)) {
+    expect_equal(result[[i]], expected[[i]])
+  }
+
+}
 
 test_that("Maraca initialisation", {
   file <- fixture_path("hce_scenario_c.csv")
@@ -40,46 +48,6 @@ test_that("Maraca initialisation", {
   expect_s3_class(mar, "maraca")
   expect_equal(mar$fixed_followup_days, fixed_followup_days)
   plot(mar)
-})
-
-test_that("plot_tte_components", {
-  file <- fixture_path("hce_scenario_c.csv")
-  data <- read.csv(file, stringsAsFactors = FALSE)
-
-  tte_outcomes <- c(
-    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
-  )
-  continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(active = "Active", control = "Control")
-  column_names <- c(
-    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
-  )
-  fixed_followup_days <- 3 * 365
-  mar <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels,
-    column_names,
-    fixed_followup_days
-    )
-  print(plot_tte_components(mar))
-  expect_true(TRUE)
-})
-
-test_that("Initialisation without fixed_followup_days", {
-  file <- fixture_path("hce_scenario_c.csv")
-
-  data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
-    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
-  )
-  continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(active = "Active", control = "Control")
-  column_names <- c(
-    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
-  )
-  mar <- maraca(data, tte_outcomes, continuous_outcome, arm_levels,
-                column_names = column_names)
-  expect_s3_class(mar, "maraca")
-  expect_equal(mar$fixed_followup_days, 1074.68286)
 })
 
 test_that("Maraca wrong params", {
@@ -123,20 +91,35 @@ test_that("Maraca wrong params", {
     maraca(
       data, tte_outcomes, continuous_outcome,
       c(active = "foo", control = "bar", whatever = "baz"),
+      column_names,
       fixed_followup_days), regexp = "Must have length 2"
   )
   expect_error(
     maraca(data, tte_outcomes, continuous_outcome, arm_levels,
+           column_names,
            fixed_followup_days = 12.3
           ),
     regexp = "single integerish value"
+  )
+  expect_error(
+    maraca(data, tte_outcomes, continuous_outcome, arm_levels,
+           column_names,
+           fixed_followup_days = NULL
+    )
+  )
+  expect_error(
+    maraca(data, tte_outcomes, continuous_outcome, arm_levels,
+           column_names,
+           fixed_followup_days = 12
+    ),
+    regexp = "Time-to-event data contain events after the fixed_followup_days"
   )
 
   expect_error(
     maraca(
       data, tte_outcomes, continuous_outcome, arm_levels,
       c("a"),
-      12
+      fixed_followup_days
     ),
     regexp = "Must have length 3"
   )
@@ -144,7 +127,7 @@ test_that("Maraca wrong params", {
     maraca(
       data, tte_outcomes, continuous_outcome, arm_levels,
       c("a", "b", "c"),
-      12
+      fixed_followup_days
     ),
     regexp = "Must have names"
   )
@@ -152,7 +135,7 @@ test_that("Maraca wrong params", {
     maraca(
       data, tte_outcomes, continuous_outcome, arm_levels,
       c(foo = "a", bar = "b", baz = "c"),
-      12
+      fixed_followup_days
     ),
     regexp = "Names must be a identical to"
   )
@@ -163,7 +146,7 @@ test_that("Maraca wrong params", {
       c(
         outcome = "GROUP", arm = "notexistent",
         value = "AVAL0"
-      ), 12
+      ), fixed_followup_days
     ),
     regexp = "Can't rename columns that don't exist"
   )
@@ -176,7 +159,7 @@ test_that("Maraca wrong params", {
       c(
         outcome = "GROUP", arm = "TRTP",
         value = "AVAL0"
-      ), 12
+      ), fixed_followup_days
     ),
     regexp = "The arm column must be characters"
   )
@@ -189,10 +172,81 @@ test_that("Maraca wrong params", {
       c(
         outcome = "GROUP", arm = "TRTP",
         value = "AVAL0"
-      ), 12
+      ), fixed_followup_days
     ),
     regexp = "The outcome column must be characters"
   )
+})
+
+test_that("Maraca printing", {
+  file <- fixture_path("hce_scenario_c.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
+  )
+  mar <- maraca(
+    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
+    compute_win_odds = TRUE
+  )
+
+  mar_no_win_odds <- maraca(
+    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
+    compute_win_odds = FALSE
+  )
+
+  data$AVAL0[[3]] <- NA
+  mar_na <- maraca(
+    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
+    compute_win_odds = TRUE
+  )
+
+  res <- capture.output(mar)
+  exp <- list(
+    "Maraca object for plotting maraca graph created for 1000 patients.",
+    "", "Win odds (95% CI): 1.31 (1.14, 1.52)",
+    "Win odds p-value: <0.001", "",
+    "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
+    "          Outcome I 129       12.9       63        66       0",
+    "         Outcome II 115       11.5       55        60       0",
+    "        Outcome III 110       11.0       50        60       0",
+    "         Outcome IV  77        7.7       34        43       0",
+    " Continuous outcome 569       56.9      298       271       0")
+
+  expect_text_equal(res, exp)
+
+  res <- capture.output(mar_no_win_odds)
+  exp <- list(
+    "Maraca object for plotting maraca graph created for 1000 patients.",
+    "", "Win odds not calculated.", "",
+    "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
+    "          Outcome I 129       12.9       63        66       0",
+    "         Outcome II 115       11.5       55        60       0",
+    "        Outcome III 110       11.0       50        60       0",
+    "         Outcome IV  77        7.7       34        43       0",
+    " Continuous outcome 569       56.9      298       271       0")
+
+  expect_text_equal(res, exp)
+
+  res <- capture.output(mar_na)
+  exp <- list(
+    "Maraca object for plotting maraca graph created for 999 patients.",
+    "", "1 patient(s) removed because of missing values.", "",
+    "Win odds (95% CI): 1.32 (1.14, 1.52)",
+    "Win odds p-value: <0.001", "",
+    "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
+    "          Outcome I 129       12.9       63        66       0",
+    "         Outcome II 115       11.5       55        60       0",
+    "        Outcome III 110       11.0       50        60       0",
+    "         Outcome IV  76        7.6       33        43       1",
+    " Continuous outcome 569       56.9      298       271       0")
+
+  expect_text_equal(res, exp)
+
 })
 
 test_that("Maraca plotting", {
@@ -216,29 +270,203 @@ test_that("Maraca plotting", {
   expect_true(TRUE)
 })
 
+test_that("Test plot functions only work with maraca objects", {
+  expect_error(plot_maraca(123), regexp = "Must inherit")
+})
 
-test_that("Test plot_tte_composite", {
-  file <- fixture_path("hce_scenario_a.csv")
+test_that("Validation function for  maraca plots", {
+  file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
-
   tte_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
   continuous_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
+  fixed_followup_days <- 3 * 365
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
-  fixed_followup_days <- 3 * 365
   mar <- maraca(
     data, tte_outcomes, continuous_outcome, arm_levels,
     column_names,
-    fixed_followup_days
-    )
-  print(plot_tte_composite(mar))
-  expect_true(TRUE)
+    fixed_followup_days,
+    compute_win_odds = TRUE
+  )
+
+  a_def <- plot(mar, density_plot_type = "default")
+  a_violin <- plot(mar, density_plot_type = "violin")
+  a_box <- plot(mar, density_plot_type = "box")
+  a_scatter <- plot(mar, density_plot_type = "scatter")
+  val_res_def <- validate_maraca_plot(a_def)
+  val_res_violin <- validate_maraca_plot(a_violin)
+  val_res_box <- validate_maraca_plot(a_box)
+  val_res_scatter <- validate_maraca_plot(a_scatter)
+
+  expect_type(val_res_def, "list")
+  expect_type(val_res_violin, "list")
+  expect_type(val_res_box, "list")
+  expect_type(val_res_scatter, "list")
+
+  expected_names <- c("plot_type", "proportions",
+                      "tte_data", "scatter_data",
+                      "boxstat_data", "violin_data",
+                      "wo_stats")
+  expect_named(val_res_def, expected_names, ignore.order = TRUE)
+  expect_named(val_res_violin, expected_names, ignore.order = TRUE)
+  expect_named(val_res_box, expected_names, ignore.order = TRUE)
+  expect_named(val_res_scatter, expected_names, ignore.order = TRUE)
+
+  expect_equal(val_res_def$plot_type, "GeomViolin")
+  expect_equal(val_res_violin$plot_type, "GeomViolin")
+  expect_equal(val_res_box$plot_type, "GeomBoxplot")
+  expect_equal(val_res_scatter$plot_type, "GeomPoint")
+
+  expected_names <- c(tte_outcomes, continuous_outcome)
+  expect_named(val_res_def$proportions, expected_names, ignore.order = TRUE)
+  expect_named(val_res_violin$proportions, expected_names, ignore.order = TRUE)
+  expect_named(val_res_box$proportions, expected_names, ignore.order = TRUE)
+  expect_named(val_res_scatter$proportions, expected_names, ignore.order = TRUE)
+
+  expect_equal(unname(val_res_def$proportions), mar$meta$proportion)
+  expect_equal(unname(val_res_violin$proportions), mar$meta$proportion)
+  expect_equal(unname(val_res_box$proportions), mar$meta$proportion)
+  expect_equal(unname(val_res_scatter$proportions), mar$meta$proportion)
+
+  mar_tte_dat <- as.data.frame(mar$ecdf_by_outcome$data)
+  mar_tte_dat <- mar_tte_dat[order(mar_tte_dat$adjusted.time), ]
+  val_res_def$tte_data <- val_res_def$tte_data[order(val_res_def$tte_data$x), ]
+  val_res_violin$tte_data <-
+    val_res_violin$tte_data[order(val_res_violin$tte_data$x), ]
+  val_res_box$tte_data <- val_res_box$tte_data[order(val_res_box$tte_data$x), ]
+  val_res_scatter$tte_data <-
+    val_res_scatter$tte_data[order(val_res_scatter$tte_data$x), ]
+  expect_equal(val_res_def$tte_data$x, mar_tte_dat$adjusted.time)
+  expect_equal(val_res_violin$tte_data$x, mar_tte_dat$adjusted.time)
+  expect_equal(val_res_box$tte_data$x, mar_tte_dat$adjusted.time)
+  expect_equal(val_res_scatter$tte_data$x, mar_tte_dat$adjusted.time)
+  expect_equal(val_res_def$tte_data$y, mar_tte_dat$ecdf_values)
+  expect_equal(val_res_violin$tte_data$y, mar_tte_dat$ecdf_values)
+  expect_equal(val_res_box$tte_data$y, mar_tte_dat$ecdf_values)
+  expect_equal(val_res_scatter$tte_data$y, mar_tte_dat$ecdf_values)
+  expect_equal(val_res_def$tte_data$group, mar_tte_dat$arm)
+  expect_equal(val_res_violin$tte_data$group, mar_tte_dat$arm)
+  expect_equal(val_res_box$tte_data$group, mar_tte_dat$arm)
+  expect_equal(val_res_scatter$tte_data$group, mar_tte_dat$arm)
+
+  expect_null(val_res_def$scatter_data)
+  expect_null(val_res_violin$boxstat_data)
+  expect_null(val_res_violin$scatter_data)
+  expect_null(val_res_box$scatter_data)
+  expect_null(val_res_box$violin_data)
+  expect_null(val_res_scatter$violin_data)
+  expect_null(val_res_scatter$boxstat_data)
+
+  expect_equal(sort(val_res_scatter$scatter_data$x),
+               sort(mar$continuous$data$x))
+
+  y_values <- unique(mar$continuous$data[, c("arm", "y_level")])
+  y_values <- y_values[order(y_values$arm), ]
+  jitter_means <- val_res_scatter$scatter_data %>%
+                        dplyr::group_by(group) %>%
+                        dplyr::summarize("y_level" = mean(y))
+  expect_equal(jitter_means$y_level, y_values$y_level, tolerance = 0.1)
+
+  boxplot_stats <- mar$continuous$data %>%
+    dplyr::group_by(arm) %>%
+    dplyr::summarize("perc_25th" = unname(quantile(x, probs = 0.25)),
+                     "median" = median(x),
+                     "perc_75th" = unname(quantile(x, probs = 0.75)),
+                     "lower_whisker" = min(x[x >= (perc_25th - (perc_75th -
+                                                      perc_25th) * 1.5)]),
+                     "upper_whisker" = max(x[x <= (perc_75th + (perc_75th -
+                                                      perc_25th) * 1.5)]),
+                     "x_lowest" = min(x),
+                     "x_highest" = max(x))
+  expect_equal(val_res_def$boxstat_data$x_lowest, boxplot_stats$x_lowest)
+  expect_equal(val_res_def$boxstat_data$whisker_lower,
+               boxplot_stats$lower_whisker)
+  expect_equal(val_res_def$boxstat_data$hinge_lower, boxplot_stats$perc_25th)
+  expect_equal(val_res_def$boxstat_data$median, boxplot_stats$median)
+  expect_equal(val_res_def$boxstat_data$hinge_upper, boxplot_stats$perc_75th)
+  expect_equal(val_res_def$boxstat_data$whisker_upper,
+               boxplot_stats$upper_whisker)
+  expect_equal(val_res_def$boxstat_data$x_highest, boxplot_stats$x_highest)
+  expect_equal(val_res_box$boxstat_data$x_lowest, boxplot_stats$x_lowest)
+  expect_equal(val_res_box$boxstat_data$whisker_lower,
+               boxplot_stats$lower_whisker)
+  expect_equal(val_res_box$boxstat_data$hinge_lower, boxplot_stats$perc_25th)
+  expect_equal(val_res_box$boxstat_data$median, boxplot_stats$median)
+  expect_equal(val_res_box$boxstat_data$hinge_upper, boxplot_stats$perc_75th)
+  expect_equal(val_res_box$boxstat_data$whisker_upper,
+               boxplot_stats$upper_whisker)
+  expect_equal(val_res_box$boxstat_data$x_highest, boxplot_stats$x_highest)
+
+  y_values_violin <- unique(val_res_violin$violin_data$y)
+  violin_stats <- mar$continuous$data %>%
+    dplyr::group_by(arm) %>%
+    dplyr::summarize("mean" = mean(x))
+  violin_stats_from_plot <- val_res_violin$violin_data %>%
+    dplyr::group_by(group) %>%
+    dplyr::summarize("mean" = weighted.mean(x, density))
+  expect_equal(y_values_violin, y_values$y_level)
+  expect_equal(violin_stats_from_plot$mean, violin_stats$mean, tolerance = 0.1)
+
 })
 
+test_that("Test win odds extraction of validation function", {
+  file <- fixture_path("hce_scenario_c.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  fixed_followup_days <- 3 * 365
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
+  )
+  mar_with_win_odds <- maraca(
+    data, tte_outcomes, continuous_outcome, arm_levels,
+    column_names,
+    fixed_followup_days,
+    compute_win_odds = TRUE
+  )
+  mar_without_win_odds <- maraca(
+    data, tte_outcomes, continuous_outcome, arm_levels,
+    column_names,
+    fixed_followup_days,
+    compute_win_odds = FALSE
+  )
+  a_with_wo <- plot(mar_with_win_odds)
+  a_without_wo <- plot(mar_without_win_odds)
+  val_res_with_wo <- validate_maraca_plot(a_with_wo)
+  val_res_without_wo <- validate_maraca_plot(a_without_wo)
+
+  expect_type(val_res_with_wo$wo_stats, "double")
+  expect_named(val_res_with_wo$wo_stats,
+               c("winodds", "lowerCI", "upperCI", "p_value"),
+               ignore.order = TRUE)
+
+  data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
+                                   arm_levels, column_names = column_names
+                                   )
+  win_odds <- .compute_win_odds(data)
+  expect_equivalent(val_res_with_wo$wo_stats["winodds"], win_odds["estimate"])
+  expect_equivalent(val_res_with_wo$wo_stats["lowerCI"], win_odds["lower"])
+  expect_equivalent(val_res_with_wo$wo_stats["upperCI"], win_odds["upper"])
+  expect_equivalent(val_res_with_wo$wo_stats["p_value"], win_odds["p-value"])
+
+  expect_null(val_res_without_wo$wo_stats)
+})
+
+test_that("Validation function only works for maraca plot", {
+  tmp <- data.frame("a" = 1:10, "b" = 10:1)
+  plot <- ggplot2::ggplot(tmp, ggplot2::aes(a, b)) +
+    ggplot2::geom_point()
+
+  expect_error(validate_maraca_plot(plot), regexp =
+              "Must inherit from class")
+})
 
 test_that("Test reformatting of data", {
   file <- fixture_path("hce_scenario_c.csv")
@@ -261,10 +489,6 @@ test_that("Test reformatting of data", {
   expect_equal(class(data$outcome), "factor")
   expect_equal(levels(data$outcome), c(tte_outcomes, continuous_outcome))
 
-})
-
-test_that("Test plot functions only work with maraca objects", {
-  expect_error(plot_maraca(123), regexp = "Must inherit")
 })
 
 test_that("Test win odds", {
@@ -322,7 +546,7 @@ test_that("Test compute metainfo", {
   expect_equal(metainfo$n_control, c(66, 60, 60, 43, 271))
 })
 
-test_that("Test compute survmod", {
+test_that("Test compute ecdf", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
   tte_outcomes <- c(
@@ -338,60 +562,27 @@ test_that("Test compute survmod", {
     column_names
   )
   meta <- .compute_metainfo(data)
-  survmod <- .compute_survmod_by_outcome(
+  HCE_ecdf <- .compute_ecdf_by_outcome(
     data, meta, tte_outcomes, continuous_outcome, arm_levels, 3 * 365)
 
   # Checking the abssum along the columns to check that values remain the same.
-  expect_equal(sum(abs(survmod$data$time)), 225699.2035)
-  expect_equal(sum(abs(survmod$data$n.risk)), 170235)
-  expect_equal(sum(abs(survmod$data$n.event)), 435)
-  expect_equal(sum(abs(survmod$data$n.censor)), 0)
-  expect_equal(sum(abs(survmod$data$surv)), 339.6)
-  expect_equal(sum(abs(survmod$data$std.err)), 10.10464444)
-  expect_equal(sum(abs(survmod$data$upper)), 354.3805911)
-  expect_equal(sum(abs(survmod$data$lower)), 325.5440402)
-  expect_equal(sum(abs(survmod$data$adjusted.time)), 9487.798376)
-  expect_equal(sum(abs(survmod$data$km.y)), 9540)
-  expect_equal(sum(abs(survmod$data$max)), 11902.4)
-  expect_equal(sum(abs(survmod$data$sum.event)), 24209)
-  expect_equal(sum(abs(survmod$data$km.end)), 18821.4)
+  expect_equal(sum(abs(HCE_ecdf$data$value)), 221627.7286)
+  expect_equal(sum(abs(HCE_ecdf$data$t_cdf)), 841397.7286)
+  expect_equal(sum(abs(HCE_ecdf$data$ecdf_values)), 9367.6)
+  expect_equal(sum(abs(HCE_ecdf$data$adjusted.time)), 9142.184244)
 
   expect_equal(
-    survmod$meta$max,
+    HCE_ecdf$meta$max,
     c(12.6, 23.6, 33.6, 40.4, 13.2, 25.2, 37.2, 45.8), tol = 1e-6)
-  expect_equal(survmod$meta$sum.event, c(
+  expect_equal(HCE_ecdf$meta$sum.event, c(
     63, 55, 50, 34, 66, 60, 60, 43
   ))
-  expect_equal(survmod$meta$km.end,
+  expect_equal(HCE_ecdf$meta$ecdf_end,
     c(40.4, 40.4, 40.4, 40.4, 45.8, 45.8, 45.8, 45.8), tol = 1e-6
   )
 
 })
 
-
-test_that("Test compute survmod", {
-  file <- fixture_path("hce_scenario_c.csv")
-  data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
-    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
-  )
-  continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(active = "Active", control = "Control")
-  column_names <- c(
-    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
-  )
-  data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
-    arm_levels, column_names)
-  meta <- .compute_metainfo(data)
-  fixed_followup_days <- max(meta[meta$outcome %in% tte_outcomes, ]$maxday)
-  survmod <- .compute_survmod_by_outcome(
-    data, meta, tte_outcomes, continuous_outcome, arm_levels,
-    fixed_followup_days)
-
-  expect_equal(sum(abs(survmod$data$time)), 224624.521)
-  expect_equal(sum(abs(survmod$data$km.end)), 18775.6)
-
-})
 
 test_that("Test compute continuous", {
   file <- fixture_path("hce_scenario_c.csv")
@@ -407,12 +598,12 @@ test_that("Test compute continuous", {
   data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
     arm_levels, column_names = column_names)
   meta <- .compute_metainfo(data)
-  survmod <- .compute_survmod_by_outcome(
+  HCE_ecdf <- .compute_ecdf_by_outcome(
     data, meta, tte_outcomes, continuous_outcome, arm_levels, 3 * 365)
   continuous <- .compute_continuous(
-    data, meta, survmod, tte_outcomes, continuous_outcome, arm_levels)
+    data, meta, HCE_ecdf, tte_outcomes, continuous_outcome, arm_levels)
   expect_equal(sum(abs(continuous$data$x)), 40828.387)
-  expect_equal(sum(abs(continuous$data$violiny)), 24451)
+  expect_equal(sum(abs(continuous$data$y_level)), 24451)
 
   expect_equal(continuous$meta$n, c(298, 271))
   expect_equal(continuous$meta$median, c(74.360287, 68.354528))
@@ -433,7 +624,8 @@ test_that("Test error for missing outcome", {
   )
 
   expect_error(
-    maraca(data, tte_outcomes, continuous_outcome, arm_levels, column_names),
+    maraca(data, tte_outcomes, continuous_outcome, arm_levels,
+           column_names, 3 * 365),
     regexp = "Outcome Outcome XXX is not present in column GROUP"
   )
 })
@@ -451,7 +643,7 @@ test_that("Test compute win_odds flag", {
   )
 
   mar <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels, column_names,
+    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
     compute_win_odds = FALSE
   )
 
@@ -475,7 +667,7 @@ test_that("Test handle NA data", {
 
   data$AVAL0[[3]] <- NA
   mar <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels, column_names
+    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365
   )
 
   plot(mar)
@@ -490,7 +682,8 @@ test_that("Test modify continuous x grid", {
     args$tte_outcomes,
     args$continuous_outcome,
     args$arm_levels,
-    args$column_names
+    args$column_names,
+    3 * 365
   )
 
   expect_true(TRUE)
@@ -506,7 +699,8 @@ test_that("Test apply transformation to continuous scale", {
     args$tte_outcomes,
     args$continuous_outcome,
     args$arm_levels,
-    args$column_names
+    args$column_names,
+    3 * 365
   )
 
   expect_true(TRUE)
@@ -523,7 +717,8 @@ test_that("Test density plot selection", {
     args$tte_outcomes,
     args$continuous_outcome,
     args$arm_levels,
-    args$column_names
+    args$column_names,
+    3 * 365
   )
 
   expect_true(TRUE)
@@ -544,7 +739,8 @@ test_that("Test vline type", {
     args$tte_outcomes,
     args$continuous_outcome,
     args$arm_levels,
-    args$column_names
+    args$column_names,
+    3 * 365
   )
 
   expect_true(TRUE)
@@ -573,27 +769,6 @@ test_that("test ordered column", {
   expect_equal(data$AVAL, hce$ordered, tol = 1e-7)
 })
 
-test_that("test hce focus function", {
-  file <- fixture_path("hce_scenario_a.csv")
-  data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
-    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
-  )
-  continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(active = "Active", control = "Control")
-  column_names <- c(
-    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
-  )
-  data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
-    arm_levels,
-    column_names
-  )
-  fixed_followup_days <- 3 * 365
-
-  .hce_survival_focus(data, 4, tte_outcomes, fixed_followup_days)
-  expect_true(TRUE)
-})
-
 test_that("test minor_grid", {
   grid <- .minor_grid(c(-10, -2, 3, 27), 1, 5)
   expect_equal(grid, c(-10, -5, 0, 5, 10, 15, 20, 25))
@@ -606,12 +781,12 @@ test_that("test minor_grid", {
 })
 
 test_that("test minor_grid", {
-  set.seed(31337)
   rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
   rates_P <- c(2.47, 2.24, 2.9, 4, 6)
   HCE <- hce::simHCE(
     n = 2500, TTE_A = rates_A, TTE_P = rates_P,
-    CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3)
+    CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3,
+    seed = 31337)
   plot(HCE)
   expect_true(TRUE)
 })

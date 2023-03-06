@@ -4,7 +4,7 @@
 #' @param data A data frame with columns for the following information:
 #'             - outcome column, containing the time-to-event and continuous
 #'               labels
-#'             - arm column, contaning the arm a given row belongs to.
+#'             - arm column, containing the arm a given row belongs to.
 #'             - value column, containing the values.
 #' @param tte_outcomes A vector of strings containing the time-to-event
 #'                     outcome labels. The order is kept for the plot.
@@ -21,8 +21,8 @@
 #'        in the data. The vector names must match in order "outcome", "arm",
 #'        and "value". Note that this parameter only need to be
 #'        specified if you have column names different from the ones above.
-#' @param fixed_followup_days The followup days, or NULL. If NULL, use the
-#'        largest value across the hard outcomes.
+#' @param fixed_followup_days A mandatory specification of the integer number
+#'                            of fixed follow-up days in the study.
 #' @param compute_win_odds If TRUE compute the win odds, otherwise (default)
 #'                         don't compute them.
 #'
@@ -34,6 +34,7 @@
 #'   data = hce_scenario_a,
 #'   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
 #'   continuous_outcome = "Continuous outcome",
+#'   fixed_followup_days = 3 * 365,
 #'   column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
 #'   arm_levels = c(active = "Active", control = "Control"),
 #'   compute_win_odds = TRUE
@@ -52,7 +53,7 @@ maraca <- function(
       arm = "arm",
       value = "value"
     ),
-    fixed_followup_days = NULL,
+    fixed_followup_days,
     compute_win_odds = FALSE
     ) {
 
@@ -69,8 +70,10 @@ maraca <- function(
     names(column_names),
     identical.to = c("outcome", "arm", "value")
   )
-  checkmate::assert_int(fixed_followup_days, null.ok = TRUE)
+  checkmate::assert_int(fixed_followup_days)
   checkmate::assert_flag(compute_win_odds)
+
+  `%>%` <- dplyr::`%>%`
 
   # Remove unwanted outcomes and arm levels, and normalise column names
   # in the internal data.
@@ -82,22 +85,40 @@ maraca <- function(
   # Calculate meta information from the entire HCE dataset needed for plotting
   meta <- .compute_metainfo(HCE)
 
-  if (is.null(fixed_followup_days)) {
-    # Use the largest value across the hard outcomes if
-    # fixed_followup_days is not specified
-    fixed_followup_days <- max(meta[meta$outcome %in% tte_outcomes, ]$maxday)
+  # In the current implementation of the package,
+  # the fixed follow-up days given cannot be smaller
+  # than the follow-up times for all tte-outcomes in the
+  # in the dataset - this has to do with the fact that
+  # we don't have information on patients that had multiple
+  # events of different severity - for example a patient
+  # having a myocardial infarction on day 300 and dies day
+  # 800 - if we now change follow-up time to 500, we will
+  # discard the death event for this patient (after 500)
+  # but will at the same time not include the MI since
+  # we don't know about it
+  if (fixed_followup_days <
+     max(meta[meta$outcome %in% tte_outcomes, "maxday"])) {
+    stop(paste("Time-to-event data contain events",
+               "after the fixed_followup_days - either",
+               "provide a longer follow-up time or",
+               "re-derive your input dataset for the",
+               "follow-up time provided."))
   }
 
-  survmod_by_outcome <- .compute_survmod_by_outcome(
+  # Remove rows with missing values - previously done
+  # automatically by survival package (should we done)
+  # after the meta data is collected to keep information
+  # on if missing data was removed
+  HCE <- HCE %>%
+    dplyr::filter(!is.na(value))
+
+  ecdf_by_outcome <- .compute_ecdf_by_outcome(
     HCE, meta, tte_outcomes, continuous_outcome, arm_levels,
     fixed_followup_days
   )
-  survmod_complete <- .compute_survmod_complete(
-    HCE, meta, tte_outcomes, continuous_outcome, arm_levels,
-    fixed_followup_days
-  )
+
   continuous <- .compute_continuous(
-    HCE, meta, survmod_by_outcome, tte_outcomes, continuous_outcome, arm_levels
+    HCE, meta, ecdf_by_outcome, tte_outcomes, continuous_outcome, arm_levels
   )
 
   win_odds <- NULL
@@ -114,8 +135,7 @@ maraca <- function(
         fixed_followup_days = fixed_followup_days,
         column_names = column_names,
         meta = meta,
-        survmod_by_outcome = survmod_by_outcome,
-        survmod_complete = survmod_complete,
+        ecdf_by_outcome = ecdf_by_outcome,
         continuous = continuous,
         win_odds = win_odds
       ),
@@ -123,6 +143,40 @@ maraca <- function(
     )
   )
 }
+
+#' @param x an object of class maraca
+#' @param ... further arguments passed to or
+#' from other methods.
+#' @method print maraca
+#' @rdname maraca
+#' @export
+print.maraca <- function(x, ...) {
+
+  cat(paste("Maraca object for plotting maraca graph created for",
+            sum(x$meta$n), "patients.\n\n"))
+
+  if (sum(x$meta$missing) > 0) {
+    cat(paste(sum(x$meta$missing),
+              "patient(s) removed because of missing values.\n\n"))
+  }
+
+  if (!is.null(x$win_odds)) {
+    cat(paste0("Win odds (95% CI): ", round(x$win_odds[[1]], 2),
+               " (", round(x$win_odds[[2]], 2), ", ",
+               round(x$win_odds[[3]], 2), ")", "\n",
+               "Win odds p-value: ",
+               format.pval(x$win_odds[[4]], digits = 3, eps = 0.001), "\n\n"))
+  } else {
+    cat("Win odds not calculated.\n\n")
+  }
+
+  tmp <- as.data.frame(x$meta[, c("outcome", "n", "proportion",
+                                  "n_active", "n_control", "missing")])
+  names(tmp) <- toupper(names(tmp))
+  print(tmp, row.names = FALSE)
+
+}
+
 
 #' Creates and returns the plot of the maraca data.
 #'
@@ -144,6 +198,7 @@ maraca <- function(
 #'   data = hce_scenario_a,
 #'   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
 #'   continuous_outcome = "Continuous outcome",
+#'   fixed_followup_days = 3 * 365,
 #'   column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
 #'   arm_levels = c(active = "Active", control = "Control"),
 #'   compute_win_odds = TRUE
@@ -168,31 +223,45 @@ plot_maraca <- function(
 
   meta <- obj$meta
   continuous <- obj$continuous
-  survmod <- obj$survmod_by_outcome
+  ecdf_mod <- obj$ecdf_by_outcome
   win_odds <- obj$win_odds
   start_continuous_endpoint <- meta[
     meta$outcome == obj$continuous_outcome, ]$startx
 
-  plotdata_surv <- survmod$data[, c("outcome", "strata",
-                                    "adjusted.time", "km.y")]
-  plotdata_surv$type <- "tte"
-  names(plotdata_surv) <- c("outcome", "arm", "x", "y", "type")
-  plotdata_cont <- continuous$data[, c("outcome", "arm", "x", "violiny")]
+  plotdata_ecdf <- ecdf_mod$data[, c("outcome", "arm",
+                                    "adjusted.time", "ecdf_values")]
+  plotdata_ecdf$type <- "tte"
+  names(plotdata_ecdf) <- c("outcome", "arm", "x", "y", "type")
+  plotdata_cont <- continuous$data[, c("outcome", "arm", "x", "y_level")]
   plotdata_cont$type <- "cont"
   names(plotdata_cont) <- c("outcome", "arm", "x", "y", "type")
-  plotdata <- as.data.frame(rbind(plotdata_surv, plotdata_cont))
 
   # Add points at (0, 0) on both curves so that they start from the origin
-  add_points <- plotdata %>%
+  add_points <- plotdata_ecdf %>%
     dplyr::group_by(arm) %>%
-    dplyr::slice_head(n = 1)
+    dplyr::slice_head(n = 1) %>%
+    dplyr::ungroup()
 
   add_points$x <- 0
   add_points$y <- 0
-  plotdata <- rbind(
+  plotdata_ecdf <- rbind(
     add_points,
-    plotdata
+    plotdata_ecdf
   )
+
+  # Add points at (100, y) on both curves so that they end at x=100%
+  add_points <- plotdata_ecdf %>%
+    dplyr::group_by(arm) %>%
+    dplyr::slice_tail(n = 1) %>%
+    dplyr::ungroup()
+
+  add_points$x <- 100
+  plotdata_ecdf <- rbind(
+    plotdata_ecdf,
+    add_points
+  )
+
+  plotdata <- as.data.frame(rbind(plotdata_ecdf, plotdata_cont))
 
   scale <- sign(log10(continuous_grid_spacing_x)) * floor(
     abs(log10(continuous_grid_spacing_x))
@@ -279,7 +348,9 @@ plot_maraca <- function(
     plot <- plot +
       ggplot2::geom_jitter(
         data = plotdata[plotdata$type == "cont", ],
-        aes(x = x, y = y, color = arm)
+        aes(x = x, y = y, color = arm),
+        # Jittering only vertically, keep the correct x-value
+        width = 0
       )
   }
 
@@ -325,13 +396,25 @@ plot_maraca <- function(
       x = 0,
       y = Inf,
       label = paste(
-        "Win odds (95% CI): ", round(win_odds[1], 2),
-        " (", round(win_odds[2], 2), ", ", round(win_odds[3], 2), ")", "\n",
-        "p-value: ", format.pval(win_odds[4], digits = 3, eps = 0.001),
+        "Win odds (95% CI): ", round(win_odds[[1]], 2),
+        " (", round(win_odds[[2]], 2), ", ", round(win_odds[[3]], 2), ")", "\n",
+        "p-value: ", format.pval(win_odds[[4]], digits = 3, eps = 0.001),
         sep = ""
       ),
       hjust = 0, vjust = 1.4, size = 3
     )
+
+    # Meta data on win odds will be added to plot
+    win_odds <- unname(win_odds)
+    params <- list(
+      "win_odds" = win_odds[[1]],
+      "lower_ci" = win_odds[[2]],
+      "upper_ci" = win_odds[[3]],
+      "p_value" = win_odds[[4]]
+    )
+
+    # Add win odds meta data as a label so retrievable
+    plot$labels$win.odds <- params
   }
 
   plot <- plot +
@@ -347,15 +430,19 @@ plot_maraca <- function(
     ) +
     ggplot2::guides(fill = "none")
 
+  # Add label to plot - maracaPlot
+  class(plot) <- c("maracaPlot", class(plot))
+
   return(plot)
 }
 
-#' Creates and returns the tte composite plot of the maraca data.
+#' Generic function to generate validation data for the maraca plot object.
 #'
-#' @param obj an object of S3 class 'maraca'
-#' @return a ggplot2 object of the data. This function
-#' will not render the plot immediately. You have to print() the returned
-#' object for it to be displayed.
+#' This will produce the 4 validation datasets.
+#'
+#' @param x An object of S3 class 'maracaPlot'.
+#' @param \dots Not used.
+#' @return Creates a list of datasets for validation purposes.
 #'
 #' @examples
 #' data(hce_scenario_a)
@@ -363,114 +450,91 @@ plot_maraca <- function(
 #'   data = hce_scenario_a,
 #'   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
 #'   continuous_outcome = "Continuous outcome",
+#'   fixed_followup_days = 3 * 365,
 #'   column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
 #'   arm_levels = c(active = "Active", control = "Control"),
 #'   compute_win_odds = TRUE
 #' )
-#' plot <- plot_tte_composite(hce_test)
+#' p <- plot(hce_test)
+#' validate_maraca_plot(p)
+#'
 #' @export
-plot_tte_composite <- function(obj) {
-  checkmate::assert_class(obj, "maraca")
+validate_maraca_plot <- function(x,  ...) {
+  checkmate::assert_class(x, "maracaPlot")
 
-  survmod <- obj$survmod_complete
-  fit <- survmod$fit
-  hr <- survmod$hr
-  hr_result <- round(hr$conf.int, 2)
+  `%>%` <- dplyr::`%>%`
 
-  plot <- ggplot2::autoplot(fit, fun = "event") +
-  ggplot2::xlab("Time") +
-  ggplot2::ylab("Cumulative proportion") +
-  ggplot2::scale_fill_discrete("Arm", labels = obj$arm_levels) +
-  ggplot2::scale_color_discrete("Arm", labels = obj$arm_levels) +
-  ggplot2::annotate(
-      geom = "label",
-      x = 0,
-      y = Inf,
-      label = paste(
-        "TTE composite HR: ",
-        hr_result[1], " (", hr_result[3], ", ", hr_result[4], ")",
-        sep = ""
-      ),
-      hjust = -0.2,
-      vjust = 1.4,
-      size = 3
+  pb <- ggplot2::ggplot_build(x)
+  plot_type <- class(as.list(x$layers[[5]])[["geom"]])[1]
+
+  proportions <- diff(pb$data[[1]][, c("xintercept")])
+  names(proportions) <- levels(x$data$outcome)
+
+  arms <- levels(pb$plot$data[, pb$plot$labels$colour])
+
+  tte_data <- utils::tail(
+    utils::head(pb$data[[4]][, c("group", "x", "y")], -2), -2)
+  tte_data$group <- factor(tte_data$group, labels = arms)
+
+  scatter_data <- NULL
+  boxstat_data <- NULL
+  violin_data <- NULL
+
+  if (plot_type == "GeomPoint") {
+    scatter_data <- pb$data[[5]][, c("group", "x", "y")]
+    scatter_data$group <- factor(scatter_data$group, labels = arms)
+  } else if (plot_type == "GeomBoxplot") {
+    boxstat_data <- pb$data[[5]] %>%
+      dplyr::select(group, "x_lowest" = xmin_final,
+                    "whisker_lower" = xmin,
+             "hinge_lower" = xlower, "median" = xmiddle,
+             "hinge_upper" = xupper, "whisker_upper" = xmax,
+             "x_highest" = xmax_final, outliers)
+    boxstat_data$outliers <- lapply(boxstat_data$outliers, sort)
+    boxstat_data$group <- factor(boxstat_data$group, labels = arms)
+  } else if (plot_type == "GeomViolin") {
+    violin_data <- pb$data[[5]][, c("group", "x", "y", "density", "width")]
+    violin_data$group <- factor(violin_data$group, labels = arms)
+    if (class(as.list(x$layers[[6]])[["geom"]])[1] == "GeomBoxplot") {
+      boxstat_data <- pb$data[[6]] %>%
+        dplyr::select(group, "x_lowest" = xmin_final,
+                      "whisker_lower" = xmin,
+               "hinge_lower" = xlower, "median" = xmiddle,
+               "hinge_upper" = xupper, "whisker_upper" = xmax,
+               "x_highest" = xmax_final, outliers)
+      boxstat_data$outliers <- lapply(boxstat_data$outliers, sort)
+      boxstat_data$group <- factor(boxstat_data$group, labels = arms)
+    }
+  } else {
+    stop(paste0("Unrecognised plot type ", plot_type))
+  }
+
+  if ("win.odds" %in% names(x$labels)) {
+    params <- x$labels$win.odds
+    wo_stats <- c(winodds = params$win_odds,
+                  lowerCI = params$lower_ci,
+                  upperCI = params$upper_ci,
+                  p_value = params$p_value)
+  } else {
+    wo_stats <- NULL
+  }
+
+  return(
+    list(
+      plot_type = plot_type,
+      proportions = proportions,
+      tte_data = tte_data,
+      scatter_data = scatter_data,
+      boxstat_data = boxstat_data,
+      violin_data = violin_data,
+      wo_stats = wo_stats
     )
-
-  return(plot)
-
+  )
 }
-
-#' Creates and returns the tte components plot of the maraca data.
-#'
-#' @param obj an object of S3 class 'maraca'
-#' @return An object representing the plot of the data. This function
-#' will not render the plot immediately. You have to print() the returned
-#' object for it to be displayed.
-#'
-#' @examples
-#' data(hce_scenario_a)
-#' hce_test <- maraca(
-#'   data = hce_scenario_a,
-#'   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
-#'   continuous_outcome = "Continuous outcome",
-#'   column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
-#'   arm_levels = c(active = "Active", control = "Control"),
-#'   compute_win_odds = TRUE
-#' )
-#' plot <- plot_tte_components(hce_test)
-#'
-#' @export
-plot_tte_components <- function(obj) {
-  checkmate::assert_class(obj, "maraca")
-  fits <- obj$survmod_by_outcome$censored_continuous_fits
-
-  plots <- lapply(fits, function(x) {
-    ggplot2::autoplot(x, fun = "event") +
-    ggplot2::ylab("Cumulative proportion") +
-    ggplot2::theme(legend.position = "none") +
-    ggplot2::scale_y_continuous(
-      labels = function(x) {
-        paste0(as.character(x * 100), "%")
-      }
-    )
-  })
-
-  plot <- gridExtra::arrangeGrob(grobs = plots, nrow = 1)
-  class(plot) <- c("maraca_tte_components", class(plot))
-
-  return(plot)
-}
-
-#' Generic to print the maraca_tte_component that is not a ggplot.
-#'
-#' @param x an object of S3 class 'maraca_tte_components'
-#' @param \dots not used
-#' @return Used for side effect. Plots the maraca_tte_components object.
-#'
-#' @examples
-#' data(hce_scenario_a)
-#' hce_test <- maraca(
-#'   data = hce_scenario_a,
-#'   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
-#'   continuous_outcome = "Continuous outcome",
-#'   column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
-#'   arm_levels = c(active = "Active", control = "Control"),
-#'   compute_win_odds = TRUE
-#' )
-#' plot <- plot_tte_components(hce_test)
-#' print(plot)
-#'
-#' @export
-print.maraca_tte_components <- function(x, ...) {
-  grid::grid.draw(x)
-}
-
 
 #' Generic function to plot the maraca object using plot().
 #'
-#' This will produce the plot_maraca plot.
-#'
-#' @param x an object of S3 class 'maraca'
+#' @param x An object of S3 class 'maraca'.
 #' @param \dots not used
 #' @param continuous_grid_spacing_x The spacing of the x grid to use for the
 #'        continuous section of the plot.
@@ -488,6 +552,7 @@ print.maraca_tte_components <- function(x, ...) {
 #'   data = hce_scenario_a,
 #'   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
 #'   continuous_outcome = "Continuous outcome",
+#'   fixed_followup_days = 3 * 365,
 #'   column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
 #'   arm_levels = c(active = "Active", control = "Control"),
 #'   compute_win_odds = TRUE
@@ -505,9 +570,7 @@ plot.maraca <- function(
 }
 #' Generic function to plot the hce object using plot().
 #'
-#' This will produce the plot_maraca plot.
-#'
-#' @param x an object of S3 class 'hce'
+#' @param x an object of S3 class 'hce'.
 #' @param \dots not used
 #' @param continuous_grid_spacing_x The spacing of the x grid to use for the
 #'        continuous section of the plot.
@@ -527,7 +590,7 @@ plot.maraca <- function(
 #' Rates_P <- c(2.47, 2.24, 2.9, 4, 6)
 #' HCE <- hce::simHCE(n = 2500, TTE_A = Rates_A, TTE_P = Rates_P,
 #'              CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3)
-#' plot(HCE)
+#' plot(HCE, fixed_followup_days = 3 * 365)
 #'
 #' @export
 plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
@@ -544,12 +607,14 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
 
   x <- as.data.frame(x)
   TTE <- sort(unique(x$GROUP)[unique(x$GROUP) != "C"])
+  fixed_followup_days <- x$TTEfixed[[1]]
   hce_test <- maraca(
     data = x,
     tte_outcomes = TTE,
     continuous_outcome = "C",
     column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
     arm_levels = c(active = "A", control = "P"),
+    fixed_followup_days = fixed_followup_days,
     compute_win_odds = compute_win_odds
   )
   print(plot_maraca(
@@ -610,12 +675,14 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
   n <- dplyr::n
   `%>%` <- dplyr::`%>%`
 
-  meta1 <- HCE %>%
+  meta1 <- HCE  %>%
+    dplyr::filter(!is.na(value)) %>%
     dplyr::group_by(outcome) %>%
     dplyr::summarise(
       n = n(),
-      proportion = n / dim(HCE)[1] * 100,
-      maxday = max(value, na.rm = TRUE)) %>%
+      proportion = n / dim(HCE)[[1]] * 100,
+      maxday = max(value, na.rm = TRUE)
+    ) %>%
     dplyr::mutate(
       startx = c(0, cumsum(utils::head(proportion, -1))),
       endx = cumsum(proportion),
@@ -623,164 +690,77 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
       n.groups = length(unique(outcome))
     )
 
-  meta2 <- HCE %>%
+  meta2 <- HCE  %>%
+    dplyr::filter(!is.na(value)) %>%
     dplyr::group_by(outcome, arm) %>%
-    dplyr::summarise(n = n(), proportion = n / dim(HCE)[1] * 100) %>%
+    dplyr::summarise(n = n(), proportion = n / dim(HCE)[[1]] * 100) %>%
     tidyr::pivot_wider(names_from = arm, values_from = c(n, proportion))
 
+  meta_missing <- HCE %>%
+    dplyr::group_by(outcome) %>%
+    dplyr::summarise(
+      missing = sum(is.na(value))
+    )
+
   meta <- dplyr::left_join(meta1, meta2, "outcome")
+  meta <- dplyr::left_join(meta, meta_missing, "outcome")
 
   return(meta)
 }
 
-# Performs the survmod calculation
-.compute_survmod_by_outcome <- function(
-    HCE, meta, tte_outcomes, continuous_outcome, arm_levels,
-    fixed_followup_days
-  ) {
-
-  endpoints <- c(tte_outcomes, continuous_outcome)
-  vars <- dplyr::vars
-  `%>%` <- dplyr::`%>%`
-
-  Surv <- survival::Surv # nolint
-
-  censored_continuous_fits <- list()
-  for (i in seq_along(tte_outcomes)) {
-    HCE_focused <- .hce_survival_focus(
-      HCE, i, tte_outcomes, fixed_followup_days)
-
-    censored_continuous_fit <- survival::survfit(
-      Surv(time = kmday, event = (outcome != continuous_outcome)) ~ arm,
-      data = HCE_focused
-    )
-
-    censored_continuous_fits[[i]] <- censored_continuous_fit
-
-    # Create survival model dataset
-    survmod_data_row <- cbind(
-      ggplot2::fortify(censored_continuous_fit),
-      outcome = tte_outcomes[[i]]
-    )
-
-    n <- dplyr::n
-    # remove first and last point
-    survmod_data_row <- survmod_data_row
-
-    if (i == 1) {
-      survmod_data_row <- survmod_data_row %>%
-        dplyr::group_by(strata) %>%
-        dplyr::slice(1:(n() - 1))
-    } else if (i == length(tte_outcomes)) {
-      survmod_data_row <- survmod_data_row %>%
-        dplyr::group_by(strata) %>%
-        dplyr::slice(2:(n() - 1))
-    } else {
-      survmod_data_row <- survmod_data_row %>%
-        dplyr::group_by(strata) %>%
-        dplyr::slice(2:(n() - 1))
-    }
-
-    if (i == 1) {
-      survmod_data <- survmod_data_row
-    } else {
-      survmod_data <- rbind(
-        survmod_data,
-        survmod_data_row
-      )
-    }
-  }
-
-  survmod_data <- survmod_data %>%
-    dplyr::mutate_at(vars(outcome), factor, levels = endpoints) %>%
-    dplyr::mutate_at(vars(strata), factor, levels = names(arm_levels))
-
-  survmod_data$adjusted.time <- 0
-  for (entry in tte_outcomes) {
-    outcome_filter <- survmod_data$outcome == entry
-    survmod_data[outcome_filter, ]$adjusted.time <-
-        meta[meta$outcome == entry, ]$startx +
-        survmod_data[outcome_filter, ]$time /
-        max(survmod_data[outcome_filter, ]$time, na.rm = TRUE) *
-        meta[meta$outcome == entry, ]$proportion
-  }
-
-  survmod_data <- survmod_data %>% dplyr::mutate(km.y = 100 * (1 - surv))
-
-  survmod_meta <- survmod_data %>%
-    dplyr::group_by(strata, outcome) %>%
-    dplyr::summarise(
-      max = 100 * max(1 - surv, na.rm = TRUE),
-      sum.event = sum(n.event, na.rm = TRUE)) %>%
-    dplyr::mutate(
-      km.end = utils::tail(max, 1)
-    )
-
-  # We put an additional point on both curves to match the continuous
-  # horizontal line no matter which point is rightmost in the last outcome.
-  # This way the junction appears smooth
-  add_points <- survmod_data %>%
-    dplyr::group_by(strata) %>%
-    dplyr::slice_tail(n = 1)
-
-  # We use the endx point so we are sure that it's the highest we can get in
-  # x terms that matches the grey line. Note also that we add the point
-  # after we calculated the meta information.
-  add_points$adjusted.time <- meta[
-    meta$outcome == utils::tail(tte_outcomes, 1), ]$endx
-  survmod_data <- rbind(
-    survmod_data,
-    add_points
-  )
-  # Add one additional point at x=100% to facilitate plotting
-  # the horizontal line through the continuous distribution.
-  # Note also that we add the point after we calculated the meta information.
-  add_points$adjusted.time <- 100
-  survmod_data <- rbind(
-    survmod_data,
-    add_points
-  )
-
-  survmod_data <- survmod_data %>% dplyr::left_join(
-    survmod_meta, by = c("strata", "outcome")
-  )
-
-  return(list(
-    data = survmod_data,
-    meta = survmod_meta,
-    censored_continuous_fits = censored_continuous_fits
-  ))
-}
-
-.compute_survmod_complete <- function(
-    HCE, meta, tte_outcomes, continuous_outcome, arm_levels,
-    fixed_followup_days
+# Calculates the cumulative distribution for TTE outcomes
+.compute_ecdf_by_outcome <- function(
+  HCE, meta, tte_outcomes, continuous_outcome, arm_levels,
+  fixed_followup_days
 ) {
-  # In this case EVENT=1 for all TTE outcomes and AVALT=AVAL0.
-  # For continuous outcomes AVALT is set to fixed_followup_days.
-  HCE$event <- 0
-  tte_row_mask <- (HCE$outcome %in% tte_outcomes)
-  HCE[tte_row_mask, "event"] <- 1
-  HCE$kmday <- fixed_followup_days
-  HCE[tte_row_mask, "kmday"] <- HCE[tte_row_mask, ]$value
 
-  Surv <- survival::Surv # nolint
-  # We need to relevel the factor to ensure that the first level
-  # is the control, as this is the way coxph expects the control arm to be
-  # "named".
-  fit0 <- survival::coxph(Surv(kmday, event) ~ arm,
-    data = dplyr::mutate(HCE, arm = stats::relevel(arm, ref = "control"))
-  )
-  hr <- summary(fit0)
-  fit <- survival::survfit(Surv(kmday, event) ~ arm, data = HCE)
+  `%>%` <- dplyr::`%>%`
+  n <- dplyr::n
+
+  num_tte_outcomes <- length(tte_outcomes)
+  HCE$t_cdf <- (num_tte_outcomes + 2) * fixed_followup_days
+
+  for (i in seq_len(num_tte_outcomes)) {
+    HCE[HCE$outcome == tte_outcomes[[i]], ]$t_cdf <-
+      HCE[HCE$outcome == tte_outcomes[[i]], ]$value +
+        fixed_followup_days * (i - 1)
+  }
+
+  HCE_ecdf <-
+    do.call("rbind",
+            lapply(unique(HCE$arm), function(a, df, outcomes) {
+      tmp <- df %>% dplyr::filter(arm == a)
+      tmp$ecdf_values <- 100 *
+        stats::ecdf(tmp$t_cdf)(tmp$t_cdf)
+      tmp %>% dplyr::filter(outcome %in% outcomes)
+  }, df = HCE, outcomes = tte_outcomes))
+
+  HCE_ecdf <- HCE_ecdf[order(HCE_ecdf$ecdf_values), ]
+
+  HCE_ecdf$adjusted.time <- 0
+  for (entry in tte_outcomes) {
+    outcome_filter <- HCE_ecdf$outcome == entry
+    HCE_ecdf[outcome_filter, ]$adjusted.time <-
+      meta[meta$outcome == entry, ]$startx +
+      HCE_ecdf[outcome_filter, ]$value /
+      fixed_followup_days *
+      meta[meta$outcome == entry, ]$proportion
+  }
+
+  HCE_ecdf_meta <- HCE_ecdf %>%
+    dplyr::group_by(arm, outcome) %>%
+    dplyr::summarise(
+      max = max(ecdf_values, na.rm = TRUE),
+      sum.event = n()) %>%
+    dplyr::mutate(
+      ecdf_end = utils::tail(max, 1)
+    )
 
   return(list(
-    fit = fit,
-    hr = hr
+    data = HCE_ecdf,
+    meta = HCE_ecdf_meta
   ))
-
 }
-
 
 # Support function for the range
 .to_rangeab <- function(x, start_continuous_endpoint, minval, maxval) {
@@ -788,24 +768,9 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
   (maxval - minval) + start_continuous_endpoint
 }
 
-.hce_survival_focus <- function(HCE, idx, tte_outcomes, fixed_followup_days) {
-  # We take the pre, and post entries in the sequence,
-  # e.g. with tte_outcomes being A,B,C,D,E,F and with index i pointing at
-  # C, pre will contain A, B
-  pre_outcomes <- tte_outcomes[seq_len(idx - 1)]
-
-  HCE$kmday <- fixed_followup_days
-  pre_row_mask <- (HCE$outcome %in% pre_outcomes)
-  HCE[pre_row_mask, "kmday"] <- 0
-  tte_row_mask <- (HCE$outcome == tte_outcomes[[idx]])
-  HCE[tte_row_mask, "kmday"] <- HCE[tte_row_mask, ]$value
-  return(HCE)
-}
-
-
 # Computes the continuous information
 .compute_continuous <- function(
-    HCE, meta, survmod, tte_outcomes, continuous_outcome, arm_levels) {
+    HCE, meta, ecdf_mod, tte_outcomes, continuous_outcome, arm_levels) {
   `%>%` <- dplyr::`%>%`
   n <- dplyr::n
 
@@ -823,14 +788,14 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
     dplyr::summarise(n = n(), median = stats::median(x, na.rm = TRUE),
       average = base::mean(x, na.rm = TRUE))
 
-  continuous_data$violiny <- survmod$meta[
-    survmod$meta$strata == "active" &
-    survmod$meta$outcome == utils::tail(tte_outcomes, 1),
-    ]$km.end
-  continuous_data[continuous_data$arm == "control", ]$violiny <- survmod$meta[
-    survmod$meta$strata == "control" &
-    survmod$meta$outcome == utils::tail(tte_outcomes, 1),
-    ]$km.end
+  continuous_data$y_level <- ecdf_mod$meta[
+    ecdf_mod$meta$arm == "active" &
+    ecdf_mod$meta$outcome == utils::tail(tte_outcomes, 1),
+    ]$ecdf_end
+  continuous_data[continuous_data$arm == "control", ]$y_level <- ecdf_mod$meta[
+    ecdf_mod$meta$arm == "control" &
+    ecdf_mod$meta$outcome == utils::tail(tte_outcomes, 1),
+    ]$ecdf_end
 
   return(list(
     data = continuous_data,
