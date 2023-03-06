@@ -27,7 +27,7 @@ expect_text_equal <- function(result, expected) {
 
 }
 
-test_that("Maraca initialisation", {
+test_that("createMaracaObject", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
 
@@ -50,7 +50,54 @@ test_that("Maraca initialisation", {
   plot(mar)
 })
 
-test_that("Maraca wrong params", {
+test_that("alternativeActiveControl", {
+  file <- fixture_path("hce_scenario_c.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
+  )
+  fixed_followup_days <- 3 * 365
+  mar <- maraca(
+    data, tte_outcomes, continuous_outcome, arm_levels,
+    column_names,
+    fixed_followup_days
+    )
+  expect_s3_class(mar, "maraca")
+  expect_equal(mar$fixed_followup_days, fixed_followup_days)
+  plot(mar)
+})
+
+test_that("alternativeColumnNames", {
+  file <- fixture_path("hce_scenario_c.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
+  )
+  fixed_followup_days <- 3 * 365
+  mar <- maraca(
+    data, tte_outcomes, continuous_outcome, arm_levels,
+    column_names,
+    fixed_followup_days
+    )
+  expect_s3_class(mar, "maraca")
+  expect_equal(mar$fixed_followup_days, fixed_followup_days)
+  plot(mar)
+})
+
+
+test_that("wrongParameters", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
   tte_outcomes <- c(
@@ -178,7 +225,20 @@ test_that("Maraca wrong params", {
   )
 })
 
-test_that("Maraca printing", {
+test_that("Test plot functions only work with maraca objects", {
+  expect_error(plot_maraca(123), regexp = "Must inherit")
+})
+
+test_that("Validation function only works for maraca plot", {
+  tmp <- data.frame("a" = 1:10, "b" = 10:1)
+  plot <- ggplot2::ggplot(tmp, ggplot2::aes(a, b)) +
+    ggplot2::geom_point()
+
+  expect_error(validate_maraca_plot(plot), regexp =
+              "Must inherit from class")
+})
+
+test_that("winOddsData", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
   tte_outcomes <- c(
@@ -249,7 +309,172 @@ test_that("Maraca printing", {
 
 })
 
-test_that("Maraca plotting", {
+test_that("Test win odds", {
+  file <- fixture_path("hce_scenario_c.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
+  )
+  data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
+    arm_levels, column_names = column_names
+  )
+  win_odds <- .compute_win_odds(data)
+
+  expect_equal(class(win_odds), "numeric")
+  expect_equal(
+    unname(win_odds), c(1.3143433745, 1.1364670136, 1.5200604024, 0.000191286)
+  )
+
+})
+
+test_that("winOddsPrinting", {
+  file <- fixture_path("hce_scenario_c.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
+  )
+  mar <- maraca(
+    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
+    compute_win_odds = TRUE
+  )
+
+  mar_no_win_odds <- maraca(
+    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
+    compute_win_odds = FALSE
+  )
+
+  data$AVAL0[[3]] <- NA
+  mar_na <- maraca(
+    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
+    compute_win_odds = TRUE
+  )
+
+  res <- capture.output(mar)
+  exp <- list(
+    "Maraca object for plotting maraca graph created for 1000 patients.",
+    "", "Win odds (95% CI): 1.31 (1.14, 1.52)",
+    "Win odds p-value: <0.001", "",
+    "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
+    "          Outcome I 129       12.9       63        66       0",
+    "         Outcome II 115       11.5       55        60       0",
+    "        Outcome III 110       11.0       50        60       0",
+    "         Outcome IV  77        7.7       34        43       0",
+    " Continuous outcome 569       56.9      298       271       0")
+
+  expect_text_equal(res, exp)
+
+  res <- capture.output(mar_no_win_odds)
+  exp <- list(
+    "Maraca object for plotting maraca graph created for 1000 patients.",
+    "", "Win odds not calculated.", "",
+    "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
+    "          Outcome I 129       12.9       63        66       0",
+    "         Outcome II 115       11.5       55        60       0",
+    "        Outcome III 110       11.0       50        60       0",
+    "         Outcome IV  77        7.7       34        43       0",
+    " Continuous outcome 569       56.9      298       271       0")
+
+  expect_text_equal(res, exp)
+
+  res <- capture.output(mar_na)
+  exp <- list(
+    "Maraca object for plotting maraca graph created for 999 patients.",
+    "", "1 patient(s) removed because of missing values.", "",
+    "Win odds (95% CI): 1.32 (1.14, 1.52)",
+    "Win odds p-value: <0.001", "",
+    "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
+    "          Outcome I 129       12.9       63        66       0",
+    "         Outcome II 115       11.5       55        60       0",
+    "        Outcome III 110       11.0       50        60       0",
+    "         Outcome IV  76        7.6       33        43       1",
+    " Continuous outcome 569       56.9      298       271       0")
+
+  expect_text_equal(res, exp)
+
+})
+
+test_that("maracaPrinting", {
+  file <- fixture_path("hce_scenario_c.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
+  )
+  mar <- maraca(
+    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
+    compute_win_odds = TRUE
+  )
+
+  mar_no_win_odds <- maraca(
+    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
+    compute_win_odds = FALSE
+  )
+
+  data$AVAL0[[3]] <- NA
+  mar_na <- maraca(
+    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
+    compute_win_odds = TRUE
+  )
+
+  res <- capture.output(mar)
+  exp <- list(
+    "Maraca object for plotting maraca graph created for 1000 patients.",
+    "", "Win odds (95% CI): 1.31 (1.14, 1.52)",
+    "Win odds p-value: <0.001", "",
+    "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
+    "          Outcome I 129       12.9       63        66       0",
+    "         Outcome II 115       11.5       55        60       0",
+    "        Outcome III 110       11.0       50        60       0",
+    "         Outcome IV  77        7.7       34        43       0",
+    " Continuous outcome 569       56.9      298       271       0")
+
+  expect_text_equal(res, exp)
+
+  res <- capture.output(mar_no_win_odds)
+  exp <- list(
+    "Maraca object for plotting maraca graph created for 1000 patients.",
+    "", "Win odds not calculated.", "",
+    "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
+    "          Outcome I 129       12.9       63        66       0",
+    "         Outcome II 115       11.5       55        60       0",
+    "        Outcome III 110       11.0       50        60       0",
+    "         Outcome IV  77        7.7       34        43       0",
+    " Continuous outcome 569       56.9      298       271       0")
+
+  expect_text_equal(res, exp)
+
+  res <- capture.output(mar_na)
+  exp <- list(
+    "Maraca object for plotting maraca graph created for 999 patients.",
+    "", "1 patient(s) removed because of missing values.", "",
+    "Win odds (95% CI): 1.32 (1.14, 1.52)",
+    "Win odds p-value: <0.001", "",
+    "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
+    "          Outcome I 129       12.9       63        66       0",
+    "         Outcome II 115       11.5       55        60       0",
+    "        Outcome III 110       11.0       50        60       0",
+    "         Outcome IV  76        7.6       33        43       1",
+    " Continuous outcome 569       56.9      298       271       0")
+
+  expect_text_equal(res, exp)
+
+})
+
+test_that("maracaPlotting", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
   tte_outcomes <- c(
@@ -270,11 +495,7 @@ test_that("Maraca plotting", {
   expect_true(TRUE)
 })
 
-test_that("Test plot functions only work with maraca objects", {
-  expect_error(plot_maraca(123), regexp = "Must inherit")
-})
-
-test_that("Validation function for  maraca plots", {
+test_that("validationFunction", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
   tte_outcomes <- c(
@@ -459,15 +680,6 @@ test_that("Test win odds extraction of validation function", {
   expect_null(val_res_without_wo$wo_stats)
 })
 
-test_that("Validation function only works for maraca plot", {
-  tmp <- data.frame("a" = 1:10, "b" = 10:1)
-  plot <- ggplot2::ggplot(tmp, ggplot2::aes(a, b)) +
-    ggplot2::geom_point()
-
-  expect_error(validate_maraca_plot(plot), regexp =
-              "Must inherit from class")
-})
-
 test_that("Test reformatting of data", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
@@ -488,29 +700,6 @@ test_that("Test reformatting of data", {
   expect_equal(levels(data$arm), names(arm_levels))
   expect_equal(class(data$outcome), "factor")
   expect_equal(levels(data$outcome), c(tte_outcomes, continuous_outcome))
-
-})
-
-test_that("Test win odds", {
-  file <- fixture_path("hce_scenario_c.csv")
-  data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
-    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
-  )
-  continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(active = "Active", control = "Control")
-  column_names <- c(
-    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
-  )
-  data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
-    arm_levels, column_names = column_names
-  )
-  win_odds <- .compute_win_odds(data)
-
-  expect_equal(class(win_odds), "numeric")
-  expect_equal(
-    unname(win_odds), c(1.3143433745, 1.1364670136, 1.5200604024, 0.000191286)
-  )
 
 })
 
@@ -583,7 +772,6 @@ test_that("Test compute ecdf", {
 
 })
 
-
 test_that("Test compute continuous", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
@@ -609,7 +797,6 @@ test_that("Test compute continuous", {
   expect_equal(continuous$meta$median, c(74.360287, 68.354528))
   expect_equal(continuous$meta$average, c(73.72377, 69.5893123))
 })
-
 
 test_that("Test error for missing outcome", {
   file <- fixture_path("hce_scenario_c.csv")
@@ -691,7 +878,7 @@ test_that("Test modify continuous x grid", {
   plot(mar, continuous_grid_spacing_x = 8)
 })
 
-test_that("Test apply transformation to continuous scale", {
+test_that("scaleTransform", {
   file <- fixture_path("hce_scenario_c.csv")
   args <- .maraca_args(file)
   mar <- maraca(
@@ -709,7 +896,7 @@ test_that("Test apply transformation to continuous scale", {
 
 })
 
-test_that("Test density plot selection", {
+test_that("densityPlotType", {
   file <- fixture_path("hce_scenario_c.csv")
   args <- .maraca_args(file)
   mar <- maraca(
@@ -731,7 +918,7 @@ test_that("Test density plot selection", {
   )
 })
 
-test_that("Test vline type", {
+test_that("verticalLine", {
   file <- fixture_path("hce_scenario_c.csv")
   args <- .maraca_args(file)
   mar <- maraca(
@@ -780,7 +967,7 @@ test_that("test minor_grid", {
   expect_equal(grid, c(5, 10))
 })
 
-test_that("test minor_grid", {
+test_that("plotHCE", {
   rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
   rates_P <- c(2.47, 2.24, 2.9, 4, 6)
   HCE <- hce::simHCE(
