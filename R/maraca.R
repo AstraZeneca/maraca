@@ -161,11 +161,11 @@ print.maraca <- function(x, ...) {
   }
 
   if (!is.null(x$win_odds)) {
-    cat(paste0("Win odds (95% CI): ", round(x$win_odds[1], 2),
-               " (", round(x$win_odds[2], 2), ", ",
-               round(x$win_odds[3], 2), ")", "\n",
+    cat(paste0("Win odds (95% CI): ", round(x$win_odds[[1]], 2),
+               " (", round(x$win_odds[[2]], 2), ", ",
+               round(x$win_odds[[3]], 2), ")", "\n",
                "Win odds p-value: ",
-               format.pval(x$win_odds[4], digits = 3, eps = 0.001), "\n\n"))
+               format.pval(x$win_odds[[4]], digits = 3, eps = 0.001), "\n\n"))
   } else {
     cat("Win odds not calculated.\n\n")
   }
@@ -396,9 +396,9 @@ plot_maraca <- function(
       x = 0,
       y = Inf,
       label = paste(
-        "Win odds (95% CI): ", round(win_odds[1], 2),
-        " (", round(win_odds[2], 2), ", ", round(win_odds[3], 2), ")", "\n",
-        "p-value: ", format.pval(win_odds[4], digits = 3, eps = 0.001),
+        "Win odds (95% CI): ", round(win_odds[[1]], 2),
+        " (", round(win_odds[[2]], 2), ", ", round(win_odds[[3]], 2), ")", "\n",
+        "p-value: ", format.pval(win_odds[[4]], digits = 3, eps = 0.001),
         sep = ""
       ),
       hjust = 0, vjust = 1.4, size = 3
@@ -407,10 +407,10 @@ plot_maraca <- function(
     # Meta data on win odds will be added to plot
     win_odds <- unname(win_odds)
     params <- list(
-      "win_odds" = win_odds[1],
-      "lower_ci" = win_odds[2],
-      "upper_ci" = win_odds[3],
-      "p_value" = win_odds[4]
+      "win_odds" = win_odds[[1]],
+      "lower_ci" = win_odds[[2]],
+      "upper_ci" = win_odds[[3]],
+      "p_value" = win_odds[[4]]
     )
 
     # Add win odds meta data as a label so retrievable
@@ -607,7 +607,7 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
 
   x <- as.data.frame(x)
   TTE <- sort(unique(x$GROUP)[unique(x$GROUP) != "C"])
-  fixed_followup_days <- x$TTEfixed[1]
+  fixed_followup_days <- x$TTEfixed[[1]]
   hce_test <- maraca(
     data = x,
     tte_outcomes = TTE,
@@ -680,7 +680,7 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
     dplyr::group_by(outcome) %>%
     dplyr::summarise(
       n = n(),
-      proportion = n / dim(HCE)[1] * 100,
+      proportion = n / dim(HCE)[[1]] * 100,
       maxday = max(value, na.rm = TRUE)
     ) %>%
     dplyr::mutate(
@@ -693,7 +693,7 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
   meta2 <- HCE  %>%
     dplyr::filter(!is.na(value)) %>%
     dplyr::group_by(outcome, arm) %>%
-    dplyr::summarise(n = n(), proportion = n / dim(HCE)[1] * 100) %>%
+    dplyr::summarise(n = n(), proportion = n / dim(HCE)[[1]] * 100) %>%
     tidyr::pivot_wider(names_from = arm, values_from = c(n, proportion))
 
   meta_missing <- HCE %>%
@@ -721,8 +721,8 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
   HCE$t_cdf <- (num_tte_outcomes + 2) * fixed_followup_days
 
   for (i in seq_len(num_tte_outcomes)) {
-    HCE[HCE$outcome == tte_outcomes[i], ]$t_cdf <-
-      HCE[HCE$outcome == tte_outcomes[i], ]$value +
+    HCE[HCE$outcome == tte_outcomes[[i]], ]$t_cdf <-
+      HCE[HCE$outcome == tte_outcomes[[i]], ]$value +
         fixed_followup_days * (i - 1)
   }
 
