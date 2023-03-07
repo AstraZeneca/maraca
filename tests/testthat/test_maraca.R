@@ -499,6 +499,42 @@ test_that("winOddsData", {
 
 })
 
+test_that("winOddsPlot", {
+  file <- fixture_path("hce_scenario_c.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
+  )
+  mar <- maraca(
+    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
+    compute_win_odds = TRUE
+  )
+
+  output <- artifacts_path("winOddsPlot-with.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
+  plot(mar)
+  expect_file_exists(output)
+
+  mar <- maraca(
+    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
+    compute_win_odds = FALSE
+  )
+
+  output <- artifacts_path("winOddsPlot-without.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
+  plot(mar)
+  expect_file_exists(output)
+
+})
+
+
 test_that("winOddsPrinting", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
