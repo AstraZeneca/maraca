@@ -16,3 +16,4 @@ inst/doc
 .Rhistory
 .Rproj
 *.html
+junit-out.xml
