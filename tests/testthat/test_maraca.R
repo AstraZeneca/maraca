@@ -47,7 +47,147 @@ test_that("createMaracaObject", {
     )
   expect_s3_class(mar, "maraca")
   expect_equal(mar$fixed_followup_days, fixed_followup_days)
-  plot(mar)
+
+  # Internal checks
+  file <- fixture_path("hce_scenario_c.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
+  )
+  data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
+    arm_levels, column_names = column_names)
+  meta <- .compute_metainfo(data)
+  HCE_ecdf <- .compute_ecdf_by_outcome(
+    data, meta, tte_outcomes, continuous_outcome, arm_levels, 3 * 365)
+  continuous <- .compute_continuous(
+    data, meta, HCE_ecdf, tte_outcomes, continuous_outcome, arm_levels)
+  expect_equal(sum(abs(continuous$data$x)), 40828.387)
+  expect_equal(sum(abs(continuous$data$y_level)), 24451)
+
+  expect_equal(continuous$meta$n, c(298, 271))
+  expect_equal(continuous$meta$median, c(74.360287, 68.354528))
+  expect_equal(continuous$meta$average, c(73.72377, 69.5893123))
+
+  # Test reformatting of data
+  file <- fixture_path("hce_scenario_c.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
+  )
+  data <- .reformat_and_check_data(
+    data, tte_outcomes, continuous_outcome, arm_levels, column_names
+  )
+
+  expect_equal(class(data), "data.frame")
+  expect_equal(class(data$arm), "factor")
+  expect_equal(levels(data$arm), names(arm_levels))
+  expect_equal(class(data$outcome), "factor")
+  expect_equal(levels(data$outcome), c(tte_outcomes, continuous_outcome))
+
+  # Test compute metainfo
+  file <- fixture_path("hce_scenario_c.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
+  )
+  data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
+    arm_levels,
+    column_names = column_names)
+  metainfo <- .compute_metainfo(data)
+  expect_equal(
+    as.character(metainfo$outcome), c(tte_outcomes, continuous_outcome))
+  expect_equal(metainfo$n, c(129, 115, 110, 77, 569))
+  expect_equal(metainfo$proportion, c(12.9, 11.5, 11, 7.7, 56.9))
+  expect_equal(
+    metainfo$maxday,
+    c(1074.68287, 1068.22797, 1074.46617, 1028.40857, 63.76411),
+    tol = 1e-5
+  )
+  expect_equal(metainfo$startx, c(0, 12.9, 24.4, 35.4, 43.1))
+  expect_equal(metainfo$endx, c(12.9, 24.4, 35.4, 43.1, 100))
+  expect_equal(metainfo$starty, c(0, 0, 0, 0, 0))
+  expect_equal(metainfo$n.groups, c(5, 5, 5, 5, 5))
+  expect_equal(metainfo$n_active, c(63, 55, 50, 34, 298))
+  expect_equal(metainfo$n_control, c(66, 60, 60, 43, 271))
+
+  # Test Compute ECDF
+  file <- fixture_path("hce_scenario_c.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
+  )
+  data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
+    arm_levels,
+    column_names
+  )
+  meta <- .compute_metainfo(data)
+  HCE_ecdf <- .compute_ecdf_by_outcome(
+    data, meta, tte_outcomes, continuous_outcome, arm_levels, 3 * 365)
+
+  # Checking the abssum along the columns to check that values remain the same.
+  expect_equal(sum(abs(HCE_ecdf$data$value)), 221627.7286)
+  expect_equal(sum(abs(HCE_ecdf$data$t_cdf)), 841397.7286)
+  expect_equal(sum(abs(HCE_ecdf$data$ecdf_values)), 9367.6)
+  expect_equal(sum(abs(HCE_ecdf$data$adjusted.time)), 9142.184244)
+
+  expect_equal(
+    HCE_ecdf$meta$max,
+    c(12.6, 23.6, 33.6, 40.4, 13.2, 25.2, 37.2, 45.8), tol = 1e-6)
+  expect_equal(HCE_ecdf$meta$sum.event, c(
+    63, 55, 50, 34, 66, 60, 60, 43
+  ))
+  expect_equal(HCE_ecdf$meta$ecdf_end,
+    c(40.4, 40.4, 40.4, 40.4, 45.8, 45.8, 45.8, 45.8), tol = 1e-6
+  )
+
+  # test ordered column
+  file <- fixture_path("hce_scenario_c.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
+  )
+  hce <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
+    arm_levels, column_names)
+
+  hce <- .with_ordered_column(hce)
+
+  # Verify against the ones we calculated in the fixture
+  expect_equal(data$AVAL, hce$ordered, tol = 1e-7)
+
+  # test minor_grid
+  grid <- .minor_grid(c(-10, -2, 3, 27), 1, 5)
+  expect_equal(grid, c(-10, -5, 0, 5, 10, 15, 20, 25))
+
+  grid <- .minor_grid(c(-10, -7, -3, -2), 1, 5)
+  expect_equal(grid, c(-10, -5))
+
+  grid <- .minor_grid(c(2, 3, 7, 10, 14), 1, 5)
+  expect_equal(grid, c(5, 10))
 })
 
 test_that("alternativeActiveControl", {
@@ -69,8 +209,6 @@ test_that("alternativeActiveControl", {
     fixed_followup_days
     )
   expect_s3_class(mar, "maraca")
-  expect_equal(mar$fixed_followup_days, fixed_followup_days)
-  plot(mar)
 })
 
 test_that("alternativeColumnNames", {
@@ -92,10 +230,7 @@ test_that("alternativeColumnNames", {
     fixed_followup_days
     )
   expect_s3_class(mar, "maraca")
-  expect_equal(mar$fixed_followup_days, fixed_followup_days)
-  plot(mar)
 })
-
 
 test_that("wrongParameters", {
   file <- fixture_path("hce_scenario_c.csv")
@@ -223,19 +358,35 @@ test_that("wrongParameters", {
     ),
     regexp = "The outcome column must be characters"
   )
-})
 
-test_that("Test plot functions only work with maraca objects", {
+  # Test plot functions only work with maraca objects
   expect_error(plot_maraca(123), regexp = "Must inherit")
-})
 
-test_that("Validation function only works for maraca plot", {
+  # Validation function only works for maraca plot
   tmp <- data.frame("a" = 1:10, "b" = 10:1)
   plot <- ggplot2::ggplot(tmp, ggplot2::aes(a, b)) +
     ggplot2::geom_point()
 
   expect_error(validate_maraca_plot(plot), regexp =
               "Must inherit from class")
+
+  # Check missing outcome
+  file <- fixture_path("hce_scenario_c.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome XXX"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
+  )
+
+  expect_error(
+    maraca(data, tte_outcomes, continuous_outcome, arm_levels,
+           column_names, 3 * 365),
+    regexp = "Outcome Outcome XXX is not present in column GROUP"
+  )
 })
 
 test_that("winOddsData", {
@@ -307,9 +458,6 @@ test_that("winOddsData", {
 
   expect_text_equal(res, exp)
 
-})
-
-test_that("Test win odds", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
   tte_outcomes <- c(
@@ -329,6 +477,25 @@ test_that("Test win odds", {
   expect_equal(
     unname(win_odds), c(1.3143433745, 1.1364670136, 1.5200604024, 0.000191286)
   )
+
+  # win odds missing if set to false
+  file <- fixture_path("hce_scenario_c.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
+  )
+
+  mar <- maraca(
+    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
+    compute_win_odds = FALSE
+  )
+
+  expect_true(is.null(mar$win_odds))
 
 })
 
@@ -634,213 +801,7 @@ test_that("validationFunction", {
 
 })
 
-test_that("Test win odds extraction of validation function", {
-  file <- fixture_path("hce_scenario_c.csv")
-  data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
-    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
-  )
-  continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(active = "Active", control = "Control")
-  fixed_followup_days <- 3 * 365
-  column_names <- c(
-    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
-  )
-  mar_with_win_odds <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels,
-    column_names,
-    fixed_followup_days,
-    compute_win_odds = TRUE
-  )
-  mar_without_win_odds <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels,
-    column_names,
-    fixed_followup_days,
-    compute_win_odds = FALSE
-  )
-  a_with_wo <- plot(mar_with_win_odds)
-  a_without_wo <- plot(mar_without_win_odds)
-  val_res_with_wo <- validate_maraca_plot(a_with_wo)
-  val_res_without_wo <- validate_maraca_plot(a_without_wo)
-
-  expect_type(val_res_with_wo$wo_stats, "double")
-  expect_named(val_res_with_wo$wo_stats,
-               c("winodds", "lowerCI", "upperCI", "p_value"),
-               ignore.order = TRUE)
-
-  data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
-                                   arm_levels, column_names = column_names
-                                   )
-  win_odds <- .compute_win_odds(data)
-  expect_equivalent(val_res_with_wo$wo_stats["winodds"], win_odds["estimate"])
-  expect_equivalent(val_res_with_wo$wo_stats["lowerCI"], win_odds["lower"])
-  expect_equivalent(val_res_with_wo$wo_stats["upperCI"], win_odds["upper"])
-  expect_equivalent(val_res_with_wo$wo_stats["p_value"], win_odds["p-value"])
-
-  expect_null(val_res_without_wo$wo_stats)
-})
-
-test_that("Test reformatting of data", {
-  file <- fixture_path("hce_scenario_c.csv")
-  data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
-    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
-  )
-  continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(active = "Active", control = "Control")
-  column_names <- c(
-    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
-  )
-  data <- .reformat_and_check_data(
-    data, tte_outcomes, continuous_outcome, arm_levels, column_names
-  )
-
-  expect_equal(class(data), "data.frame")
-  expect_equal(class(data$arm), "factor")
-  expect_equal(levels(data$arm), names(arm_levels))
-  expect_equal(class(data$outcome), "factor")
-  expect_equal(levels(data$outcome), c(tte_outcomes, continuous_outcome))
-
-})
-
-test_that("Test compute metainfo", {
-  file <- fixture_path("hce_scenario_c.csv")
-  data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
-    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
-  )
-  continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(active = "Active", control = "Control")
-  column_names <- c(
-    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
-  )
-  data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
-    arm_levels,
-    column_names = column_names)
-  metainfo <- .compute_metainfo(data)
-  expect_equal(
-    as.character(metainfo$outcome), c(tte_outcomes, continuous_outcome))
-  expect_equal(metainfo$n, c(129, 115, 110, 77, 569))
-  expect_equal(metainfo$proportion, c(12.9, 11.5, 11, 7.7, 56.9))
-  expect_equal(
-    metainfo$maxday,
-    c(1074.68287, 1068.22797, 1074.46617, 1028.40857, 63.76411),
-    tol = 1e-5
-  )
-  expect_equal(metainfo$startx, c(0, 12.9, 24.4, 35.4, 43.1))
-  expect_equal(metainfo$endx, c(12.9, 24.4, 35.4, 43.1, 100))
-  expect_equal(metainfo$starty, c(0, 0, 0, 0, 0))
-  expect_equal(metainfo$n.groups, c(5, 5, 5, 5, 5))
-  expect_equal(metainfo$n_active, c(63, 55, 50, 34, 298))
-  expect_equal(metainfo$n_control, c(66, 60, 60, 43, 271))
-})
-
-test_that("Test compute ecdf", {
-  file <- fixture_path("hce_scenario_c.csv")
-  data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
-    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
-  )
-  continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(active = "Active", control = "Control")
-  column_names <- c(
-    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
-  )
-  data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
-    arm_levels,
-    column_names
-  )
-  meta <- .compute_metainfo(data)
-  HCE_ecdf <- .compute_ecdf_by_outcome(
-    data, meta, tte_outcomes, continuous_outcome, arm_levels, 3 * 365)
-
-  # Checking the abssum along the columns to check that values remain the same.
-  expect_equal(sum(abs(HCE_ecdf$data$value)), 221627.7286)
-  expect_equal(sum(abs(HCE_ecdf$data$t_cdf)), 841397.7286)
-  expect_equal(sum(abs(HCE_ecdf$data$ecdf_values)), 9367.6)
-  expect_equal(sum(abs(HCE_ecdf$data$adjusted.time)), 9142.184244)
-
-  expect_equal(
-    HCE_ecdf$meta$max,
-    c(12.6, 23.6, 33.6, 40.4, 13.2, 25.2, 37.2, 45.8), tol = 1e-6)
-  expect_equal(HCE_ecdf$meta$sum.event, c(
-    63, 55, 50, 34, 66, 60, 60, 43
-  ))
-  expect_equal(HCE_ecdf$meta$ecdf_end,
-    c(40.4, 40.4, 40.4, 40.4, 45.8, 45.8, 45.8, 45.8), tol = 1e-6
-  )
-
-})
-
-test_that("Test compute continuous", {
-  file <- fixture_path("hce_scenario_c.csv")
-  data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
-    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
-  )
-  continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(active = "Active", control = "Control")
-  column_names <- c(
-    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
-  )
-  data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
-    arm_levels, column_names = column_names)
-  meta <- .compute_metainfo(data)
-  HCE_ecdf <- .compute_ecdf_by_outcome(
-    data, meta, tte_outcomes, continuous_outcome, arm_levels, 3 * 365)
-  continuous <- .compute_continuous(
-    data, meta, HCE_ecdf, tte_outcomes, continuous_outcome, arm_levels)
-  expect_equal(sum(abs(continuous$data$x)), 40828.387)
-  expect_equal(sum(abs(continuous$data$y_level)), 24451)
-
-  expect_equal(continuous$meta$n, c(298, 271))
-  expect_equal(continuous$meta$median, c(74.360287, 68.354528))
-  expect_equal(continuous$meta$average, c(73.72377, 69.5893123))
-})
-
-test_that("Test error for missing outcome", {
-  file <- fixture_path("hce_scenario_c.csv")
-  data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
-    "Outcome I", "Outcome II", "Outcome III", "Outcome XXX"
-  )
-  continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(active = "Active", control = "Control")
-  column_names <- c(
-    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
-  )
-
-  expect_error(
-    maraca(data, tte_outcomes, continuous_outcome, arm_levels,
-           column_names, 3 * 365),
-    regexp = "Outcome Outcome XXX is not present in column GROUP"
-  )
-})
-
-test_that("Test compute win_odds flag", {
-  file <- fixture_path("hce_scenario_c.csv")
-  data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
-    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
-  )
-  continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(active = "Active", control = "Control")
-  column_names <- c(
-    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
-  )
-
-  mar <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
-    compute_win_odds = FALSE
-  )
-
-  expect_true(is.null(mar$win_odds))
-
-  plot(mar)
-
-})
-
-test_that("Test handle NA data", {
+test_that("handleNAData", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
   tte_outcomes <- c(
@@ -861,7 +822,7 @@ test_that("Test handle NA data", {
   expect_true(TRUE)
 })
 
-test_that("Test modify continuous x grid", {
+test_that("gridSpacing", {
   file <- fixture_path("hce_scenario_c.csv")
   args <- .maraca_args(file)
   mar <- maraca(
@@ -934,37 +895,6 @@ test_that("verticalLine", {
 
   plot(mar, vline_type = "median")
   plot(mar, vline_type = "mean")
-})
-
-test_that("test ordered column", {
-  file <- fixture_path("hce_scenario_c.csv")
-  data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
-    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
-  )
-  continuous_outcome <- "Continuous outcome"
-  arm_levels <- c(active = "Active", control = "Control")
-  column_names <- c(
-    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
-  )
-  hce <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
-    arm_levels, column_names)
-
-  hce <- .with_ordered_column(hce)
-
-  # Verify against the ones we calculated in the fixture
-  expect_equal(data$AVAL, hce$ordered, tol = 1e-7)
-})
-
-test_that("test minor_grid", {
-  grid <- .minor_grid(c(-10, -2, 3, 27), 1, 5)
-  expect_equal(grid, c(-10, -5, 0, 5, 10, 15, 20, 25))
-
-  grid <- .minor_grid(c(-10, -7, -3, -2), 1, 5)
-  expect_equal(grid, c(-10, -5))
-
-  grid <- .minor_grid(c(2, 3, 7, 10, 14), 1, 5)
-  expect_equal(grid, c(5, 10))
 })
 
 test_that("plotHCE", {
