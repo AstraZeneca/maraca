@@ -48,5 +48,9 @@ vignettes:
 check: build
 	R CMD check --as-cran dist/${PACKAGE_NAME}_${PACKAGE_VERSION}.tar.gz
 
+validate:
+	Rscript -e "junit <- testthat::JunitReporter\$$new(file=\"../artifacts/junit-out.xml\"); devtools::test(reporter=junit)"
+	sed -I '' 's/classname="[a-zA-Z]*"/classname="az.r.package.maraca"/' tests/artifacts/junit-out.xml
+
 clean:
 	-rm -rf dist
