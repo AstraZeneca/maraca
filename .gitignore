@@ -17,3 +17,4 @@ inst/doc
 .Rproj
 *.html
 junit-out.xml
+tests/artifacts/
