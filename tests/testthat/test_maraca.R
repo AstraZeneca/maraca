@@ -658,8 +658,12 @@ test_that("maracaPlotting", {
     column_names,
     fixed_followup_days
     )
+
+  output <- artifacts_path("maracaPlotting-basic.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
   plot(mar)
-  expect_true(TRUE)
+  expect_file_exists(output)
 })
 
 test_that("validationFunction", {
@@ -681,10 +685,30 @@ test_that("validationFunction", {
     compute_win_odds = TRUE
   )
 
+  output <- artifacts_path("validationFunction-default.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
   a_def <- plot(mar, density_plot_type = "default")
+  expect_file_exists(output)
+
+  output <- artifacts_path("validationFunction-violin.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
   a_violin <- plot(mar, density_plot_type = "violin")
+  expect_file_exists(output)
+
+  output <- artifacts_path("validationFunction-box.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
   a_box <- plot(mar, density_plot_type = "box")
+  expect_file_exists(output)
+
+  output <- artifacts_path("validationFunction-scatter.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
   a_scatter <- plot(mar, density_plot_type = "scatter")
+  expect_file_exists(output)
+
   val_res_def <- validate_maraca_plot(a_def)
   val_res_violin <- validate_maraca_plot(a_violin)
   val_res_box <- validate_maraca_plot(a_box)
@@ -818,8 +842,11 @@ test_that("handleNAData", {
     data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365
   )
 
+  output <- artifacts_path("handleNAData-basic.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
   plot(mar)
-  expect_true(TRUE)
+  expect_file_exists(output)
 })
 
 test_that("gridSpacing", {
@@ -834,9 +861,11 @@ test_that("gridSpacing", {
     3 * 365
   )
 
-  expect_true(TRUE)
-
+  output <- artifacts_path("gridSpacing-basic.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
   plot(mar, continuous_grid_spacing_x = 8)
+  expect_file_exists(output)
 })
 
 test_that("scaleTransform", {
@@ -851,9 +880,11 @@ test_that("scaleTransform", {
     3 * 365
   )
 
-  expect_true(TRUE)
-
+  output <- artifacts_path("scaleTransform-basic.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
   plot(mar, trans = "sqrt")
+  expect_file_exists(output)
 
 })
 
@@ -869,14 +900,31 @@ test_that("densityPlotType", {
     3 * 365
   )
 
-  expect_true(TRUE)
-
+  output <- artifacts_path("densityPlotType-default.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
   plot(mar, density_plot_type = "default")
+  expect_file_exists(output)
+
+  output <- artifacts_path("densityPlotType-violin.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
   plot(mar, density_plot_type = "violin")
+  expect_file_exists(output)
+
+  output <- artifacts_path("densityPlotType-box.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
   plot(mar, density_plot_type = "box")
+  expect_file_exists(output)
+
+  output <- artifacts_path("densityPlotType-scatter.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
   suppressWarnings(
     plot(mar, density_plot_type = "scatter")
   )
+  expect_file_exists(output)
 })
 
 test_that("verticalLine", {
@@ -893,8 +941,17 @@ test_that("verticalLine", {
 
   expect_true(TRUE)
 
+  output <- artifacts_path("verticalLine-median.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
   plot(mar, vline_type = "median")
+  expect_file_exists(output)
+
+  output <- artifacts_path("verticalLine-mean.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
   plot(mar, vline_type = "mean")
+  expect_file_exists(output)
 })
 
 test_that("plotHCE", {
@@ -904,6 +961,9 @@ test_that("plotHCE", {
     n = 2500, TTE_A = rates_A, TTE_P = rates_P,
     CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3,
     seed = 31337)
+  output <- artifacts_path("plotHCE-basic.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
   plot(HCE)
-  expect_true(TRUE)
+  expect_file_exists(output)
 })
