@@ -6,8 +6,8 @@ License: Apache License (>= 2)
 Authors@R: c(
     person("Martin Karpefors", "", email = "martin.karpefors@astrazeneca.com", role = "aut"),
     person("Samvel B. Gasparyan", "", email = "samvel.gasparyan@astrazeneca.com", role = "aut"),
-    person("Monika Huhn", "", email = "monika.huhn@astrazeneca.com", role = "aut"),
-    person("Stefano Borini", "", email = "stefano.borini@astrazeneca.com", role = c("ctb", "cre")))
+    person("Monika Huhn", "", email = "monika.huhn@astrazeneca.com", role = "aut", "cre"),
+    person("Stefano Borini", "", email = "stefano.borini@astrazeneca.com", role = c("ctb")))
 Description: Library that supports visual interpretation of hierarchical composite
     endpoints (HCEs). HCEs are complex constructs used as primary endpoints in
     clinical trials, combining outcomes of different types into ordinal endpoints,
