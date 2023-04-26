@@ -23,7 +23,6 @@ Imports:
     dplyr (>= 1.0),
     tidyr (>= 1.2),
     ggplot2 (>= 3.3),
-    gridExtra (>= 2.3),
     hce (>= 0.0.2),
     checkmate (>= 2.1)
 RoxygenNote: 7.2.1

@@ -15,6 +15,10 @@
 - Problem with jumps in the cumulative distribution functions fixed. As part
   of this fix, the package does not depend on the survival package anymore.
 
+## Dependency change
+
+- `maraca` does no longer depend on the `gridExtra` package.
+
 ## Discontinued features
 
 - The `plot_tte_components()` function for plotting the individual time-to-event
