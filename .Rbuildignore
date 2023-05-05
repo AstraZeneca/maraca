@@ -3,6 +3,7 @@
 ^maraca\.Rcheck$
 ^dist$
 ^LICENSE\.md$
+^cran-comments\.md$
 ^AUTHORS\.md$
 ^CONTRIBUTING\.md$
 ^Makefile$
