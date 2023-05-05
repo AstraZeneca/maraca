@@ -572,6 +572,8 @@ plot.maraca <- function(
 #'
 #' @param x an object of S3 class 'hce'.
 #' @param \dots not used
+#' @param continuous_outcome A single string containing the continuous
+#'                           outcome label. Default value "C".
 #' @param continuous_grid_spacing_x The spacing of the x grid to use for the
 #'        continuous section of the plot.
 #' @param trans the transformation to apply to the data before plotting.
@@ -580,6 +582,13 @@ plot.maraca <- function(
 #'        Accepts "default", "violin", "box" and "scatter".
 #' @param vline_type what the vertical dashed line should represent. Accepts
 #'        "median", "mean", "none".
+#' @param fixed_followup_days Not needed if HCE object contains information
+#'                            on fixed follow-up days in the study
+#'                            (column TTEfixed). Otherwise,
+#'                            this argument must be specified.
+#'                            Note: If argument is specified and HCE object
+#'                            contains TTEfixed column, then
+#'                            fixed_followup_days argument is used.
 #' @param compute_win_odds If TRUE compute the win odds, otherwise (default)
 #'                         don't compute them.
 #' @return Used for side effect. Plots the maraca object.
@@ -590,12 +599,18 @@ plot.maraca <- function(
 #' Rates_P <- c(2.47, 2.24, 2.9, 4, 6)
 #' HCE <- hce::simHCE(n = 2500, TTE_A = Rates_A, TTE_P = Rates_P,
 #'              CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3)
+#' plot(HCE)
 #' plot(HCE, fixed_followup_days = 3 * 365)
 #'
 #' @export
-plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
+plot.hce <- function(x, continuous_outcome = "C",
+                     continuous_grid_spacing_x = 10,
+                     trans = "identity",
                      density_plot_type = "default",
-                     vline_type = "median", compute_win_odds = FALSE, ...) {
+                     vline_type = "median",
+                     fixed_followup_days = NULL,
+                     compute_win_odds = FALSE, ...) {
+  checkmate::assert_string(continuous_outcome)
   checkmate::assert_int(continuous_grid_spacing_x)
   checkmate::assert_string(trans)
   checkmate::assert_choice(
@@ -604,19 +619,27 @@ plot.hce <- function(x, continuous_grid_spacing_x = 10, trans = "identity",
     vline_type, c("median", "mean", "none")
   )
   checkmate::assert_flag(compute_win_odds)
+  checkmate::assertNames(names(x), must.include = "GROUP")
 
   x <- as.data.frame(x)
-  TTE <- sort(unique(x$GROUP)[unique(x$GROUP) != "C"])
-  fixed_followup_days <- x$TTEfixed[[1]]
+  TTE <- sort(unique(x$GROUP)[unique(x$GROUP) != continuous_outcome])
+
+  if (is.null(fixed_followup_days)) {
+    checkmate::assertNames(names(x), must.include = "TTEfixed")
+    checkmate::assert_int(x$TTEfixed[[1]])
+    fixed_followup_days <- x$TTEfixed[[1]]
+  }
+
   hce_test <- maraca(
     data = x,
     tte_outcomes = TTE,
-    continuous_outcome = "C",
+    continuous_outcome = continuous_outcome,
     column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
     arm_levels = c(active = "A", control = "P"),
     fixed_followup_days = fixed_followup_days,
     compute_win_odds = compute_win_odds
   )
+
   print(plot_maraca(
     hce_test, continuous_grid_spacing_x, trans, density_plot_type, vline_type))
 }

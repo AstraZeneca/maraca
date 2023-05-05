@@ -362,6 +362,16 @@ test_that("wrongParameters", {
   # Test plot functions only work with maraca objects
   expect_error(plot_maraca(123), regexp = "Must inherit")
 
+  # Test plot.hce input
+  rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
+  rates_P <- c(2.47, 2.24, 2.9, 4, 6)
+  HCE <- hce::simHCE(
+    n = 2500, TTE_A = rates_A, TTE_P = rates_P,
+    CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3,
+    seed = 31337)
+  HCE$TTEfixed <- NULL
+  expect_error(plot(HCE))
+
   # Validation function only works for maraca plot
   tmp <- data.frame("a" = 1:10, "b" = 10:1)
   plot <- ggplot2::ggplot(tmp, ggplot2::aes(a, b)) +
@@ -1001,5 +1011,11 @@ test_that("plotHCE", {
   expect_file_not_exists(output)
   set_pdf_output(output)
   plot(HCE)
+  expect_file_exists(output)
+
+  output <- artifacts_path("plotHCE-fixed_follow_up.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
+  plot(HCE, fixed_followup_days = 6 * 365)
   expect_file_exists(output)
 })
