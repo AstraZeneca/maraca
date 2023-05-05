@@ -6,16 +6,21 @@
 \usage{
 \method{plot}{hce}(
   x,
+  continuous_outcome = "C",
   continuous_grid_spacing_x = 10,
   trans = "identity",
   density_plot_type = "default",
   vline_type = "median",
+  fixed_followup_days = NULL,
   compute_win_odds = FALSE,
   ...
 )
 }
 \arguments{
 \item{x}{an object of S3 class 'hce'.}
+
+\item{continuous_outcome}{A single string containing the continuous
+outcome label. Default value "C".}
 
 \item{continuous_grid_spacing_x}{The spacing of the x grid to use for the
 continuous section of the plot.}
@@ -28,6 +33,14 @@ Accepts "default", "violin", "box" and "scatter".}
 
 \item{vline_type}{what the vertical dashed line should represent. Accepts
 "median", "mean", "none".}
+
+\item{fixed_followup_days}{Not needed if HCE object contains information
+on fixed follow-up days in the study
+(column TTEfixed). Otherwise,
+this argument must be specified.
+Note: If argument is specified and HCE object
+contains TTEfixed column, then
+fixed_followup_days argument is used.}
 
 \item{compute_win_odds}{If TRUE compute the win odds, otherwise (default)
 don't compute them.}
@@ -46,6 +59,7 @@ Rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
 Rates_P <- c(2.47, 2.24, 2.9, 4, 6)
 HCE <- hce::simHCE(n = 2500, TTE_A = Rates_A, TTE_P = Rates_P,
              CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3)
+plot(HCE)
 plot(HCE, fixed_followup_days = 3 * 365)
 
 }
