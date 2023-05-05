@@ -3,7 +3,9 @@
 ^maraca\.Rcheck$
 ^dist$
 ^LICENSE\.md$
+^cran-comments\.md$
 ^AUTHORS\.md$
+^README\.md$
 ^CONTRIBUTING\.md$
 ^Makefile$
 ^Rplots\.pdf$

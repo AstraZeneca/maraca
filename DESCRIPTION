@@ -1,12 +1,13 @@
 Package: maraca
-Version: 0.4.0
+Version: 0.5.0
 Type: Package
 Title: The Maraca Plot: Visualization of Hierarchical Composite Endpoints in Clinical Trials
 License: Apache License (>= 2)
 Authors@R: c(
     person("Martin Karpefors", "", email = "martin.karpefors@astrazeneca.com", role = "aut"),
     person("Samvel B. Gasparyan", "", email = "samvel.gasparyan@astrazeneca.com", role = "aut"),
-    person("Stefano Borini", "", email = "stefano.borini@astrazeneca.com", role = c("ctb", "cre")))
+    person("Monika Huhn", "", email = "monika.huhn@astrazeneca.com", role = c("aut", "cre")),
+    person("Stefano Borini", "", email = "stefano.borini@astrazeneca.com", role = c("ctb")))
 Description: Library that supports visual interpretation of hierarchical composite
     endpoints (HCEs). HCEs are complex constructs used as primary endpoints in
     clinical trials, combining outcomes of different types into ordinal endpoints,
@@ -22,7 +23,6 @@ Imports:
     dplyr (>= 1.0),
     tidyr (>= 1.2),
     ggplot2 (>= 3.3),
-    gridExtra (>= 2.3),
     hce (>= 0.0.2),
     checkmate (>= 2.1)
 RoxygenNote: 7.2.1
