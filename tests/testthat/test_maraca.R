@@ -1018,4 +1018,15 @@ test_that("plotHCE", {
   set_pdf_output(output)
   plot(HCE, fixed_followup_days = 6 * 365)
   expect_file_exists(output)
+
+  if (!("PADY" %in% names(HCE))) {
+    HCE$PADY <- HCE$TTEfixed
+  }
+  HCE$TTEfixed <- NULL
+  output <- artifacts_path("plotHCE-newVersionHCEpkg.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
+  plot(HCE)
+  expect_file_exists(output)
+
 })

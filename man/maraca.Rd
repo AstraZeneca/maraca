@@ -3,6 +3,7 @@
 \docType{package}
 \name{maraca}
 \alias{maraca}
+\alias{maraca-package}
 \alias{print.maraca}
 \title{maraca package.}
 \usage{
