@@ -1,3 +1,10 @@
+# maraca 0.5.1
+
+## Bug fixes
+
+- Small bug fix to account for changes in HCE objects created in newest
+  version of HCE package
+
 # maraca 0.5.0
 
 ## New features

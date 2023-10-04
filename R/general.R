@@ -2,6 +2,7 @@
 #'
 #' @docType package
 #' @name maraca
+#' @aliases maraca-package
 NULL
 
 #' Example HCE scenario A.

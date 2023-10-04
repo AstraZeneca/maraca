@@ -624,6 +624,12 @@ plot.hce <- function(x, continuous_outcome = "C",
   x <- as.data.frame(x)
   TTE <- sort(unique(x$GROUP)[unique(x$GROUP) != continuous_outcome])
 
+  # Small bugfix to allow for name change of variable TTEFixed in newer
+  # version of HCE package
+  if ("PADY" %in% names(x)) {
+    x$TTEfixed <- x$PADY
+  }
+
   if (is.null(fixed_followup_days)) {
     checkmate::assertNames(names(x), must.include = "TTEfixed")
     checkmate::assert_int(x$TTEfixed[[1]])
