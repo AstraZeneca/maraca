@@ -41,21 +41,21 @@
 #' )
 #' @export
 maraca <- function(
-    data,
-    tte_outcomes,
-    continuous_outcome,
-    arm_levels = c(
-      active = "active",
-      control = "control"
-    ),
-    column_names = c(
-      outcome = "outcome",
-      arm = "arm",
-      value = "value"
-    ),
-    fixed_followup_days,
-    compute_win_odds = FALSE
-    ) {
+  data,
+  tte_outcomes,
+  continuous_outcome,
+  arm_levels = c(
+    active = "active",
+    control = "control"
+  ),
+  column_names = c(
+    outcome = "outcome",
+    arm = "arm",
+    value = "value"
+  ),
+  fixed_followup_days,
+  compute_win_odds = FALSE
+) {
 
   checkmate::assert_data_frame(data)
   checkmate::assert_character(tte_outcomes, any.missing = FALSE)
@@ -79,11 +79,12 @@ maraca <- function(
   # in the internal data.
   # Note: We use HCE to refer to our internal, normalised data frame.
   # and with "data" to the user-provided, external, dirty data frame.
-  HCE <- .reformat_and_check_data(
-    data, tte_outcomes, continuous_outcome, arm_levels, column_names)
+  hce_dat <- .reformat_and_check_data(data, tte_outcomes,
+                                      continuous_outcome,
+                                      arm_levels, column_names)
 
   # Calculate meta information from the entire HCE dataset needed for plotting
-  meta <- .compute_metainfo(HCE)
+  meta <- .compute_metainfo(hce_dat)
 
   # In the current implementation of the package,
   # the fixed follow-up days given cannot be smaller
@@ -97,7 +98,7 @@ maraca <- function(
   # but will at the same time not include the MI since
   # we don't know about it
   if (fixed_followup_days <
-     max(meta[meta$outcome %in% tte_outcomes, "maxday"])) {
+        max(meta[meta$outcome %in% tte_outcomes, "maxday"])) {
     stop(paste("Time-to-event data contain events",
                "after the fixed_followup_days - either",
                "provide a longer follow-up time or",
@@ -109,21 +110,21 @@ maraca <- function(
   # automatically by survival package (should we done)
   # after the meta data is collected to keep information
   # on if missing data was removed
-  HCE <- HCE %>%
+  hce_dat <- hce_dat %>%
     dplyr::filter(!is.na(value))
 
   ecdf_by_outcome <- .compute_ecdf_by_outcome(
-    HCE, meta, tte_outcomes, continuous_outcome, arm_levels,
+    hce_dat, meta, tte_outcomes, continuous_outcome, arm_levels,
     fixed_followup_days
   )
 
   continuous <- .compute_continuous(
-    HCE, meta, ecdf_by_outcome, tte_outcomes, continuous_outcome, arm_levels
+    hce_dat, meta, ecdf_by_outcome, tte_outcomes, continuous_outcome, arm_levels
   )
 
   win_odds <- NULL
   if (compute_win_odds) {
-    win_odds <- .compute_win_odds(HCE)
+    win_odds <- .compute_win_odds(hce_dat)
   }
 
   return(
@@ -225,11 +226,11 @@ plot_maraca <- function(
   continuous <- obj$continuous
   ecdf_mod <- obj$ecdf_by_outcome
   win_odds <- obj$win_odds
-  start_continuous_endpoint <- meta[
-    meta$outcome == obj$continuous_outcome, ]$startx
+  start_continuous_endpoint <-
+    meta[meta$outcome == obj$continuous_outcome, ]$startx
 
   plotdata_ecdf <- ecdf_mod$data[, c("outcome", "arm",
-                                    "adjusted.time", "ecdf_values")]
+                                     "adjusted.time", "ecdf_values")]
   plotdata_ecdf$type <- "tte"
   names(plotdata_ecdf) <- c("outcome", "arm", "x", "y", "type")
   plotdata_cont <- continuous$data[, c("outcome", "arm", "x", "y_level")]
@@ -285,7 +286,7 @@ plot_maraca <- function(
     ggplot2::geom_vline(
       xintercept = zeroposition,
       color = "white",
-      size = 1
+      linewidth = 1
     )
 
   if (vline_type == "median") {
@@ -297,7 +298,7 @@ plot_maraca <- function(
         ),
         data = continuous$meta,
         linetype = "dashed",
-        size = 0.8
+        linewidth = 0.8
       )
   } else if (vline_type == "mean") {
     plot <- plot +
@@ -308,13 +309,13 @@ plot_maraca <- function(
         ),
         data = continuous$meta,
         linetype = "dashed",
-        size = 0.8
+        linewidth = 0.8
       )
   }
 
   plot <- plot +
     ggplot2::geom_step(
-    data = plotdata[plotdata$type == "tte", ],
+      data = plotdata[plotdata$type == "tte", ],
       aes(x = x, y = y, color = arm)
     )
 
@@ -327,11 +328,12 @@ plot_maraca <- function(
         data = plotdata[plotdata$type == "cont", ],
         aes(x = x, y = y, colour = arm, fill = arm), alpha = 0.5
       ) + ggplot2::geom_boxplot(
-        data = plotdata[plotdata$type == "cont", ],
-        aes(x = x, y = y, colour = arm, fill = arm), alpha = 0.5,
-        width = abs(diff(as.numeric(unique(
-          plotdata[plotdata$type == "cont", ]$y)))) / 3
-      )
+      data = plotdata[plotdata$type == "cont", ],
+      aes(x = x, y = y, colour = arm, fill = arm), alpha = 0.5,
+      width =
+        abs(diff(as.numeric(unique(plotdata[plotdata$type == "cont", ]$y)))) /
+        3
+    )
   } else if (density_plot_type == "violin") {
     plot <- plot +
       ggplot2::geom_violin(
@@ -383,7 +385,7 @@ plot_maraca <- function(
         start_continuous_endpoint,
         min(continuous$data$value, na.rm = TRUE),
         max(continuous$data$value, na.rm = TRUE)
-        ),
+      ),
       y = 0,
       label = labels,
       color = "grey60"
@@ -391,18 +393,19 @@ plot_maraca <- function(
 
   if (!is.null(win_odds)) {
     plot <- plot +
-    ggplot2::annotate(
-      geom = "label",
-      x = 0,
-      y = Inf,
-      label = paste(
-        "Win odds (95% CI): ", round(win_odds[[1]], 2),
-        " (", round(win_odds[[2]], 2), ", ", round(win_odds[[3]], 2), ")", "\n",
-        "p-value: ", format.pval(win_odds[[4]], digits = 3, eps = 0.001),
-        sep = ""
-      ),
-      hjust = 0, vjust = 1.4, size = 3
-    )
+      ggplot2::annotate(
+        geom = "label",
+        x = 0,
+        y = Inf,
+        label = paste(
+          "Win odds (95% CI): ", round(win_odds[[1]], 2),
+          " (", round(win_odds[[2]], 2), ", ",
+          round(win_odds[[3]], 2), ")", "\n",
+          "p-value: ", format.pval(win_odds[[4]], digits = 3, eps = 0.001),
+          sep = ""
+        ),
+        hjust = 0, vjust = 1.4, size = 3
+      )
 
     # Meta data on win odds will be added to plot
     win_odds <- unname(win_odds)
@@ -472,8 +475,8 @@ validate_maraca_plot <- function(x,  ...) {
 
   arms <- levels(pb$plot$data[, pb$plot$labels$colour])
 
-  tte_data <- utils::tail(
-    utils::head(pb$data[[4]][, c("group", "x", "y")], -2), -2)
+  tte_data <-
+    utils::tail(utils::head(pb$data[[4]][, c("group", "x", "y")], -2), -2)
   tte_data$group <- factor(tte_data$group, labels = arms)
 
   scatter_data <- NULL
@@ -487,9 +490,9 @@ validate_maraca_plot <- function(x,  ...) {
     boxstat_data <- pb$data[[5]] %>%
       dplyr::select(group, "x_lowest" = xmin_final,
                     "whisker_lower" = xmin,
-             "hinge_lower" = xlower, "median" = xmiddle,
-             "hinge_upper" = xupper, "whisker_upper" = xmax,
-             "x_highest" = xmax_final, outliers)
+                    "hinge_lower" = xlower, "median" = xmiddle,
+                    "hinge_upper" = xupper, "whisker_upper" = xmax,
+                    "x_highest" = xmax_final, outliers)
     boxstat_data$outliers <- lapply(boxstat_data$outliers, sort)
     boxstat_data$group <- factor(boxstat_data$group, labels = arms)
   } else if (plot_type == "GeomViolin") {
@@ -499,9 +502,9 @@ validate_maraca_plot <- function(x,  ...) {
       boxstat_data <- pb$data[[6]] %>%
         dplyr::select(group, "x_lowest" = xmin_final,
                       "whisker_lower" = xmin,
-               "hinge_lower" = xlower, "median" = xmiddle,
-               "hinge_upper" = xupper, "whisker_upper" = xmax,
-               "x_highest" = xmax_final, outliers)
+                      "hinge_lower" = xlower, "median" = xmiddle,
+                      "hinge_upper" = xupper, "whisker_upper" = xmax,
+                      "x_highest" = xmax_final, outliers)
       boxstat_data$outliers <- lapply(boxstat_data$outliers, sort)
       boxstat_data$group <- factor(boxstat_data$group, labels = arms)
     }
@@ -565,8 +568,9 @@ plot.maraca <- function(
     density_plot_type = "default",
     vline_type = "median",
     ...) {
-  print(plot_maraca(
-    x, continuous_grid_spacing_x, trans, density_plot_type, vline_type))
+  print(plot_maraca(x, continuous_grid_spacing_x,
+                    trans, density_plot_type,
+                    vline_type))
 }
 #' Generic function to plot the hce object using plot().
 #'
@@ -597,10 +601,10 @@ plot.maraca <- function(
 #' set.seed(31337)
 #' Rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
 #' Rates_P <- c(2.47, 2.24, 2.9, 4, 6)
-#' HCE <- hce::simHCE(n = 2500, TTE_A = Rates_A, TTE_P = Rates_P,
+#' hce_dat <- hce::simHCE(n = 2500, TTE_A = Rates_A, TTE_P = Rates_P,
 #'              CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3)
-#' plot(HCE)
-#' plot(HCE, fixed_followup_days = 3 * 365)
+#' plot(hce_dat)
+#' plot(hce_dat, fixed_followup_days = 3 * 365)
 #'
 #' @export
 plot.hce <- function(x, continuous_outcome = "C",
@@ -613,8 +617,8 @@ plot.hce <- function(x, continuous_outcome = "C",
   checkmate::assert_string(continuous_outcome)
   checkmate::assert_int(continuous_grid_spacing_x)
   checkmate::assert_string(trans)
-  checkmate::assert_choice(
-    density_plot_type, c("default", "violin", "box", "scatter"))
+  checkmate::assert_choice(density_plot_type,
+                           c("default", "violin", "box", "scatter"))
   checkmate::assert_choice(
     vline_type, c("median", "mean", "none")
   )
@@ -622,7 +626,7 @@ plot.hce <- function(x, continuous_outcome = "C",
   checkmate::assertNames(names(x), must.include = "GROUP")
 
   x <- as.data.frame(x)
-  TTE <- sort(unique(x$GROUP)[unique(x$GROUP) != continuous_outcome])
+  tte <- sort(unique(x$GROUP)[unique(x$GROUP) != continuous_outcome])
 
   # Small bugfix to allow for name change of variable TTEFixed in newer
   # version of HCE package
@@ -638,7 +642,7 @@ plot.hce <- function(x, continuous_outcome = "C",
 
   hce_test <- maraca(
     data = x,
-    tte_outcomes = TTE,
+    tte_outcomes = tte,
     continuous_outcome = continuous_outcome,
     column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
     arm_levels = c(active = "A", control = "P"),
@@ -646,20 +650,21 @@ plot.hce <- function(x, continuous_outcome = "C",
     compute_win_odds = compute_win_odds
   )
 
-  print(plot_maraca(
-    hce_test, continuous_grid_spacing_x, trans, density_plot_type, vline_type))
+  print(plot_maraca(hce_test, continuous_grid_spacing_x,
+                    trans, density_plot_type, vline_type))
 }
 
 ### Private functions
 
 # Computes the win odds from the internal data.
-.compute_win_odds <- function(HCE) {
-  HCE <- base::as.data.frame(HCE)
-  HCE <- .with_ordered_column(HCE)
-  fit <- hce::calcWO(x = HCE, AVAL = "ordered", TRTP = "arm", ref = "control")
-  CI <- base::as.numeric(fit[, base::c("WO", "LCL", "UCL")])
+.compute_win_odds <- function(hce_dat) {
+  hce_dat <- base::as.data.frame(hce_dat)
+  hce_dat <- .with_ordered_column(hce_dat)
+  fit <- hce::calcWO(x = hce_dat, AVAL = "ordered",
+                     TRTP = "arm", ref = "control")
+  ci <- base::as.numeric(fit[, base::c("WO", "LCL", "UCL")])
   p <- fit$Pvalue
-  win_odds <- base::c(CI, p)
+  win_odds <- base::c(ci, p)
   names(win_odds) <- base::c("estimate", "lower", "upper", "p-value")
   return(win_odds)
 }
@@ -670,14 +675,14 @@ plot.hce <- function(x, continuous_outcome = "C",
 # for each passing tte variable (and highest for the continuous).
 # In practice, we are translating the values for each tte variable group.
 # Explanation inline
-.with_ordered_column <- function(HCE) {
+.with_ordered_column <- function(hce_dat) {
   # We create a data frame, grouping according to the outcome,
   # then we get the minimum and maximum values of the value.
   # What we want to know is the "window" where data are for each of the groups
   # We then select the largest window.
   `%>%` <- dplyr::`%>%`
 
-  tmp <- HCE %>%
+  tmp <- hce_dat %>%
     dplyr::group_by(outcome) %>%
     dplyr::summarise(min = min(value), max = max(value)) %>%
     dplyr::mutate(separation = max - min) %>%
@@ -692,24 +697,24 @@ plot.hce <- function(x, continuous_outcome = "C",
   # apply the gap to all values. outcome is a factor, so we use its numeric
   # value to multiply the offset, and end up having each value "translated up"
   # of the proper amount.
-  HCE <- HCE %>%
+  hce_dat <- hce_dat %>%
     dplyr::mutate(ordered = .env$gap * (as.numeric(outcome) - 1) + value)
 
   # and now we have a new data set with the column added.
-  return(HCE)
+  return(hce_dat)
 }
 
 # Computes the metainfo from the internal HCE data.
-.compute_metainfo <- function(HCE) {
+.compute_metainfo <- function(hce_dat) {
   n <- dplyr::n
   `%>%` <- dplyr::`%>%`
 
-  meta1 <- HCE  %>%
+  meta1 <- hce_dat  %>%
     dplyr::filter(!is.na(value)) %>%
     dplyr::group_by(outcome) %>%
     dplyr::summarise(
       n = n(),
-      proportion = n / dim(HCE)[[1]] * 100,
+      proportion = n / dim(hce_dat)[[1]] * 100,
       maxday = max(value, na.rm = TRUE)
     ) %>%
     dplyr::mutate(
@@ -719,13 +724,13 @@ plot.hce <- function(x, continuous_outcome = "C",
       n.groups = length(unique(outcome))
     )
 
-  meta2 <- HCE  %>%
+  meta2 <- hce_dat  %>%
     dplyr::filter(!is.na(value)) %>%
     dplyr::group_by(outcome, arm) %>%
-    dplyr::summarise(n = n(), proportion = n / dim(HCE)[[1]] * 100) %>%
+    dplyr::summarise(n = n(), proportion = n / dim(hce_dat)[[1]] * 100) %>%
     tidyr::pivot_wider(names_from = arm, values_from = c(n, proportion))
 
-  meta_missing <- HCE %>%
+  meta_missing <- hce_dat %>%
     dplyr::group_by(outcome) %>%
     dplyr::summarise(
       missing = sum(is.na(value))
@@ -739,7 +744,7 @@ plot.hce <- function(x, continuous_outcome = "C",
 
 # Calculates the cumulative distribution for TTE outcomes
 .compute_ecdf_by_outcome <- function(
-  HCE, meta, tte_outcomes, continuous_outcome, arm_levels,
+  hce_dat, meta, tte_outcomes, continuous_outcome, arm_levels,
   fixed_followup_days
 ) {
 
@@ -747,63 +752,62 @@ plot.hce <- function(x, continuous_outcome = "C",
   n <- dplyr::n
 
   num_tte_outcomes <- length(tte_outcomes)
-  HCE$t_cdf <- (num_tte_outcomes + 2) * fixed_followup_days
+  hce_dat$t_cdf <- (num_tte_outcomes + 2) * fixed_followup_days
 
   for (i in seq_len(num_tte_outcomes)) {
-    HCE[HCE$outcome == tte_outcomes[[i]], ]$t_cdf <-
-      HCE[HCE$outcome == tte_outcomes[[i]], ]$value +
-        fixed_followup_days * (i - 1)
+    hce_dat[hce_dat$outcome == tte_outcomes[[i]], ]$t_cdf <-
+      hce_dat[hce_dat$outcome == tte_outcomes[[i]], ]$value +
+      fixed_followup_days * (i - 1)
   }
 
-  HCE_ecdf <-
+  hce_ecdf <-
     do.call("rbind",
-            lapply(unique(HCE$arm), function(a, df, outcomes) {
-      tmp <- df %>% dplyr::filter(arm == a)
-      tmp$ecdf_values <- 100 *
-        stats::ecdf(tmp$t_cdf)(tmp$t_cdf)
-      tmp %>% dplyr::filter(outcome %in% outcomes)
-  }, df = HCE, outcomes = tte_outcomes))
+            lapply(unique(hce_dat$arm), function(a, df, outcomes) {
+              tmp <- df %>% dplyr::filter(arm == a)
+              tmp$ecdf_values <- 100 *
+                stats::ecdf(tmp$t_cdf)(tmp$t_cdf)
+              tmp %>% dplyr::filter(outcome %in% outcomes)
+            }, df = hce_dat, outcomes = tte_outcomes))
 
-  HCE_ecdf <- HCE_ecdf[order(HCE_ecdf$ecdf_values), ]
+  hce_ecdf <- hce_ecdf[order(hce_ecdf$ecdf_values), ]
 
-  HCE_ecdf$adjusted.time <- 0
+  hce_ecdf$adjusted.time <- 0
   for (entry in tte_outcomes) {
-    outcome_filter <- HCE_ecdf$outcome == entry
-    HCE_ecdf[outcome_filter, ]$adjusted.time <-
+    outcome_filter <- hce_ecdf$outcome == entry
+    hce_ecdf[outcome_filter, ]$adjusted.time <-
       meta[meta$outcome == entry, ]$startx +
-      HCE_ecdf[outcome_filter, ]$value /
+      hce_ecdf[outcome_filter, ]$value /
       fixed_followup_days *
       meta[meta$outcome == entry, ]$proportion
   }
 
-  HCE_ecdf_meta <- HCE_ecdf %>%
+  hce_ecdf_meta <- hce_ecdf %>%
     dplyr::group_by(arm, outcome) %>%
-    dplyr::summarise(
-      max = max(ecdf_values, na.rm = TRUE),
-      sum.event = n()) %>%
+    dplyr::summarise(max = max(ecdf_values, na.rm = TRUE),
+                     sum.event = n()) %>%
     dplyr::mutate(
       ecdf_end = utils::tail(max, 1)
     )
 
   return(list(
-    data = HCE_ecdf,
-    meta = HCE_ecdf_meta
+    data = hce_ecdf,
+    meta = hce_ecdf_meta
   ))
 }
 
 # Support function for the range
 .to_rangeab <- function(x, start_continuous_endpoint, minval, maxval) {
   (100 - start_continuous_endpoint) * (x - minval) /
-  (maxval - minval) + start_continuous_endpoint
+    (maxval - minval) + start_continuous_endpoint
 }
 
 # Computes the continuous information
 .compute_continuous <- function(
-    HCE, meta, ecdf_mod, tte_outcomes, continuous_outcome, arm_levels) {
+    hce_dat, meta, ecdf_mod, tte_outcomes, continuous_outcome, arm_levels) {
   `%>%` <- dplyr::`%>%`
   n <- dplyr::n
 
-  continuous_data <- HCE[HCE$outcome == continuous_outcome, ]
+  continuous_data <- hce_dat[hce_dat$outcome == continuous_outcome, ]
   start_continuous_endpoint <- meta[meta$outcome == continuous_outcome, ]$startx
 
   continuous_data$x <- .to_rangeab(
@@ -815,16 +819,16 @@ plot.hce <- function(x, continuous_outcome = "C",
   continuous_meta <- continuous_data %>%
     dplyr::group_by(arm) %>%
     dplyr::summarise(n = n(), median = stats::median(x, na.rm = TRUE),
-      average = base::mean(x, na.rm = TRUE))
+                     average = base::mean(x, na.rm = TRUE))
 
   continuous_data$y_level <- ecdf_mod$meta[
     ecdf_mod$meta$arm == "active" &
-    ecdf_mod$meta$outcome == utils::tail(tte_outcomes, 1),
-    ]$ecdf_end
+      ecdf_mod$meta$outcome == utils::tail(tte_outcomes, 1),
+  ]$ecdf_end
   continuous_data[continuous_data$arm == "control", ]$y_level <- ecdf_mod$meta[
     ecdf_mod$meta$arm == "control" &
-    ecdf_mod$meta$outcome == utils::tail(tte_outcomes, 1),
-    ]$ecdf_end
+      ecdf_mod$meta$outcome == utils::tail(tte_outcomes, 1),
+  ]$ecdf_end
 
   return(list(
     data = continuous_data,
@@ -839,19 +843,19 @@ plot.hce <- function(x, continuous_outcome = "C",
   vars <- dplyr::vars
   all_of <- dplyr::all_of
 
-  HCE <- data %>%
+  hce_dat <- data %>%
     dplyr::rename(all_of(column_names)) %>%
     dplyr::select(all_of(names(column_names)))
 
   # Check if the arm and outcome are strings, rather than factors.
-  if (!inherits(HCE[, "arm"], "character")) {
+  if (!inherits(hce_dat[, "arm"], "character")) {
     stop(paste(
       "The arm column must be characters.",
       "If you used read.csv, ensure you specify stringsAsFactors = FALSE."
     ))
   }
 
-  if (!inherits(HCE[, "outcome"], "character")) {
+  if (!inherits(hce_dat[, "outcome"], "character")) {
     stop(paste(
       "The outcome column must be characters.",
       "If you used read.csv, ensure you specify stringsAsFactors = FALSE."
@@ -859,19 +863,19 @@ plot.hce <- function(x, continuous_outcome = "C",
   }
 
   inverse_map <- stats::setNames(names(arm_levels), arm_levels)
-  HCE$arm <- sapply(HCE$arm, function(x) {
+  hce_dat$arm <- sapply(hce_dat$arm, function(x) {
     return(inverse_map[x])
   })
 
   endpoints <- c(tte_outcomes, continuous_outcome)
-  HCE <- HCE %>%
+  hce_dat <- hce_dat %>%
     dplyr::filter(outcome %in% endpoints) %>%
     dplyr::mutate_at(vars(outcome), factor, levels = endpoints) %>%
     dplyr::mutate_at(vars(arm), factor, levels = names(arm_levels))
 
   # Check if the endpoints are all present
   for (entry in c(tte_outcomes, continuous_outcome)) {
-    if (!any(HCE$outcome == entry)) {
+    if (!any(hce_dat$outcome == entry)) {
       stop(paste(
         "Outcome", entry, "is not present in column",
         column_names[["outcome"]]
@@ -879,7 +883,7 @@ plot.hce <- function(x, continuous_outcome = "C",
     }
   }
 
-  return(HCE)
+  return(hce_dat)
 
 }
 
