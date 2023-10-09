@@ -14,8 +14,10 @@ hce = ">=0.5"
 checkmate = "*"
 gridExtra = "*"
 tidyselect = "*"
+patchwork = "*"
 
 [tool.roo.dev-dependencies]
 here = "*"
 lintr = "*"
 devtools = "*"
+lattice = "~0.20"

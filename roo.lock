@@ -4,7 +4,7 @@ url = "https://cloud.r-project.org/"
 
 [[entry]]
 categories = []
-dependencies = [ "checkmate", "devtools", "dplyr", "ggplot2", "gridExtra", "hce", "here", "lintr", "tidyr", "tidyselect",]
+dependencies = [ "checkmate", "devtools", "dplyr", "ggplot2", "gridExtra", "hce", "here", "lattice", "lintr", "patchwork", "tidyr", "tidyselect",]
 type = "root"
 
 [[entry]]
@@ -325,14 +325,14 @@ md5 = "7d4f697f7af872bfa8ccaf1326d5d650"
 categories = [ "dev",]
 dependencies = []
 name = "curl"
-version = "5.0.2"
+version = "5.1.0"
 source = "CRAN"
 r_constraint = ">=3.0.0"
 type = "source"
 [[entry.files]]
-name = "curl_5.0.2.tar.gz"
-hash = "sha256:166b373a992eb7c880d71b2fabfc31cba6195f52f307056e8420ecc42c6d7c72"
-md5 = "32e637928a6f8be84558a5ccc92a167b"
+name = "curl_5.1.0.tar.gz"
+hash = "sha256:57218da84b85bd01ce7daa4bca3e271eda1bf688e0cdb211c397ccb272ecba97"
+md5 = "8f4d84ce6ffa8d08611c66ae0d6238bc"
 
 
 [[entry]]
@@ -451,28 +451,28 @@ md5 = "c453b4514da3717af5d5b97f0e3d2415"
 categories = [ "dev",]
 dependencies = [ "methods",]
 name = "evaluate"
-version = "0.21"
+version = "0.22"
 source = "CRAN"
 r_constraint = ">=3.0.2"
 type = "source"
 [[entry.files]]
-name = "evaluate_0.21.tar.gz"
-hash = "sha256:3178c99cee8917d7d128806d064d4fecce7845ed07f42e759dcc0adda89c22b9"
-md5 = "fcd53297915079edf4f846d0c6489379"
+name = "evaluate_0.22.tar.gz"
+hash = "sha256:9047d8732f14677b512d2b00dc6afbdfd579e3735f35ae746a2b2ff26bfce46b"
+md5 = "5499a742ee6fb940f2a98fcfc0e098b2"
 
 
 [[entry]]
 categories = [ "dev", "main",]
 dependencies = [ "grDevices", "utils",]
 name = "fansi"
-version = "1.0.4"
+version = "1.0.5"
 source = "CRAN"
 r_constraint = ">=3.1.0"
 type = "source"
 [[entry.files]]
-name = "fansi_1.0.4.tar.gz"
-hash = "sha256:3163214e6c40922bbb495229259ed8ce1bebd98b77098a6936d234e43da9c49f"
-md5 = "cb7018ddfb0602db4fdeb41f693643fe"
+name = "fansi_1.0.5.tar.gz"
+hash = "sha256:c616ce357fbfd43253c366da578549a38066459058c22fb99c82fc05992e23f6"
+md5 = "d1a4e4d70abf0bc079c2a20763b765bf"
 
 
 [[entry]]
@@ -628,7 +628,7 @@ name = "graphics"
 type = "core"
 
 [[entry]]
-categories = [ "main",]
+categories = [ "dev", "main",]
 dependencies = []
 name = "grid"
 type = "core"
@@ -707,14 +707,14 @@ md5 = "75ac8d38e8c9b56e40220daebb00c4ea"
 categories = [ "dev",]
 dependencies = [ "base64enc", "digest", "ellipsis", "fastmap", "grDevices", "rlang", "utils",]
 name = "htmltools"
-version = "0.5.6"
+version = "0.5.6.1"
 source = "CRAN"
 r_constraint = ">=2.14.1"
 type = "source"
 [[entry.files]]
-name = "htmltools_0.5.6.tar.gz"
-hash = "sha256:15eb8e2745c3be5e9926aa773f21d551435e903aa1dd20712f8ab54055b5a067"
-md5 = "d95781d5275b257942860ae484ea2319"
+name = "htmltools_0.5.6.1.tar.gz"
+hash = "sha256:09b84ef819d03ba818c7d54a99b5b8b029e91370fd72b3410b5048f0f644a04e"
+md5 = "393cee9a068064ff50f4e8d37fd3f0c6"
 
 
 [[entry]]
@@ -872,17 +872,17 @@ md5 = "04a2e2203f3b4c78477378eb414f80ca"
 
 
 [[entry]]
-categories = [ "main",]
+categories = [ "dev", "main",]
 dependencies = [ "grDevices", "graphics", "grid", "stats", "utils",]
 name = "lattice"
-version = "0.21-8"
+version = "0.20-45"
 source = "CRAN"
-r_constraint = ">=4.0.0"
+r_constraint = ">=3.0.0"
 type = "source"
 [[entry.files]]
-name = "lattice_0.21-8.tar.gz"
-hash = "sha256:8ad3d6974262e6cab6cc8fec38aa279b5b2f2524adf6f3eab56f68302b60c329"
-md5 = "d9bc82810e0daa36984e695cb3970d92"
+name = "lattice_0.20-45.tar.gz"
+hash = "sha256:22388d92bdb7d3959da84d7308d9026dd8226ef07580783729e8ad2f7d7507ad"
+md5 = "df6d9b8d8a919fcf96334c9c67a883c3"
 
 
 [[entry]]
@@ -1043,6 +1043,20 @@ type = "source"
 name = "openssl_2.1.1.tar.gz"
 hash = "sha256:faa726f9af2a97d5fa1e1044f4a38ee2edd4c81f0beb5830f6a36ff249b64bdc"
 md5 = "638ba0b9ff6d9376e21a9063ce4dd20a"
+
+
+[[entry]]
+categories = [ "main",]
+dependencies = [ "cli", "ggplot2", "grDevices", "graphics", "grid", "gtable", "rlang", "stats", "utils",]
+name = "patchwork"
+version = "1.1.3"
+source = "CRAN"
+r_constraint = "*"
+type = "source"
+[[entry.files]]
+name = "patchwork_1.1.3.tar.gz"
+hash = "sha256:e976424f4bd88e075f2ca6836db2aa1eb5fa7ad6a20ad0a34a4d5047d59ad71e"
+md5 = "ed9694bdaa8739de29faed20a71d497b"
 
 
 [[entry]]
@@ -1523,14 +1537,14 @@ md5 = "b099fee0892289e48b34cd412dacc535"
 categories = [ "dev",]
 dependencies = [ "R6", "brio", "callr", "cli", "desc", "digest", "ellipsis", "evaluate", "jsonlite", "lifecycle", "magrittr", "methods", "pkgload", "praise", "processx", "ps", "rlang", "utils", "waldo", "withr",]
 name = "testthat"
-version = "3.1.10"
+version = "3.2.0"
 source = "CRAN"
-r_constraint = ">=3.1"
+r_constraint = ">=3.6.0"
 type = "source"
 [[entry.files]]
-name = "testthat_3.1.10.tar.gz"
-hash = "sha256:3135085d04ef76d2e000dddb7100a9708b27c1fbf4f33b51301f72b07b0608f6"
-md5 = "aa4160444bc19e76e3c3fa78e8824402"
+name = "testthat_3.2.0.tar.gz"
+hash = "sha256:5b0be53295fe509042e48711df091f7021e23512d1339a4f6f6d9f36d145650e"
+md5 = "27df4556adf7bc288e1b93f853a2fc58"
 
 
 [[entry]]
@@ -1593,14 +1607,14 @@ md5 = "147069ee8d8bc42f63f253311f6c1806"
 categories = [ "dev",]
 dependencies = [ "xfun",]
 name = "tinytex"
-version = "0.46"
+version = "0.47"
 source = "CRAN"
 r_constraint = "*"
 type = "source"
 [[entry.files]]
-name = "tinytex_0.46.tar.gz"
-hash = "sha256:0b8c8e89234dd5d260c8d07d7abd507f55b759eb4c9c315dc35dbf3dfa0a0203"
-md5 = "e719ca1552c1a0e98ee043eab6b705b1"
+name = "tinytex_0.47.tar.gz"
+hash = "sha256:7975c8313ff83aa8054530873fc091bbfb956e3080f7ebd3a12cde2d2089c5df"
+md5 = "fd95943f2868f38772c73a4d338f3b3f"
 
 
 [[entry]]
@@ -1827,5 +1841,5 @@ md5 = "4f4294028c8902df55475b69a249c06c"
 
 [metadata]
 version = 2
-content_hash = "10861b80e0cfca695b387b6910fa6ac4f518fa2ee867ccdaa57e79ce188e201e"
+content_hash = "a9c3b40cd73acd1faa2b4f516f87ac0b5e3f2724484f4fe7964c40a53df947b6"
 conservative = false
