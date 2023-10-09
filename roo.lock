@@ -4,21 +4,21 @@ url = "https://cloud.r-project.org/"
 
 [[entry]]
 categories = []
-dependencies = [ "checkmate", "devtools", "dplyr", "ggplot2", "gridExtra", "hce", "here", "lattice", "lintr", "patchwork", "tidyr", "tidyselect",]
+dependencies = [ "MASS", "checkmate", "devtools", "dplyr", "ggplot2", "gridExtra", "hce", "here", "lattice", "lintr", "patchwork", "tidyr", "tidyselect",]
 type = "root"
 
 [[entry]]
-categories = [ "main",]
+categories = [ "dev", "main",]
 dependencies = [ "grDevices", "graphics", "methods", "stats", "utils",]
 name = "MASS"
-version = "7.3-60"
+version = "7.3-52"
 source = "CRAN"
-r_constraint = ">=4.0"
+r_constraint = ">=3.1.0"
 type = "source"
 [[entry.files]]
-name = "MASS_7.3-60.tar.gz"
-hash = "sha256:b802410feab01464d112b27b3501176eb8e68511d4ba9d052ac4db1f2a72f0c2"
-md5 = "24ac97ba3e4446708f9bb9b8911eb920"
+name = "MASS_7.3-52.tar.gz"
+hash = "sha256:89291b3cb6889d41e87f0ee4c9293c6ea0b6ab7d2e35c6dd748a0f5f1f1e3114"
+md5 = "dce228596c5eb2f10a06f2702057039e"
 
 
 [[entry]]
@@ -1841,5 +1841,5 @@ md5 = "4f4294028c8902df55475b69a249c06c"
 
 [metadata]
 version = 2
-content_hash = "a9c3b40cd73acd1faa2b4f516f87ac0b5e3f2724484f4fe7964c40a53df947b6"
+content_hash = "8b3c8708480d34ceb32f773a6f8d0a2ffb133800d59c85b7996f996493040196"
 conservative = false
