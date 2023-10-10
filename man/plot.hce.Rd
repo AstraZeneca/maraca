@@ -13,6 +13,7 @@
   vline_type = "median",
   fixed_followup_days = NULL,
   compute_win_odds = FALSE,
+  theme = "maraca",
   ...
 )
 }
@@ -45,10 +46,14 @@ fixed_followup_days argument is used.}
 \item{compute_win_odds}{If TRUE compute the win odds, otherwise (default)
 don't compute them.}
 
+\item{theme}{Choose theme to style the plot. The default theme is "maraca".
+Options are "maraca", "maraca_old", "color1", "color2" and none".
+For more details, check the themes vignette.}
+
 \item{\dots}{not used}
 }
 \value{
-Used for side effect. Plots the maraca object.
+Used for side effect. Returns ggplot2 plot of the hce object.
 }
 \description{
 Generic function to plot the hce object using plot().
@@ -57,9 +62,9 @@ Generic function to plot the hce object using plot().
 set.seed(31337)
 Rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
 Rates_P <- c(2.47, 2.24, 2.9, 4, 6)
-HCE <- hce::simHCE(n = 2500, TTE_A = Rates_A, TTE_P = Rates_P,
+hce_dat <- hce::simHCE(n = 2500, TTE_A = Rates_A, TTE_P = Rates_P,
              CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3)
-plot(HCE)
-plot(HCE, fixed_followup_days = 3 * 365)
+plot(hce_dat)
+plot(hce_dat, fixed_followup_days = 3 * 365)
 
 }
