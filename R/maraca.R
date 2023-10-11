@@ -122,7 +122,7 @@ maraca <- function(
     hce_dat, meta, ecdf_by_outcome, tte_outcomes, continuous_outcome, arm_levels
   )
 
-  win_odds <- NULL
+  win_odds <- list("win_odds" = NULL, "win_odds_outcome" = NULL)
   if (compute_win_odds) {
     win_odds <- .compute_win_odds(hce_dat)
   }
@@ -138,7 +138,8 @@ maraca <- function(
         meta = meta,
         ecdf_by_outcome = ecdf_by_outcome,
         continuous = continuous,
-        win_odds = win_odds
+        win_odds = win_odds[["win_odds"]],
+        win_odds_outcome = win_odds[["win_odds_outcome"]]
       ),
       class = c("maraca")
     )
@@ -658,6 +659,7 @@ plot.hce <- function(x, continuous_outcome = "C",
 
 # Computes the win odds from the internal data.
 .compute_win_odds <- function(hce_dat) {
+
   hce_dat <- base::as.data.frame(hce_dat)
   hce_dat <- .with_ordered_column(hce_dat)
   fit <- hce::calcWO(x = hce_dat, AVAL = "ordered",
@@ -666,9 +668,14 @@ plot.hce <- function(x, continuous_outcome = "C",
   p <- fit$Pvalue
   win_odds <- base::c(ci, p)
   names(win_odds) <- base::c("estimate", "lower", "upper", "p-value")
-  return(win_odds)
-}
 
+  win_odds_outcome <- hce::summaryWO(hce_dat, AVAL = "ordered", TRTP = "arm",
+                                     ref = "control", GROUP = "outcome")
+
+  return(list("win_odds" = win_odds,
+              "win_odds_outcome" = win_odds_outcome))
+
+}
 
 # This function does a bit of dirty magic to distribute the values
 # onto different "floors", each floor being a numeric offset that is higher

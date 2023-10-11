@@ -483,7 +483,8 @@ test_that("winOddsData", {
   data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
     arm_levels, column_names = column_names
   )
-  win_odds <- .compute_win_odds(data)
+  win_odds_list <- .compute_win_odds(data)
+  win_odds <- win_odds_list[["win_odds"]]
 
   expect_equal(class(win_odds), "numeric")
   expect_equal(
