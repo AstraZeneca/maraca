@@ -82,12 +82,17 @@ component_plot.hce <- function(x, continuous_outcome = "C",
   plot <- .create_component_plot(wo_bar_nc, endpoints)
 
   plot <- plot +
+    ggplot2::geom_vline(xintercept = seq(0.5, length(endpoints) + 1.5, 1),
+                        linetype = 2, linewidth = 0.5, color = "darkgray") +
+    # Axis showing percentages
+    ggplot2::scale_y_continuous(labels = function(x) paste0(round(x, 2), "%")) +
     ggplot2::ylab("Percent of all comparisons") +
     ggplot2::scale_fill_manual(values = c("#F8766D", "#00BFC4",
                                           "#d3d3d3"), name = NULL)  +
     ggplot2::theme_bw() +
     ggplot2::theme(legend.position = "bottom",
-                   axis.title.y = ggplot2::element_blank())
+                   axis.title.y = ggplot2::element_blank(),
+                   panel.grid.major.x = ggplot2::element_blank())
 
   return(plot)
 }
@@ -131,7 +136,7 @@ component_plot.maraca <- function(x,
   # Check that win odds were calculated for the maraca object
   if (is.null(x[["win_odds_outcome"]])) {
     stop(paste0("Win odds not calculated for maraca object.\n",
-                "Make sure to set compute_win_odds = TRUE when ",
+                "  Make sure to set compute_win_odds = TRUE when ",
                 "creating the maraca object."))
   }
 
@@ -145,12 +150,17 @@ component_plot.maraca <- function(x,
   plot <- .create_component_plot(wo_bar_nc, endpoints)
 
   plot <- plot +
+    ggplot2::geom_vline(xintercept = seq(0.5, length(endpoints) + 1.5, 1),
+                        linetype = 2, linewidth = 0.5, color = "darkgray") +
+    # Axis showing percentages
+    ggplot2::scale_y_continuous(labels = function(x) paste0(round(x, 2), "%")) +
     ggplot2::ylab("Percent of all comparisons") +
     ggplot2::scale_fill_manual(values = c("#F8766D", "#00BFC4",
                                           "#d3d3d3"), name = NULL)  +
     ggplot2::theme_bw() +
     ggplot2::theme(legend.position = "bottom",
-                   axis.title.y = ggplot2::element_blank())
+                   axis.title.y = ggplot2::element_blank(),
+                   panel.grid.major.x = ggplot2::element_blank())
 
   return(plot)
 }
@@ -169,9 +179,18 @@ component_plot.default <- function(x,
 
   `%>%` <- dplyr::`%>%`
 
-  wo_bar_nc <-
-    # Win odds summary for each outcome from maraca object
-    win_odds_outcome$summary_by_GROUP %>%
+  # Win odds summary for each outcome from maraca object
+  wo_bar_nc <- win_odds_outcome$summary_by_GROUP
+
+  # Add overall numbers
+  wo_tot <- win_odds_outcome$summary
+  wo_tot <- wo_tot %>%
+    dplyr::mutate("GROUP" = "Overall") %>%
+    dplyr::select(names(win_odds_outcome$summary_by_GROUP))
+
+  wo_bar_nc <- rbind(wo_tot, wo_bar_nc)
+
+  wo_bar_nc <- wo_bar_nc %>%
     # Order according to outcome
     dplyr::arrange(match(GROUP, endpoints)) %>%
     # Wide format to get 1 line per outcome
@@ -185,10 +204,10 @@ component_plot.default <- function(x,
                         names_to = "name", values_to = "value")
 
   # Total number of wins/losses/ties to get relative results
-  tot <- win_odds_outcome$summary$TOTAL[1]
+  wo_bar_nc$total <- wo_tot$TOTAL[1]
 
   # Calculate percentage results
-  wo_bar_nc$value <- 100 * (wo_bar_nc$value / tot)
+  wo_bar_nc$percentage <- 100 * (wo_bar_nc$value / wo_bar_nc$total)
 
   return(wo_bar_nc)
 }
@@ -199,22 +218,20 @@ component_plot.default <- function(x,
 
   aes <- ggplot2::aes
 
+  wo_bar_nc$GROUP <- factor(wo_bar_nc$GROUP,
+                            levels = rev(c("Overall", endpoints)))
+
   plot <-
-    ggplot2::ggplot(data = wo_bar_nc, aes(x = GROUP, y = value,
+    ggplot2::ggplot(data = wo_bar_nc, aes(x = GROUP, y = percentage,
                                           fill = name)) +
-    # Ensure right order of endpoints
-    ggplot2::scale_x_discrete(limits = rev(endpoints),
-                              labels = rev(endpoints)) +
-    # Axis showing percentages
-    ggplot2::scale_y_continuous(labels = function(x) paste0(round(x, 2), "%")) +
     # Bars
     ggplot2::geom_bar(stat = "identity", position = ggplot2::position_dodge(),
-                      width = .9) +
+                      width = .8) +
     # Flip to show bars horizontally
     ggplot2::coord_flip() +
     # Add wins/losses/ties as labels
-    ggplot2::geom_text(aes(label = round(value, 1)),
-                       position = ggplot2::position_dodge(width = .9),
+    ggplot2::geom_text(aes(label = round(percentage, 1)),
+                       position = ggplot2::position_dodge(width = .8),
                        vjust = 0.5, hjust = "inward")
 
   return(plot)
