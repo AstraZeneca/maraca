@@ -48,7 +48,9 @@ don't compute them.}
 
 \item{theme}{Choose theme to style the plot. The default theme is "maraca".
 Options are "maraca", "maraca_old", "color1", "color2" and none".
-For more details, check the themes vignette.}
+For more details, check the vignette called
+"Maraca Plots - Themes and Styling".
+[companion vignette for package users](themes.html)}
 
 \item{\dots}{not used}
 }

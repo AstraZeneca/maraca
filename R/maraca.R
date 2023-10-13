@@ -192,7 +192,8 @@ print.maraca <- function(x, ...) {
 #'        should highlight. Options are "median", "mean", "none".
 #' @param theme Choose theme to style the plot. The default theme is "maraca".
 #'        Options are "maraca", "maraca_old", "color1", "color2" and none".
-#'        For more details, check the themes vignette.
+#'        For more details, check the vignette called
+#'        "Maraca Plots - Themes and Styling".
 #' @return a ggplot2 object of the data. This function
 #' will not render the plot immediately. You have to print() the returned
 #' object for it to be displayed.
@@ -549,7 +550,8 @@ validate_maraca_plot <- function(x,  ...) {
 #'        "median", "mean", "none".
 #' @param theme Choose theme to style the plot. The default theme is "maraca".
 #'        Options are "maraca", "maraca_old", "color1", "color2" and none".
-#'        For more details, check the themes vignette.
+#'        For more details, check the vignette called
+#'        "Maraca Plots - Themes and Styling".
 #' @return Used for side effect. Returns ggplot2 plot of the maraca object.
 #'
 #' @examples
@@ -601,7 +603,9 @@ plot.maraca <- function(
 #'                         don't compute them.
 #' @param theme Choose theme to style the plot. The default theme is "maraca".
 #'        Options are "maraca", "maraca_old", "color1", "color2" and none".
-#'        For more details, check the themes vignette.
+#'        For more details, check the vignette called
+#'        "Maraca Plots - Themes and Styling".
+#'        [companion vignette for package users](themes.html)
 #' @return Used for side effect. Returns ggplot2 plot of the hce object.
 #'
 #' @examples
