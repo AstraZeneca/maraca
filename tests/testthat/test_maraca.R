@@ -92,7 +92,7 @@ test_that("createMaracaObject", {
 
   expect_equal(class(data), "data.frame")
   expect_equal(class(data$arm), "factor")
-  expect_equal(levels(data$arm), names(arm_levels))
+  expect_equal(levels(data$arm), unname(arm_levels))
   expect_equal(class(data$outcome), "factor")
   expect_equal(levels(data$outcome), c(tte_outcomes, continuous_outcome))
 
@@ -319,8 +319,7 @@ test_that("wrongParameters", {
       data, tte_outcomes, continuous_outcome, arm_levels,
       c(foo = "a", bar = "b", baz = "c"),
       fixed_followup_days
-    ),
-    regexp = "Names must be a identical to"
+    )
   )
 
   expect_error(
@@ -334,30 +333,30 @@ test_that("wrongParameters", {
     regexp = "Can't rename columns that don't exist"
   )
 
-  data2 <- data.frame(data)
-  data2$TRTP <- as.factor(data2$TRTP)
   expect_error(
     maraca(
-      data2, tte_outcomes, continuous_outcome, arm_levels,
+      data, tte_outcomes, continuous_outcome,
+      arm_levels = c(active = "A", control = "C"),
       c(
         outcome = "GROUP", arm = "TRTP",
         value = "AVAL0"
       ), fixed_followup_days
     ),
-    regexp = "The arm column must be characters"
+    regexp = list(paste("Arm variable contains different",
+                        "values then given in parameter arm_levels"))
   )
 
-  data2 <- data.frame(data)
-  data2$GROUP <- as.factor(data2$GROUP)
   expect_error(
     maraca(
-      data2, tte_outcomes, continuous_outcome, arm_levels,
+      data, tte_outcomes, continuous_outcome = "C", arm_levels,
       c(
         outcome = "GROUP", arm = "TRTP",
         value = "AVAL0"
       ), fixed_followup_days
     ),
-    regexp = "The outcome column must be characters"
+    regexp = list(paste("Outcome variable contains different",
+                        "values then given in parameters",
+                        "tte_outcomes and continuous_outcome"))
   )
 
   # Test plot functions only work with maraca objects
@@ -397,7 +396,9 @@ test_that("wrongParameters", {
   expect_error(
     maraca(data, tte_outcomes, continuous_outcome, arm_levels,
            column_names, 3 * 365),
-    regexp = "Outcome Outcome XXX is not present in column GROUP"
+    regexp = list(paste("Outcome variable contains different",
+                        "values then given in parameters",
+                        "tte_outcomes and continuous_outcome"))
   )
 })
 
@@ -433,7 +434,7 @@ test_that("winOddsData", {
                      "graph created for 1000 patients."),
               "", "Win odds (95% CI): 1.31 (1.14, 1.52)",
               "Win odds p-value: <0.001", "",
-              "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
+              "            Outcome   N Proportion N Active N Control Missing",
               "          Outcome I 129       12.9       63        66       0",
               "         Outcome II 115       11.5       55        60       0",
               "        Outcome III 110       11.0       50        60       0",
@@ -446,7 +447,7 @@ test_that("winOddsData", {
   exp <- list(paste0("Maraca object for plotting maraca ",
                      "graph created for 1000 patients."),
               "", "Win odds not calculated.", "",
-              "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
+              "            Outcome   N Proportion N Active N Control Missing",
               "          Outcome I 129       12.9       63        66       0",
               "         Outcome II 115       11.5       55        60       0",
               "        Outcome III 110       11.0       50        60       0",
@@ -461,7 +462,7 @@ test_that("winOddsData", {
               "", "1 patient(s) removed because of missing values.", "",
               "Win odds (95% CI): 1.32 (1.14, 1.52)",
               "Win odds p-value: <0.001", "",
-              "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
+              "            Outcome   N Proportion N Active N Control Missing",
               "          Outcome I 129       12.9       63        66       0",
               "         Outcome II 115       11.5       55        60       0",
               "        Outcome III 110       11.0       50        60       0",
@@ -483,7 +484,7 @@ test_that("winOddsData", {
   data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
     arm_levels, column_names = column_names
   )
-  win_odds <- .compute_win_odds(data)
+  win_odds <- .compute_win_odds(data, arm_levels)
 
   expect_equal(class(win_odds), "numeric")
   expect_equal(
@@ -579,7 +580,7 @@ test_that("winOddsPrinting", {
                      "graph created for 1000 patients."),
               "", "Win odds (95% CI): 1.31 (1.14, 1.52)",
               "Win odds p-value: <0.001", "",
-              "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
+              "            Outcome   N Proportion N Active N Control Missing",
               "          Outcome I 129       12.9       63        66       0",
               "         Outcome II 115       11.5       55        60       0",
               "        Outcome III 110       11.0       50        60       0",
@@ -592,7 +593,7 @@ test_that("winOddsPrinting", {
   exp <- list(paste0("Maraca object for plotting maraca ",
                      "graph created for 1000 patients."),
               "", "Win odds not calculated.", "",
-              "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
+              "            Outcome   N Proportion N Active N Control Missing",
               "          Outcome I 129       12.9       63        66       0",
               "         Outcome II 115       11.5       55        60       0",
               "        Outcome III 110       11.0       50        60       0",
@@ -607,7 +608,7 @@ test_that("winOddsPrinting", {
               "", "1 patient(s) removed because of missing values.", "",
               "Win odds (95% CI): 1.32 (1.14, 1.52)",
               "Win odds p-value: <0.001", "",
-              "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
+              "            Outcome   N Proportion N Active N Control Missing",
               "          Outcome I 129       12.9       63        66       0",
               "         Outcome II 115       11.5       55        60       0",
               "        Outcome III 110       11.0       50        60       0",
@@ -650,7 +651,7 @@ test_that("maracaPrinting", {
                      "graph created for 1000 patients."),
               "", "Win odds (95% CI): 1.31 (1.14, 1.52)",
               "Win odds p-value: <0.001", "",
-              "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
+              "            Outcome   N Proportion N Active N Control Missing",
               "          Outcome I 129       12.9       63        66       0",
               "         Outcome II 115       11.5       55        60       0",
               "        Outcome III 110       11.0       50        60       0",
@@ -663,7 +664,7 @@ test_that("maracaPrinting", {
   exp <- list(paste0("Maraca object for plotting maraca ",
                      "graph created for 1000 patients."),
               "", "Win odds not calculated.", "",
-              "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
+              "            Outcome   N Proportion N Active N Control Missing",
               "          Outcome I 129       12.9       63        66       0",
               "         Outcome II 115       11.5       55        60       0",
               "        Outcome III 110       11.0       50        60       0",
@@ -678,7 +679,7 @@ test_that("maracaPrinting", {
               "", "1 patient(s) removed because of missing values.", "",
               "Win odds (95% CI): 1.32 (1.14, 1.52)",
               "Win odds p-value: <0.001", "",
-              "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
+              "            Outcome   N Proportion N Active N Control Missing",
               "          Outcome I 129       12.9       63        66       0",
               "         Outcome II 115       11.5       55        60       0",
               "        Outcome III 110       11.0       50        60       0",
