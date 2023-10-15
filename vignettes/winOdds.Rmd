@@ -2,9 +2,11 @@
 title: "Plotting win odds"
 author: "Monika Huhn"
 date: "10/10/2023"
-output:
-  pdf_document: default
-  html_document: default
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Maraca Plots - Plotting win odds}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
 ---
 
 ```{r setup, include = FALSE}
@@ -76,3 +78,24 @@ component_plot(hce_dat)
 ## Styling
 
 The resulting plot is a normal ggplot2 object that can be styled accordingly.
+There are also different themes available to style the plot.
+
+The default style is called `theme = "maraca"`.
+```{r}
+component_plot(maraca_dat, theme = "maraca")
+```
+
+There are 2 different themes with different color
+schemes, `theme = "color1"` and `theme = "color2"`.
+```{r}
+component_plot(maraca_dat, theme = "color1")
+```
+
+```{r}
+component_plot(maraca_dat, theme = "color2")
+```
+
+There is also a theme without any styling `theme = "none"`.
+```{r}
+component_plot(maraca_dat, theme = "none")
+```

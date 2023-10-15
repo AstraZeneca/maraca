@@ -593,21 +593,22 @@ test_that("winOddsPlot", {
   win_odds_outcome <- mar$win_odds_outcome
   wo_smry_grp <- win_odds_outcome$summary_by_GROUP
   endpoints <- c(mar$tte_outcomes, mar$continuous_outcome)
-  wo_bar_nc <- .prep_data_component_plot(win_odds_outcome, endpoints)
+  wo_bar_nc <- .prep_data_component_plot(win_odds_outcome, endpoints,
+                                         mar$arm_levels)
 
   expect_equal(wo_smry_grp[wo_smry_grp$TRTP == "A", "WIN"],
-               unname(unlist(wo_bar_nc[wo_bar_nc$name == "Active_wins" &
+               unname(unlist(wo_bar_nc[wo_bar_nc$name == "Active wins" &
                                          wo_bar_nc$GROUP %in%
                                            c(tte_outcomes, continuous_outcome),
                                        "value"])))
   expect_equal(wo_smry_grp[wo_smry_grp$TRTP == "P", "WIN"],
-               unname(unlist(wo_bar_nc[wo_bar_nc$name == "Placebo_wins" &
+               unname(unlist(wo_bar_nc[wo_bar_nc$name == "Control wins" &
                                          wo_bar_nc$GROUP %in%
                                            c(tte_outcomes, continuous_outcome),
                                        "value"])))
   expect_equal(win_odds_outcome$summary[win_odds_outcome$summary$TRTP == "A",
                                         "TOTAL"],
-               unname(unlist(wo_bar_nc[wo_bar_nc$name == "Active_wins",
+               unname(unlist(wo_bar_nc[wo_bar_nc$name == "Active wins",
                                        "total"][1, ])))
 
   output <- artifacts_path("componentPlot-with.pdf")
