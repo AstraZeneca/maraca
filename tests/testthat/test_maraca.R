@@ -518,12 +518,12 @@ test_that("winOddsData", {
                sum(wo_smry_grp[wo_smry_grp$TRTP == "A", "TIE"]))
 
   wins_II_A <-
-    sum(sapply(data[data$arm == "active" & data$outcome == "Outcome II",
+    sum(sapply(data[data$arm == "Active" & data$outcome == "Outcome II",
                     "value"],
                function(vl) {
-                 sum(vl > data[data$arm == "control" &
+                 sum(vl > data[data$arm == "Control" &
                                  data$outcome == "Outcome II", "value"]) +
-                   nrow(data[data$arm == "control" &
+                   nrow(data[data$arm == "Control" &
                                data$outcome == "Outcome I", ])
                }))
   expect_equal(wo_smry_grp[wo_smry_grp$TRTP == "A" &
@@ -531,12 +531,12 @@ test_that("winOddsData", {
                wins_II_A)
 
   loss_III_A <-
-    sum(sapply(data[data$arm == "active" & data$outcome == "Outcome III",
+    sum(sapply(data[data$arm == "Active" & data$outcome == "Outcome III",
                     "value"],
                function(vl) {
-                 sum(vl < data[data$arm == "control" &
+                 sum(vl < data[data$arm == "Control" &
                                  data$outcome == "Outcome III", "value"]) +
-                   nrow(data[data$arm == "control" &
+                   nrow(data[data$arm == "Control" &
                                !(data$outcome %in% c("Outcome I",
                                                      "Outcome II",
                                                      "Outcome III")), ])

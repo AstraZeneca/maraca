@@ -712,7 +712,8 @@ plot.hce <- function(x, continuous_outcome = "C",
   names(win_odds) <- base::c("estimate", "lower", "upper", "p-value")
 
   win_odds_outcome <- hce::summaryWO(hce_dat, AVAL = "ordered", TRTP = "arm",
-                                     ref = "control", GROUP = "outcome")
+                                     ref = unname(arm_levels["control"]),
+                                     GROUP = "outcome")
 
   return(list("win_odds" = win_odds,
               "win_odds_outcome" = win_odds_outcome))
