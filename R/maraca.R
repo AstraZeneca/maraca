@@ -196,6 +196,10 @@ print.maraca <- function(x, ...) {
 #'        part of the plot. Options are "default", "violin", "box", "scatter".
 #' @param vline_type what the vertical lines in the continuous part of the plot
 #'        should highlight. Options are "median", "mean", "none".
+#' @param theme Choose theme to style the plot. The default theme is "maraca".
+#'        Options are "maraca", "maraca_old", "color1", "color2" and none".
+#'        For more details, check the vignette called
+#'        "Maraca Plots - Themes and Styling".
 #' @return a ggplot2 object of the data. This function
 #' will not render the plot immediately. You have to print() the returned
 #' object for it to be displayed.
@@ -215,7 +219,8 @@ print.maraca <- function(x, ...) {
 plot_maraca <- function(
     obj, continuous_grid_spacing_x = 10, trans = "identity",
     density_plot_type = "default",
-    vline_type = "median") {
+    vline_type = "median",
+    theme = "maraca") {
   checkmate::assert_class(obj, "maraca")
   checkmate::assert_int(continuous_grid_spacing_x)
   checkmate::assert_string(trans)
@@ -325,9 +330,6 @@ plot_maraca <- function(
       aes(x = x, y = y, color = arm)
     )
 
-  plot <- plot +
-    ggplot2::scale_color_discrete("Arm", labels = obj$arm_levels)
-
   if (density_plot_type == "default") {
     plot <- plot +
       ggplot2::geom_violin(
@@ -370,8 +372,6 @@ plot_maraca <- function(
     }
   )
   plot <- plot +
-    ggplot2::xlab("Type of endpoint") +
-    ggplot2::ylab("Cumulative proportion") +
     ggplot2::scale_x_continuous(
       limits = c(0, 100),
       breaks = c(meta$proportion / 2 + meta$startx),
@@ -426,18 +426,19 @@ plot_maraca <- function(
     plot$labels$win.odds <- params
   }
 
+  plot <- switch(theme,
+                 "maraca" = .theme_maraca(plot),
+                 "maraca_old" = .theme_maraca_old(plot),
+                 "color1" = .theme_color1(plot),
+                 "color2" = .theme_color2(plot),
+                 "none" = plot,
+                 stop("Please provide theme that exists"))
+
   plot <- plot +
     ggplot2::theme(
-      axis.text.x.bottom = ggplot2::element_text(
-        angle = 90,
-        vjust = 0.5,
-        hjust = 1
-      ),
       axis.ticks.x.bottom = ggplot2::element_blank(),
-      panel.grid.major.x = ggplot2::element_blank(),
-      axis.title.x.bottom =  ggplot2::element_blank()
-    ) +
-    ggplot2::guides(fill = "none")
+      panel.grid.major.x = ggplot2::element_blank()
+    )
 
   # Add label to plot - maracaPlot
   class(plot) <- c("maracaPlot", class(plot))
@@ -553,7 +554,11 @@ validate_maraca_plot <- function(x,  ...) {
 #'        Accepts "default", "violin", "box" and "scatter".
 #' @param vline_type what the vertical dashed line should represent. Accepts
 #'        "median", "mean", "none".
-#' @return Used for side effect. Plots the maraca object.
+#' @param theme Choose theme to style the plot. The default theme is "maraca".
+#'        Options are "maraca", "maraca_old", "color1", "color2" and none".
+#'        For more details, check the vignette called
+#'        "Maraca Plots - Themes and Styling".
+#' @return Used for side effect. Returns ggplot2 plot of the maraca object.
 #'
 #' @examples
 #' data(hce_scenario_a)
@@ -573,10 +578,11 @@ plot.maraca <- function(
     x, continuous_grid_spacing_x = 10, trans = "identity",
     density_plot_type = "default",
     vline_type = "median",
+    theme = "maraca",
     ...) {
-  print(plot_maraca(x, continuous_grid_spacing_x,
-                    trans, density_plot_type,
-                    vline_type))
+  plot_maraca(x, continuous_grid_spacing_x,
+              trans, density_plot_type,
+              vline_type, theme)
 }
 #' Generic function to plot the hce object using plot().
 #'
@@ -607,7 +613,12 @@ plot.maraca <- function(
 #'                            fixed_followup_days argument is used.
 #' @param compute_win_odds If TRUE compute the win odds, otherwise (default)
 #'                         don't compute them.
-#' @return Used for side effect. Plots the maraca object.
+#' @param theme Choose theme to style the plot. The default theme is "maraca".
+#'        Options are "maraca", "maraca_old", "color1", "color2" and none".
+#'        For more details, check the vignette called
+#'        "Maraca Plots - Themes and Styling".
+#'        [companion vignette for package users](themes.html)
+#' @return Used for side effect. Returns ggplot2 plot of the hce object.
 #'
 #' @examples
 #' set.seed(31337)
@@ -626,7 +637,8 @@ plot.hce <- function(x, continuous_outcome = "C",
                      density_plot_type = "default",
                      vline_type = "median",
                      fixed_followup_days = NULL,
-                     compute_win_odds = FALSE, ...) {
+                     compute_win_odds = FALSE,
+                     theme = "maraca", ...) {
   checkmate::assert_string(continuous_outcome)
   checkmate::assert_names(names(x),
                           must.include = c("GROUP", "TRTP", "AVAL0"))
@@ -658,7 +670,7 @@ plot.hce <- function(x, continuous_outcome = "C",
     fixed_followup_days <- x$TTEfixed[[1]]
   }
 
-  hce_test <- maraca(
+  maraca_obj <- maraca(
     data = x,
     tte_outcomes = tte,
     continuous_outcome = continuous_outcome,
@@ -668,8 +680,8 @@ plot.hce <- function(x, continuous_outcome = "C",
     compute_win_odds = compute_win_odds
   )
 
-  print(plot_maraca(hce_test, continuous_grid_spacing_x,
-                    trans, density_plot_type, vline_type))
+  plot_maraca(maraca_obj, continuous_grid_spacing_x,
+              trans, density_plot_type, vline_type, theme)
 }
 
 ### Private functions

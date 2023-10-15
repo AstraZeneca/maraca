@@ -713,6 +713,39 @@ test_that("maracaPlotting", {
   set_pdf_output(output)
   plot(mar)
   expect_file_exists(output)
+
+  output <- artifacts_path("maracaPlotting-none.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
+  plot(mar, theme = "none")
+  expect_file_exists(output)
+
+  output <- artifacts_path("maracaPlotting-maraca.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
+  plot(mar, theme = "maraca")
+  expect_file_exists(output)
+
+  output <- artifacts_path("maracaPlotting-maraca-old.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
+  plot(mar, theme = "maraca_old")
+  expect_file_exists(output)
+
+  output <- artifacts_path("maracaPlotting-color1.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
+  plot(mar, theme = "color1")
+  expect_file_exists(output)
+
+  output <- artifacts_path("maracaPlotting-color2.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
+  plot(mar, theme = "color2")
+  expect_file_exists(output)
+
+  expect_error(plot(mar, theme = "my_theme"),
+               regexp = "Please provide theme that exists")
 })
 
 test_that("validationFunction", {
