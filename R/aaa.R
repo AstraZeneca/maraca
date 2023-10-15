@@ -1,5 +1,6 @@
 # Ignored NSE variables in devtools::check
 utils::globalVariables("time")
+utils::globalVariables("n")
 utils::globalVariables("n.event")
 utils::globalVariables("x")
 utils::globalVariables("y")

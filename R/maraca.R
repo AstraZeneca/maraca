@@ -63,17 +63,21 @@ maraca <- function(
   checkmate::assert_character(arm_levels, len = 2, any.missing = FALSE)
   checkmate::assert_names(
     names(arm_levels),
-    identical.to = c("active", "control")
+    permutation.of = c("active", "control")
   )
   checkmate::assert_character(column_names, len = 3, any.missing = FALSE)
   checkmate::assert_names(
     names(column_names),
-    identical.to = c("outcome", "arm", "value")
+    permutation.of = c("outcome", "arm", "value")
   )
+
   checkmate::assert_int(fixed_followup_days)
   checkmate::assert_flag(compute_win_odds)
 
   `%>%` <- dplyr::`%>%`
+
+  # Make sure that data is a data.frame
+  data <- as.data.frame(data, stringsAsFactors = FALSE)
 
   # Remove unwanted outcomes and arm levels, and normalise column names
   # in the internal data.
@@ -124,7 +128,7 @@ maraca <- function(
 
   win_odds <- list("win_odds" = NULL, "win_odds_outcome" = NULL)
   if (compute_win_odds) {
-    win_odds <- .compute_win_odds(hce_dat)
+    win_odds <- .compute_win_odds(hce_dat, arm_levels)
   }
 
   return(
@@ -172,9 +176,11 @@ print.maraca <- function(x, ...) {
     cat("Win odds not calculated.\n\n")
   }
 
-  tmp <- as.data.frame(x$meta[, c("outcome", "n", "proportion",
-                                  "n_active", "n_control", "missing")])
-  names(tmp) <- toupper(names(tmp))
+  tmp <- x$meta %>%
+    dplyr::select(outcome, n, proportion,
+                  dplyr::starts_with("n_"), missing) %>%
+    as.data.frame()
+  names(tmp) <- .title_case(gsub("_", " ", names(tmp)))
   print(tmp, row.names = FALSE)
 
 }
@@ -191,6 +197,10 @@ print.maraca <- function(x, ...) {
 #'        part of the plot. Options are "default", "violin", "box", "scatter".
 #' @param vline_type what the vertical lines in the continuous part of the plot
 #'        should highlight. Options are "median", "mean", "none".
+#' @param theme Choose theme to style the plot. The default theme is "maraca".
+#'        Options are "maraca", "maraca_old", "color1", "color2" and none".
+#'        For more details, check the vignette called
+#'        "Maraca Plots - Themes and Styling".
 #' @return a ggplot2 object of the data. This function
 #' will not render the plot immediately. You have to print() the returned
 #' object for it to be displayed.
@@ -210,7 +220,8 @@ print.maraca <- function(x, ...) {
 plot_maraca <- function(
     obj, continuous_grid_spacing_x = 10, trans = "identity",
     density_plot_type = "default",
-    vline_type = "median") {
+    vline_type = "median",
+    theme = "maraca") {
   checkmate::assert_class(obj, "maraca")
   checkmate::assert_int(continuous_grid_spacing_x)
   checkmate::assert_string(trans)
@@ -320,9 +331,6 @@ plot_maraca <- function(
       aes(x = x, y = y, color = arm)
     )
 
-  plot <- plot +
-    ggplot2::scale_color_discrete("Arm", labels = obj$arm_levels)
-
   if (density_plot_type == "default") {
     plot <- plot +
       ggplot2::geom_violin(
@@ -365,8 +373,6 @@ plot_maraca <- function(
     }
   )
   plot <- plot +
-    ggplot2::xlab("Type of endpoint") +
-    ggplot2::ylab("Cumulative proportion") +
     ggplot2::scale_x_continuous(
       limits = c(0, 100),
       breaks = c(meta$proportion / 2 + meta$startx),
@@ -421,18 +427,19 @@ plot_maraca <- function(
     plot$labels$win.odds <- params
   }
 
+  plot <- switch(theme,
+                 "maraca" = .theme_maraca(plot),
+                 "maraca_old" = .theme_maraca_old(plot),
+                 "color1" = .theme_color1(plot),
+                 "color2" = .theme_color2(plot),
+                 "none" = plot,
+                 stop("Please provide theme that exists"))
+
   plot <- plot +
     ggplot2::theme(
-      axis.text.x.bottom = ggplot2::element_text(
-        angle = 90,
-        vjust = 0.5,
-        hjust = 1
-      ),
       axis.ticks.x.bottom = ggplot2::element_blank(),
-      panel.grid.major.x = ggplot2::element_blank(),
-      axis.title.x.bottom =  ggplot2::element_blank()
-    ) +
-    ggplot2::guides(fill = "none")
+      panel.grid.major.x = ggplot2::element_blank()
+    )
 
   # Add label to plot - maracaPlot
   class(plot) <- c("maracaPlot", class(plot))
@@ -548,7 +555,11 @@ validate_maraca_plot <- function(x,  ...) {
 #'        Accepts "default", "violin", "box" and "scatter".
 #' @param vline_type what the vertical dashed line should represent. Accepts
 #'        "median", "mean", "none".
-#' @return Used for side effect. Plots the maraca object.
+#' @param theme Choose theme to style the plot. The default theme is "maraca".
+#'        Options are "maraca", "maraca_old", "color1", "color2" and none".
+#'        For more details, check the vignette called
+#'        "Maraca Plots - Themes and Styling".
+#' @return Used for side effect. Returns ggplot2 plot of the maraca object.
 #'
 #' @examples
 #' data(hce_scenario_a)
@@ -568,10 +579,11 @@ plot.maraca <- function(
     x, continuous_grid_spacing_x = 10, trans = "identity",
     density_plot_type = "default",
     vline_type = "median",
+    theme = "maraca",
     ...) {
-  print(plot_maraca(x, continuous_grid_spacing_x,
-                    trans, density_plot_type,
-                    vline_type))
+  plot_maraca(x, continuous_grid_spacing_x,
+              trans, density_plot_type,
+              vline_type, theme)
 }
 #' Generic function to plot the hce object using plot().
 #'
@@ -579,6 +591,12 @@ plot.maraca <- function(
 #' @param \dots not used
 #' @param continuous_outcome A single string containing the continuous
 #'                           outcome label. Default value "C".
+#' @param arm_levels A named vector of exactly two strings, mapping the
+#'                   values used for the active and control arms to the values
+#'                   used in the data. The names must be "active" and "control"
+#'                   in this order. Note that this parameter only need to
+#'                   be specified if you have labels different from
+#'                    "active" and "control".
 #' @param continuous_grid_spacing_x The spacing of the x grid to use for the
 #'        continuous section of the plot.
 #' @param trans the transformation to apply to the data before plotting.
@@ -596,7 +614,12 @@ plot.maraca <- function(
 #'                            fixed_followup_days argument is used.
 #' @param compute_win_odds If TRUE compute the win odds, otherwise (default)
 #'                         don't compute them.
-#' @return Used for side effect. Plots the maraca object.
+#' @param theme Choose theme to style the plot. The default theme is "maraca".
+#'        Options are "maraca", "maraca_old", "color1", "color2" and none".
+#'        For more details, check the vignette called
+#'        "Maraca Plots - Themes and Styling".
+#'        [companion vignette for package users](themes.html)
+#' @return Used for side effect. Returns ggplot2 plot of the hce object.
 #'
 #' @examples
 #' set.seed(31337)
@@ -609,13 +632,21 @@ plot.maraca <- function(
 #'
 #' @export
 plot.hce <- function(x, continuous_outcome = "C",
+                     arm_levels = c(active = "A", control = "P"),
                      continuous_grid_spacing_x = 10,
                      trans = "identity",
                      density_plot_type = "default",
                      vline_type = "median",
                      fixed_followup_days = NULL,
-                     compute_win_odds = FALSE, ...) {
+                     compute_win_odds = FALSE,
+                     theme = "maraca", ...) {
   checkmate::assert_string(continuous_outcome)
+  checkmate::assert_names(names(x),
+                          must.include = c("GROUP", "TRTP", "AVAL0"))
+  checkmate::assert_names(
+    names(arm_levels),
+    permutation.of = c("active", "control")
+  )
   checkmate::assert_int(continuous_grid_spacing_x)
   checkmate::assert_string(trans)
   checkmate::assert_choice(density_plot_type,
@@ -624,9 +655,8 @@ plot.hce <- function(x, continuous_outcome = "C",
     vline_type, c("median", "mean", "none")
   )
   checkmate::assert_flag(compute_win_odds)
-  checkmate::assertNames(names(x), must.include = "GROUP")
 
-  x <- as.data.frame(x)
+  x <- as.data.frame(x, stringsAsFactors = FALSE)
   tte <- sort(unique(x$GROUP)[unique(x$GROUP) != continuous_outcome])
 
   # Small bugfix to allow for name change of variable TTEFixed in newer
@@ -641,29 +671,41 @@ plot.hce <- function(x, continuous_outcome = "C",
     fixed_followup_days <- x$TTEfixed[[1]]
   }
 
-  hce_test <- maraca(
+  maraca_obj <- maraca(
     data = x,
     tte_outcomes = tte,
     continuous_outcome = continuous_outcome,
     column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
-    arm_levels = c(active = "A", control = "P"),
+    arm_levels = arm_levels,
     fixed_followup_days = fixed_followup_days,
     compute_win_odds = compute_win_odds
   )
 
-  print(plot_maraca(hce_test, continuous_grid_spacing_x,
-                    trans, density_plot_type, vline_type))
+  plot_maraca(maraca_obj, continuous_grid_spacing_x,
+              trans, density_plot_type, vline_type, theme)
 }
 
 ### Private functions
 
-# Computes the win odds from the internal data.
-.compute_win_odds <- function(hce_dat) {
+# For printing - upper case first letter of each word
+.title_case <- function(x) {
+  sapply(x, function(word) {
+    word_split <- strsplit(word, " ")
+    paste(sapply(word_split, function(w) {
+      paste0(toupper(substring(w, 1, 1)),
+             tolower(substring(w, 2, nchar(w))))
+    }), collapse = " ")
+  })
+}
 
+
+# Computes the win odds from the internal data.
+.compute_win_odds <- function(hce_dat, arm_levels) {
   hce_dat <- base::as.data.frame(hce_dat)
   hce_dat <- .with_ordered_column(hce_dat)
   fit <- hce::calcWO(x = hce_dat, AVAL = "ordered",
-                     TRTP = "arm", ref = "control")
+                     TRTP = "arm",
+                     ref = unname(arm_levels["control"]))
   ci <- base::as.numeric(fit[, base::c("WO", "LCL", "UCL")])
   p <- fit$Pvalue
   win_odds <- base::c(ci, p)
@@ -735,6 +777,7 @@ plot.hce <- function(x, continuous_outcome = "C",
     dplyr::filter(!is.na(value)) %>%
     dplyr::group_by(outcome, arm) %>%
     dplyr::summarise(n = n(), proportion = n / dim(hce_dat)[[1]] * 100) %>%
+    dplyr::mutate("arm" = gsub(" ", "_", tolower(arm))) %>%
     tidyr::pivot_wider(names_from = arm, values_from = c(n, proportion))
 
   meta_missing <- hce_dat %>%
@@ -814,6 +857,8 @@ plot.hce <- function(x, continuous_outcome = "C",
   `%>%` <- dplyr::`%>%`
   n <- dplyr::n
 
+  ctrl <- unname(arm_levels["control"])
+
   continuous_data <- hce_dat[hce_dat$outcome == continuous_outcome, ]
   start_continuous_endpoint <- meta[meta$outcome == continuous_outcome, ]$startx
 
@@ -829,11 +874,11 @@ plot.hce <- function(x, continuous_outcome = "C",
                      average = base::mean(x, na.rm = TRUE))
 
   continuous_data$y_level <- ecdf_mod$meta[
-    ecdf_mod$meta$arm == "active" &
+    ecdf_mod$meta$arm == unname(arm_levels["active"]) &
       ecdf_mod$meta$outcome == utils::tail(tte_outcomes, 1),
   ]$ecdf_end
-  continuous_data[continuous_data$arm == "control", ]$y_level <- ecdf_mod$meta[
-    ecdf_mod$meta$arm == "control" &
+  continuous_data[continuous_data$arm == ctrl, ]$y_level <- ecdf_mod$meta[
+    ecdf_mod$meta$arm == ctrl &
       ecdf_mod$meta$outcome == utils::tail(tte_outcomes, 1),
   ]$ecdf_end
 
@@ -854,31 +899,29 @@ plot.hce <- function(x, continuous_outcome = "C",
     dplyr::rename(all_of(column_names)) %>%
     dplyr::select(all_of(names(column_names)))
 
-  # Check if the arm and outcome are strings, rather than factors.
-  if (!inherits(hce_dat[, "arm"], "character")) {
-    stop(paste(
-      "The arm column must be characters.",
-      "If you used read.csv, ensure you specify stringsAsFactors = FALSE."
-    ))
-  }
-
-  if (!inherits(hce_dat[, "outcome"], "character")) {
-    stop(paste(
-      "The outcome column must be characters.",
-      "If you used read.csv, ensure you specify stringsAsFactors = FALSE."
-    ))
-  }
-
-  inverse_map <- stats::setNames(names(arm_levels), arm_levels)
-  hce_dat$arm <- sapply(hce_dat$arm, function(x) {
-    return(inverse_map[x])
-  })
+  # Make sure outcome and arm columns are not factors
+  hce_dat$outcome <- as.character(hce_dat$outcome)
+  hce_dat$arm <- as.character(hce_dat$arm)
 
   endpoints <- c(tte_outcomes, continuous_outcome)
+
+  if (!all(as.character(unique(hce_dat[, "arm"])) %in%
+             unname(arm_levels))) {
+    stop(paste("Arm variable contains different values",
+               "then given in parameter arm_levels"))
+  }
+  if (!all(as.character(unique(hce_dat[, "outcome"])) %in%
+             unname(endpoints))) {
+    stop(paste("Outcome variable contains different values",
+               "then given in parameters tte_outcomes and",
+               "continuous_outcome"))
+  }
+
   hce_dat <- hce_dat %>%
     dplyr::filter(outcome %in% endpoints) %>%
     dplyr::mutate_at(vars(outcome), factor, levels = endpoints) %>%
-    dplyr::mutate_at(vars(arm), factor, levels = names(arm_levels))
+    dplyr::mutate_at(vars(arm), factor,
+                     levels = c(arm_levels)[c("active", "control")])
 
   # Check if the endpoints are all present
   for (entry in c(tte_outcomes, continuous_outcome)) {
