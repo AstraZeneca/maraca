@@ -102,8 +102,8 @@ p <- p +
     axis.title.x = element_blank(),
     axis.title.y = element_blank()
   ) +
-  scale_color_viridis_d() +
-  scale_fill_viridis_d()
+  scale_color_viridis_d(end = 0.8) +
+  scale_fill_viridis_d(end = 0.8)
 
 p
 ```

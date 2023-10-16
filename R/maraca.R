@@ -399,20 +399,9 @@ plot_maraca <- function(
     )
 
   if (!is.null(win_odds)) {
-    plot <- plot +
-      ggplot2::annotate(
-        geom = "label",
-        x = 0,
-        y = Inf,
-        label = paste(
-          "Win odds (95% CI): ", round(win_odds[[1]], 2),
-          " (", round(win_odds[[2]], 2), ", ",
-          round(win_odds[[3]], 2), ")", "\n",
-          "p-value: ", format.pval(win_odds[[4]], digits = 3, eps = 0.001),
-          sep = ""
-        ),
-        hjust = 0, vjust = 1.4, size = 3
-      )
+
+    plot <- .add_win_odds_to_plot(plot, win_odds, 0, Inf,
+                                  hjust = 0)
 
     # Meta data on win odds will be added to plot
     win_odds <- unname(win_odds)
@@ -624,11 +613,11 @@ plot.maraca <- function(
 #' @return Used for side effect. Returns ggplot2 plot of the hce object.
 #'
 #' @examples
-#' set.seed(31337)
 #' Rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
 #' Rates_P <- c(2.47, 2.24, 2.9, 4, 6)
 #' hce_dat <- hce::simHCE(n = 2500, TTE_A = Rates_A, TTE_P = Rates_P,
-#'              CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3)
+#'              CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3,
+#'              seed = 31337)
 #' plot(hce_dat)
 #' plot(hce_dat, fixed_followup_days = 3 * 365)
 #'

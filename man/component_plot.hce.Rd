@@ -55,11 +55,11 @@ outcome directly from an hce object.
 Check the vignette "Maraca Plots - Plotting win odds" for more details.
 }
 \examples{
-set.seed(31337)
 Rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
 Rates_P <- c(2.47, 2.24, 2.9, 4, 6)
 hce_dat <- hce::simHCE(n = 2500, TTE_A = Rates_A, TTE_P = Rates_P,
-             CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3)
+             CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3,
+             seed = 31337)
 component_plot.hce(hce_dat)
 
 }

@@ -70,11 +70,11 @@ Used for side effect. Returns ggplot2 plot of the hce object.
 Generic function to plot the hce object using plot().
 }
 \examples{
-set.seed(31337)
 Rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
 Rates_P <- c(2.47, 2.24, 2.9, 4, 6)
 hce_dat <- hce::simHCE(n = 2500, TTE_A = Rates_A, TTE_P = Rates_P,
-             CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3)
+             CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3,
+             seed = 31337)
 plot(hce_dat)
 plot(hce_dat, fixed_followup_days = 3 * 365)
 

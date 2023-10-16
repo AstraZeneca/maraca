@@ -3,8 +3,8 @@
 .theme_common <- function(p) {
 
   p <- p +
-    ggplot2::xlab("Type of endpoint") +
-    ggplot2::ylab("Cumulative proportion") +
+    ggplot2::xlab("Outcomes") +
+    ggplot2::ylab("Cumulative percentage") +
     ggplot2::theme(
       axis.text.x.bottom = ggplot2::element_text(
         angle = 90,
@@ -23,9 +23,10 @@
   n <- length(levels(p$data$GROUP))
   p <- p +
     ggplot2::geom_vline(xintercept = seq(0.5, n + 1.5, 1),
-                        linetype = 2, linewidth = 0.5, color = "darkgray") +
+                        linetype = 2, linewidth = 0.3, color = "darkgray") +
     # Axis showing percentages
-    ggplot2::scale_y_continuous(labels = function(x) paste0(round(x, 2), "%")) +
+    ggplot2::scale_y_continuous(labels =
+                                  function(x) paste0(round(x, 2), "%")) +
     ggplot2::ylab("Percent of all comparisons") +
     ggplot2::theme_bw() +
     ggplot2::theme(legend.position = "bottom",
@@ -76,7 +77,7 @@
 
   p <- .theme_common_cp(p)
   p <- p +
-    ggplot2::scale_fill_manual(values = c("deeppink4", "goldenrod1",
+    ggplot2::scale_fill_manual(values = c("#830051", "#F0AB00",
                                           "#d3d3d3"), name = NULL)
 
   return(p)
@@ -90,7 +91,7 @@
 
   p <- .theme_common(p)
 
-  colScheme <- c("deeppink4", "goldenrod1")
+  colScheme <- c("#830051", "#F0AB00")
   names(colScheme) <- levels(p$data$arm)
 
   p <- p +

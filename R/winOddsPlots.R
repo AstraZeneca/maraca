@@ -66,6 +66,11 @@ component_plot.maraca <- function(x,
   # Create component plot
   plot <- .create_component_plot(wo_bar_nc, endpoints, theme)
 
+  plot <- .add_win_odds_to_plot(plot, x$win_odds,
+                                x = (length(endpoints) + 1.5),
+                                y = max(wo_bar_nc$percentage) * 1.4,
+                                hjust = 1)
+
   return(plot)
 }
 
@@ -98,11 +103,11 @@ component_plot.maraca <- function(x,
 #'        "Maraca Plots - Plotting win odds".
 #' @return Component plot as a ggplot2 object.
 #' @examples
-#' set.seed(31337)
 #' Rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
 #' Rates_P <- c(2.47, 2.24, 2.9, 4, 6)
 #' hce_dat <- hce::simHCE(n = 2500, TTE_A = Rates_A, TTE_P = Rates_P,
-#'              CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3)
+#'              CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3,
+#'              seed = 31337)
 #' component_plot.hce(hce_dat)
 #'
 #' @export
@@ -127,6 +132,11 @@ component_plot.hce <- function(x, continuous_outcome = "C",
                                          maraca_dat$arm_levels)
   # Create component plot
   plot <- .create_component_plot(wo_bar_nc, endpoints, theme)
+
+  plot <- .add_win_odds_to_plot(plot, maraca_dat$win_odds,
+                                x = (length(endpoints) + 1.5),
+                                y = max(wo_bar_nc$percentage) * 1.4,
+                                hjust = 1)
 
   return(plot)
 }

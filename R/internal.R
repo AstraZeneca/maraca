@@ -389,7 +389,7 @@
     # Add wins/losses/ties as labels
     ggplot2::geom_text(aes(label = round(percentage, 1)),
                        position = ggplot2::position_dodge(width = .8),
-                       vjust = 0.5, hjust = "inward", size = 3)
+                       vjust = 0.5, hjust = -0.2)
 
   plot <- switch(theme,
                  "maraca" = .theme_maraca_cp(plot),
@@ -402,4 +402,24 @@
   class(plot) <- c("componentPlot", class(plot))
 
   return(plot)
+}
+
+.add_win_odds_to_plot <- function(p, win_odds, x, y, hjust) {
+
+    p <- p +
+      ggplot2::annotate(
+        geom = "label",
+        x = x,
+        y = y,
+        label = paste(
+          "Win odds: ", round(win_odds[[1]], 2),
+          "\n95% CI: ", round(win_odds[[2]], 2), " - ",
+          round(win_odds[[3]], 2), "\n",
+          "p-value: ", format.pval(win_odds[[4]], digits = 3, eps = 0.001),
+          sep = ""
+        ),
+        hjust = hjust, vjust = 1.4, size = 3
+      )
+
+    return(p)
 }
