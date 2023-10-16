@@ -1,3 +1,22 @@
+# maraca 0.6
+
+## New features
+
+- The `theme` argument in the plotting functions allows users to easily change the
+  styling of the plot. Details are given in the new vignette
+  "Maraca Plots - Themes and Styling".
+- A new plot to visualize the win odds components was added. The `component_plot()`
+  function works for both `maraca` and `hce`. Details can be found in the new
+  vignette "Maraca Plots - Plotting win odds".
+- A new vignette called "Maraca Plots - Validation" to highlight the function
+  `validate_maraca()` that was added in version 0.5.
+
+## Dependency change
+
+- `maraca` now has increased the version dependency for the package `hce`
+  to >= 0.5.
+- The `hce` is now automatically attached when loading `maraca`.
+
 # maraca 0.5.1
 
 ## Bug fixes

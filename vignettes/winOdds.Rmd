@@ -1,5 +1,5 @@
 ---
-title: "Plotting win odds"
+title: "Maraca Plots - Plotting win odds"
 author: "Monika Huhn"
 date: "10/10/2023"
 output: rmarkdown::html_vignette
