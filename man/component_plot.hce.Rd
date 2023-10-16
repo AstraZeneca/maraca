@@ -5,11 +5,12 @@
 \title{Generic function to create a plot showing the components used in
 calculating win odds (wins and ties) separately for each
 outcome directly from an hce object.
-Check the vignette "Plotting win odds" for more details.}
+Check the vignette "Maraca Plots - Plotting win odds" for more details.}
 \usage{
 \method{component_plot}{hce}(
   x,
   continuous_outcome = "C",
+  arm_levels = c(active = "A", control = "P"),
   fixed_followup_days = NULL,
   theme = "maraca",
   ...
@@ -21,17 +22,26 @@ Check the vignette "Plotting win odds" for more details.}
 \item{continuous_outcome}{A single string containing the continuous
 outcome label. Default value "C".}
 
+\item{arm_levels}{A named vector of exactly two strings, mapping the
+values used for the active and control arms to the values
+used in the data. The names must be "active" and "control"
+in this order. Note that this parameter only need to
+be specified if you have labels different from
+ "active" and "control".}
+
 \item{fixed_followup_days}{Not needed if HCE object contains information
 on fixed follow-up days in the study
-(column PADY or TTEfixed depending on hce
-version). Otherwise,
-this argument must be specified.
+(column PADY or TTEfixed,
+depending on hce version).
+Otherwise, this argument must be specified.
 Note: If argument is specified and HCE object
-contains PADY/TTEfixed column, then
+contains PADY or TTEfixed column, then
 fixed_followup_days argument is used.}
 
-\item{theme}{Different themes to style the graph. Default style is
-"maraca".}
+\item{theme}{Choose theme to style the plot. The default theme is "maraca".
+Options are "maraca", "color1", "color2" and none".
+For more details, check the vignette called
+"Maraca Plots - Plotting win odds".}
 
 \item{\dots}{not used}
 }
@@ -42,7 +52,7 @@ Component plot as a ggplot2 object.
 Generic function to create a plot showing the components used in
 calculating win odds (wins and ties) separately for each
 outcome directly from an hce object.
-Check the vignette "Plotting win odds" for more details.
+Check the vignette "Maraca Plots - Plotting win odds" for more details.
 }
 \examples{
 set.seed(31337)

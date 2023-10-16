@@ -7,6 +7,7 @@
 \method{plot}{hce}(
   x,
   continuous_outcome = "C",
+  arm_levels = c(active = "A", control = "P"),
   continuous_grid_spacing_x = 10,
   trans = "identity",
   density_plot_type = "default",
@@ -23,6 +24,13 @@
 \item{continuous_outcome}{A single string containing the continuous
 outcome label. Default value "C".}
 
+\item{arm_levels}{A named vector of exactly two strings, mapping the
+values used for the active and control arms to the values
+used in the data. The names must be "active" and "control"
+in this order. Note that this parameter only need to
+be specified if you have labels different from
+ "active" and "control".}
+
 \item{continuous_grid_spacing_x}{The spacing of the x grid to use for the
 continuous section of the plot.}
 
@@ -37,10 +45,11 @@ Accepts "default", "violin", "box" and "scatter".}
 
 \item{fixed_followup_days}{Not needed if HCE object contains information
 on fixed follow-up days in the study
-(column TTEfixed). Otherwise,
-this argument must be specified.
+(column PADY or TTEfixed,
+depending on hce version).
+Otherwise, this argument must be specified.
 Note: If argument is specified and HCE object
-contains TTEfixed column, then
+contains PADY or TTEfixed column, then
 fixed_followup_days argument is used.}
 
 \item{compute_win_odds}{If TRUE compute the win odds, otherwise (default)

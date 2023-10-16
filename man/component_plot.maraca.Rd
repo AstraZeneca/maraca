@@ -7,15 +7,17 @@ calculating win odds (wins and ties) separately for each
 outcome directly from a maraca object.
 Note that for this plot, when creating the maraca object using the maraca()
 function, the argument "compute_win_odds" has to be set to TRUE.
-Check the vignette "Plotting win odds" for more details.}
+Check the vignette "Maraca Plots - Plotting win odds" for more details.}
 \usage{
 \method{component_plot}{maraca}(x, theme = "maraca", ...)
 }
 \arguments{
 \item{x}{an object of S3 class 'maraca'.}
 
-\item{theme}{Different themes to style the graph. Default style is
-"maraca".}
+\item{theme}{Choose theme to style the plot. The default theme is "maraca".
+Options are "maraca", "color1", "color2" and none".
+For more details, check the vignette called
+"Maraca Plots - Plotting win odds".}
 
 \item{\dots}{not used}
 }
@@ -28,7 +30,7 @@ calculating win odds (wins and ties) separately for each
 outcome directly from a maraca object.
 Note that for this plot, when creating the maraca object using the maraca()
 function, the argument "compute_win_odds" has to be set to TRUE.
-Check the vignette "Plotting win odds" for more details.
+Check the vignette "Maraca Plots - Plotting win odds" for more details.
 }
 \examples{
 
