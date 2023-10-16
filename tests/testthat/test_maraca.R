@@ -484,12 +484,67 @@ test_that("winOddsData", {
   data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
     arm_levels, column_names = column_names
   )
-  win_odds <- .compute_win_odds(data, arm_levels)
+
+  win_odds_list <- .compute_win_odds(data, arm_levels)
+  win_odds <- win_odds_list[["win_odds"]]
 
   expect_equal(class(win_odds), "numeric")
   expect_equal(
     unname(win_odds), c(1.3143433745, 1.1364670136, 1.5200604024, 0.000191286)
   )
+
+  win_odds_by_outcome <- win_odds_list[["win_odds_outcome"]]
+  expect_equal(class(win_odds_by_outcome), "list")
+  expect_equal(class(win_odds_by_outcome[["summary"]]), "data.frame")
+  expect_equal(class(win_odds_by_outcome[["summary_by_GROUP"]]), "data.frame")
+  expect_equal(class(win_odds_by_outcome[["WO"]]), "data.frame")
+  expect_equal(names(win_odds_by_outcome[["summary"]]),
+               c("TRTP", "WIN", "LOSS", "TIE", "TOTAL", "WR", "WO"))
+  expect_equal(names(win_odds_by_outcome[["summary_by_GROUP"]]),
+               c("TRTP", "GROUP", "WIN", "LOSS", "TIE", "TOTAL"))
+  expect_equal(names(win_odds_by_outcome[["WO"]]),
+               c("WO", "SE", "WP", "SE_WP"))
+
+  wo_smry <- win_odds_by_outcome[["summary"]]
+  wo_smry_grp <- win_odds_by_outcome[["summary_by_GROUP"]]
+
+  expect_equal(wo_smry[wo_smry$TRTP == "A", "WIN"],
+               sum(wo_smry_grp[wo_smry_grp$TRTP == "A", "WIN"]))
+  expect_equal(wo_smry[wo_smry$TRTP == "P", "WIN"],
+               sum(wo_smry_grp[wo_smry_grp$TRTP == "P", "WIN"]))
+  expect_equal(wo_smry[wo_smry$TRTP == "P", "LOSS"],
+               sum(wo_smry_grp[wo_smry_grp$TRTP == "P", "LOSS"]))
+  expect_equal(wo_smry[wo_smry$TRTP == "A", "TIE"],
+               sum(wo_smry_grp[wo_smry_grp$TRTP == "A", "TIE"]))
+
+  wins_II_A <-
+    sum(sapply(data[data$arm == "Active" & data$outcome == "Outcome II",
+                    "value"],
+               function(vl) {
+                 sum(vl > data[data$arm == "Control" &
+                                 data$outcome == "Outcome II", "value"]) +
+                   nrow(data[data$arm == "Control" &
+                               data$outcome == "Outcome I", ])
+               }))
+  expect_equal(wo_smry_grp[wo_smry_grp$TRTP == "A" &
+                             wo_smry_grp$GROUP == "Outcome II", "WIN"],
+               wins_II_A)
+
+  loss_III_A <-
+    sum(sapply(data[data$arm == "Active" & data$outcome == "Outcome III",
+                    "value"],
+               function(vl) {
+                 sum(vl < data[data$arm == "Control" &
+                                 data$outcome == "Outcome III", "value"]) +
+                   nrow(data[data$arm == "Control" &
+                               !(data$outcome %in% c("Outcome I",
+                                                     "Outcome II",
+                                                     "Outcome III")), ])
+               }))
+
+  expect_equal(wo_smry_grp[wo_smry_grp$TRTP == "A" &
+                             wo_smry_grp$GROUP == "Outcome III", "LOSS"],
+               loss_III_A)
 
   # win odds missing if set to false
   file <- fixture_path("hce_scenario_c.csv")
@@ -509,6 +564,7 @@ test_that("winOddsData", {
   )
 
   expect_true(is.null(mar$win_odds))
+  expect_true(is.null(mar$win_odds_outcome))
 
 })
 
@@ -534,6 +590,33 @@ test_that("winOddsPlot", {
   plot(mar)
   expect_file_exists(output)
 
+  win_odds_outcome <- mar$win_odds_outcome
+  wo_smry_grp <- win_odds_outcome$summary_by_GROUP
+  endpoints <- c(mar$tte_outcomes, mar$continuous_outcome)
+  wo_bar_nc <- .prep_data_component_plot(win_odds_outcome, endpoints,
+                                         mar$arm_levels)
+
+  expect_equal(wo_smry_grp[wo_smry_grp$TRTP == "A", "WIN"],
+               unname(unlist(wo_bar_nc[wo_bar_nc$name == "Active wins" &
+                                         wo_bar_nc$GROUP %in%
+                                           c(tte_outcomes, continuous_outcome),
+                                       "value"])))
+  expect_equal(wo_smry_grp[wo_smry_grp$TRTP == "P", "WIN"],
+               unname(unlist(wo_bar_nc[wo_bar_nc$name == "Control wins" &
+                                         wo_bar_nc$GROUP %in%
+                                           c(tte_outcomes, continuous_outcome),
+                                       "value"])))
+  expect_equal(win_odds_outcome$summary[win_odds_outcome$summary$TRTP == "A",
+                                        "TOTAL"],
+               unname(unlist(wo_bar_nc[wo_bar_nc$name == "Active wins",
+                                       "total"][1, ])))
+
+  output <- artifacts_path("componentPlot-with.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
+  component_plot(mar)
+  expect_file_exists(output)
+
   mar <- maraca(
     data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
     compute_win_odds = FALSE
@@ -543,6 +626,30 @@ test_that("winOddsPlot", {
   expect_file_not_exists(output)
   set_pdf_output(output)
   plot(mar)
+  expect_file_exists(output)
+
+  expect_error(component_plot(mar), regexp =
+                 list(paste0("Win odds not calculated for maraca object.\n",
+                             "  Make sure to set compute_win_odds = TRUE when ",
+                             "creating the maraca object.")))
+
+  expect_text_equal(component_plot(data),
+                    list(paste0("component_plot() function can only handle ",
+                                "inputs of class 'hce' or 'maraca'. ",
+                                "Your input has class data.frame.")))
+
+  rates_a <- c(1.72, 1.74, 0.58, 1.5, 1)
+  rates_p <- c(2.47, 2.24, 2.9, 4, 6)
+  hce_dat <- hce::simHCE(n = 2500, TTE_A = rates_a,
+                         TTE_P = rates_p, CM_A = -3,
+                         CM_P = -6, CSD_A = 16,
+                         CSD_P = 15, fixedfy = 3,
+                         seed = 31337)
+
+  output <- artifacts_path("componentPlot-hce.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
+  component_plot(hce_dat)
   expect_file_exists(output)
 
 })
