@@ -406,20 +406,20 @@
 
 .add_win_odds_to_plot <- function(p, win_odds, x, y, hjust) {
 
-    p <- p +
-      ggplot2::annotate(
-        geom = "label",
-        x = x,
-        y = y,
-        label = paste(
-          "Win odds: ", round(win_odds[[1]], 2),
-          "\n95% CI: ", round(win_odds[[2]], 2), " - ",
-          round(win_odds[[3]], 2), "\n",
-          "p-value: ", format.pval(win_odds[[4]], digits = 3, eps = 0.001),
-          sep = ""
-        ),
-        hjust = hjust, vjust = 1.4, size = 3
-      )
+  p <- p +
+    ggplot2::annotate(
+      geom = "label",
+      x = x,
+      y = y,
+      label = paste(
+        "Win odds: ", round(win_odds[[1]], 2),
+        "\n95% CI: ", round(win_odds[[2]], 2), " - ",
+        round(win_odds[[3]], 2), "\n",
+        "p-value: ", format.pval(win_odds[[4]], digits = 3, eps = 0.001),
+        sep = ""
+      ),
+      hjust = hjust, vjust = 1.4, size = 3
+    )
 
-    return(p)
+  return(p)
 }
