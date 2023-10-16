@@ -16,6 +16,12 @@ library(ggplot2)
 library(maraca)
 ```
 
+This vignette is largely based on the
+<a href="https://journals.sagepub.com/doi/suppl/10.1177/17407745221134949/suppl_file/sj-pdf-1-ctj-10.1177_17407745221134949.pdf" 
+target="_blank">supplement</a>
+of the publication 'The maraca plot -- a novel visualization of hierarchical composite endpoints'
+<a href="https://doi.org/10.1177/17407745221134949" target="_blank">doi:10.1177/17407745221134949</a>.
+
 # Introduction
 
 
@@ -144,9 +150,13 @@ Conveniently, you can customize your maraca plot with the comprehensive toolbox 
 ```{r maraca11, eval = TRUE, fig.width = 7, fig.height = 6, message=FALSE, warning=FALSE}
 p <- plot_maraca(mar, continuous_grid_spacing_x = 20, density_plot_type = "scatter", vline_type = "mean")
 p + 
-  theme_bw() + scale_color_manual(values=c("#999999", "#E69F00")) + 
+  scale_color_manual(values = c("#E69F00", "#999999")) + 
   theme(axis.text.x.bottom = element_text(vjust = 0.5, hjust = 0.5))
 ```
+
+Note that some styling settings are already specified in the default plot version. The maraca package contains different styling
+themes for the convenience of the user, including a version without any preset stylings. For more details, please take a look at
+the vignette [Maraca Plots - Themes and Styling](themes.html).
 
 # References
 
