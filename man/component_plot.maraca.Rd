@@ -49,6 +49,6 @@ maraca_dat <- maraca(data = hce_scenario_a,
                      compute_win_odds = TRUE
                      )
 
-component_plot.hce(maraca_dat)
+component_plot(maraca_dat)
 
 }

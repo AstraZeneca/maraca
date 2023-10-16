@@ -2,6 +2,7 @@
 #'
 #' @docType package
 #' @name maraca
+#' @import hce
 #' @aliases maraca-package
 NULL
 

@@ -84,22 +84,20 @@ the win odds statistics, otherwise `NULL`
 These can then be converted to a convenient format for validation, such as as individual
 data.frames.
 ```{r}
-library(tibble)
 library(dplyr)
 library(tidyr)
 
 validation_list$proportions %>% 
   as.data.frame() %>%
-  rownames_to_column("outcome") %>%
   rename("proportion" = ".")
 
 head(validation_list$tte_data)
 
 validation_list$boxstat_data %>%
- as_tibble() %>%
  unnest_wider(outliers, names_sep = "") %>%
  pivot_longer(., cols = -group, names_to = "stat_name", values_to = "values") %>%
- filter(!is.na(values))
+ filter(!is.na(values)) %>% 
+  as.data.frame()
 
 head(validation_list$violin_data)
 

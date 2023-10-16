@@ -158,6 +158,8 @@ maraca <- function(
 #' @export
 print.maraca <- function(x, ...) {
 
+  `%>%` <- dplyr::`%>%`
+
   cat(paste("Maraca object for plotting maraca graph created for",
             sum(x$meta$n), "patients.\n\n"))
 

@@ -1,10 +1,18 @@
-
+#' Function to create a plot showing the components used in
+#' calculating win odds (wins and ties) separately for each
+#' outcome for a hierarchical endpoint.
+#'
+#' Implemented for objects of type 'maraca' and 'hce'.
+#'
+#' @param x an object of S3 class 'maraca' or 'hce'.
+#' @param \dots further arguments to be passed to the
+#'        object-specific functions
 #' @export
 component_plot <- function(x, ...) {
   UseMethod("component_plot", x)
 }
 
-##' @export
+#' @export
 component_plot.default <- function(x,
                                    ...) {
   paste0("component_plot() function can only handle inputs of class ",
@@ -42,7 +50,7 @@ component_plot.default <- function(x,
 #'                      compute_win_odds = TRUE
 #'                      )
 #'
-#' component_plot.hce(maraca_dat)
+#' component_plot(maraca_dat)
 #'
 #' @export
 component_plot.maraca <- function(x,
@@ -108,8 +116,8 @@ component_plot.maraca <- function(x,
 #' hce_dat <- hce::simHCE(n = 2500, TTE_A = Rates_A, TTE_P = Rates_P,
 #'              CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3,
 #'              seed = 31337)
-#' component_plot.hce(hce_dat)
 #'
+#' component_plot(hce_dat)
 #' @export
 #'
 component_plot.hce <- function(x, continuous_outcome = "C",
