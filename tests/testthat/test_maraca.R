@@ -917,7 +917,7 @@ test_that("validationFunction", {
   expect_named(val_res_box, expected_names, ignore.order = TRUE)
   expect_named(val_res_scatter, expected_names, ignore.order = TRUE)
 
-  expect_equal(val_res_def$plot_type, "GeomViolin")
+  expect_equal(val_res_def$plot_type, "GeomViolin+GeomBoxplot")
   expect_equal(val_res_violin$plot_type, "GeomViolin")
   expect_equal(val_res_box$plot_type, "GeomBoxplot")
   expect_equal(val_res_scatter$plot_type, "GeomPoint")

@@ -1,7 +1,6 @@
 ---
 title: "Maraca Plots - Validation"
 author: "Monika Huhn"
-date: "15/10/2023"
 date: "`r Sys.Date()`"
 vignette: >
   %\VignetteIndexEntry{Maraca Plots - Validation}
@@ -65,4 +64,45 @@ validation_list <- validate_maraca_plot(maraca_plot)
 str(validation_list)
 ```
 
+Running the `validate_maraca_plot()` function on a maraca plot object returns a list
+with the following items:
+
+1. `plot_type`: depending on which `density_plot_type` was selected for the plot either
+`GeomPoint`, `GeomViolin` and/or `GeomBoxplot`
+2. `proportions`: the proportions of the HCE components
+3. `tte_data`: the time-to-event data
+4. `scatter_data`: if plot was created with `density_plot_type = "scatter"` then contains 
+dataset that was plotted in scatter plot, otherwise `NULL`  
+5. `boxstat_data`: if plot was created with `density_plot_type = "box"` or
+`density_plot_type = "default"` then contains the boxplot statistics, otherwise `NULL`
+6. `violin_data`: if plot was created with `density_plot_type = "violin"` or
+`density_plot_type = "default"` then contains the violin distribution data, otherwise `NULL`
+7. `wo_stats`: if maraca object was created with `compute_win_odds = TRUE` then contains 
+the win odds statistics, otherwise `NULL`
+
+
+These can then be converted to a convenient format for validation, such as as individual
+data.frames.
+```{r}
+library(tibble)
+library(dplyr)
+library(tidyr)
+
+validation_list$proportions %>% 
+  as.data.frame() %>%
+  rownames_to_column("outcome") %>%
+  rename("proportion" = ".")
+
+head(validation_list$tte_data)
+
+validation_list$boxstat_data %>%
+ as_tibble() %>%
+ unnest_wider(outliers, names_sep = "") %>%
+ pivot_longer(., cols = -group, names_to = "stat_name", values_to = "values") %>%
+ filter(!is.na(values))
+
+head(validation_list$violin_data)
+
+validation_list$wo_stats
+```
 

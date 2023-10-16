@@ -507,6 +507,7 @@ validate_maraca_plot <- function(x,  ...) {
     violin_data <- pb$data[[5]][, c("group", "x", "y", "density", "width")]
     violin_data$group <- factor(violin_data$group, labels = arms)
     if (class(as.list(x$layers[[6]])[["geom"]])[1] == "GeomBoxplot") {
+      plot_type <- paste(plot_type, "GeomBoxplot", sep = "+")
       boxstat_data <- pb$data[[6]] %>%
         dplyr::select(group, "x_lowest" = xmin_final,
                       "whisker_lower" = xmin,
