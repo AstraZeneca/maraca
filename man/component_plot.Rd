@@ -11,7 +11,7 @@ component_plot(x, ...)
 \arguments{
 \item{x}{an object of S3 class 'maraca' or 'hce'.}
 
-\item{\dots}{further arguments to be passed to the 
+\item{\dots}{further arguments to be passed to the
 object-specific functions}
 }
 \description{

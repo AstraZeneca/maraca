@@ -17,7 +17,7 @@ library(maraca)
 ```
 
 This vignette is largely based on the
-<a href="https://journals.sagepub.com/doi/suppl/10.1177/17407745221134949/suppl_file/sj-pdf-1-ctj-10.1177_17407745221134949.pdf" 
+<a href="https://doi.org/10.25384/SAGE.21558565.v1" 
 target="_blank">supplement</a>
 of the publication 'The maraca plot -- a novel visualization of hierarchical composite endpoints'
 <a href="https://doi.org/10.1177/17407745221134949" target="_blank">doi:10.1177/17407745221134949</a>.

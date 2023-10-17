@@ -61,7 +61,7 @@ component_plot(maraca_dat)
 
 It is also possible to use the `component_plot()` function directly on
 an `hce` object (created using the
-[hce package](https://cran.r-project.org/web/packages/hce/index.html).
+[hce package](https://cran.r-project.org/package=hce)).
 
 ```{r fig.width=9, fig.height=6}
 library(hce)
