@@ -2,6 +2,7 @@
 title: "Maraca Plots - Themes and Styling"
 author: "Monika Huhn"
 date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Maraca Plots - Themes and Styling}
   %\VignetteEngine{knitr::rmarkdown}
@@ -43,36 +44,36 @@ By default, the plotting functions are using a theme called
 "maraca". It is implicitly called so you do not have to specify
 the argument `theme = "maraca"`.
 
-```{r fig.width=9, fig.height=6}
+```{r fig.width = 8, fig.height = 6}
 plot(maraca_dat)
 ```
 
 The default maraca theme adds an x- and y-axis label and angels the
-x-axis text for better readibility. It also uses the theme "bw"
+x-axis text for better readability. It also uses the theme "bw"
 of the ggplot2 package.
 The plot colors are not styled in the default maraca theme. We include
 2 different color themes by default for the users convenience,
 `theme = "color1"` and `theme = "color2"`.
 
-```{r fig.width=9, fig.height=6}
+```{r fig.width = 8, fig.height = 6}
 plot(maraca_dat, theme = "color1")
 ```
 
-```{r fig.width=9, fig.height=6}
+```{r fig.width = 8, fig.height = 6}
 plot(maraca_dat, theme = "color2")
 ```
 
 We kept the previous default styling of the maraca package as its
 own theme, `theme = "maraca_old"`
 
-```{r fig.width=9, fig.height=6}
+```{r fig.width = 8, fig.height = 6}
 plot(maraca_dat, theme = "maraca_old")
 ```
 
 If you want to completely style your code by yourself, remove any
 of the extra styling with `theme = "none"`.
 
-```{r fig.width=9, fig.height=6}
+```{r fig.width = 8, fig.height = 6}
 plot(maraca_dat, theme = "none")
 ```
 
@@ -86,7 +87,7 @@ For example, using the `theme = "none"` styling, we can add
 manually the angle of the x-axis labels, remove axis texts
 and style with differnt colors.
 
-```{r fig.width=9, fig.height=6}
+```{r fig.width = 8, fig.height = 6}
 library(ggplot2)
 
 p <- plot(maraca_dat, theme = "none")
@@ -112,7 +113,7 @@ If you want to use your own color scheme on the plots,
 the easiest way is to use the default styling `theme = "maraca"`
 and then add the colors as an extra layer.
 
-```{r fig.width=9, fig.height=6}
+```{r fig.width = 8, fig.height = 6}
 p <- plot(maraca_dat)
 
 colorScheme <- c("Active" = "steelblue", "Control" = "seagreen3")
@@ -132,11 +133,11 @@ The user has 2 ways of changing these labels. One is to overwrite the default
 text size for the plot. Do not forget to reset the default text size afterwards
 for further plotting.
 
-```{r fig.width=9, fig.height=6}
+```{r fig.width = 8, fig.height = 6}
 keep_default <- GeomLabel$default_aes$size
 
 # Changing default text size for the plot
-update_geom_defaults("text", list(size = 2))
+update_geom_defaults("text", list(size = 3))
 
 plot(maraca_dat)
 
@@ -147,7 +148,7 @@ update_geom_defaults("text", list(size = keep_default))
 Alternatively, the user can use the parameter `continuous_grid_spacing_x` in the `plot()`
 function for maraca objects to create more or less grid lines and labels.
 
-```{r fig.width=9, fig.height=6}
+```{r fig.width = 8, fig.height = 6}
 plot(maraca_dat, continuous_grid_spacing_x = 20)
 ```
 

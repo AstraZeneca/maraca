@@ -1,6 +1,6 @@
 ---
 title: "Maraca Plots - Frequently Asked Questions"
-author: "Martin Karpefors, Stefano Borini"
+author: "Martin Karpefors, Stefano Borini, Monika Huhn"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
@@ -14,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
 library(maraca)
 ```
 
-# I get a warning "Removed 1 rows containing missing values (geom_point)." when plotting using density_plot_type scatter.
+## I get the warning "Removed 1 rows containing missing values (geom_point)." when plotting using density_plot_type scatter.
 
 This happens because when using scatter, some points are jittered and may end up
 visually outside of the plotting range, so they can't be displayed.
@@ -25,13 +25,13 @@ won't, even for the same input.
 If you want to silence the warning, use suppressWarning() when you print
 the plot for displaying.
 
-# I want to add other information to the plot rather than win odds.
+## I want to add other information to the plot rather than win odds.
 
 The `maraca` package can only display the win odds within the plot.
 If the user wants to for example display the win ratio instead, they
 need to calculate those themselves and then add them to the plot.
 
-```{r fig.width = 8, fig.height = 6}
+```{r fig.width = 7, fig.height = 6}
 library(hce)
 
 Rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)

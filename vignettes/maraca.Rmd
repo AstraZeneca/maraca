@@ -17,13 +17,12 @@ library(maraca)
 ```
 
 This vignette is largely based on the
-<a href="https://doi.org/10.25384/SAGE.21558565.v1" 
-target="_blank">supplement</a>
-of the publication 'The maraca plot -- a novel visualization of hierarchical composite endpoints'
-<a href="https://doi.org/10.1177/17407745221134949" target="_blank">doi:10.1177/17407745221134949</a>.
+publication 'The maraca plot -- a novel visualization of hierarchical composite endpoints'
+<a href="https://doi.org/10.1177/17407745221134949" target="_blank">doi:10.1177/17407745221134949</a> as well as
+pages 1-6 of the <a href="https://doi.org/10.25384/SAGE.21558565.v1" 
+target="_blank">supplement</a>.
 
 # Introduction
-
 
 Hierarchical composite endpoints (HCE) are complex endpoints combining events of different clinical importance into an ordinal outcome that prioritize the most severe event of a patient. Up to now, one of the difficulties in interpreting HCEs has been the lack of proper tools for visualizing the treatment effect captured by HCE. This package makes it possible to visualize endpoints consisting of the combination of one to several time-to-event (TTE) outcomes (like Death, Hospitalization for heart failure, …) with one continuous outcome (like a symptom score).
 

@@ -76,8 +76,8 @@ component_plot.maraca <- function(x,
 
   plot <- .add_win_odds_to_plot(plot, x$win_odds,
                                 x = (length(endpoints) + 1.5),
-                                y = max(wo_bar_nc$percentage) * 1.4,
-                                hjust = 1)
+                                y = max(wo_bar_nc$percentage) * 1.5,
+                                hjust = 0.85)
 
   return(plot)
 }
@@ -144,7 +144,7 @@ component_plot.hce <- function(x, continuous_outcome = "C",
   plot <- .add_win_odds_to_plot(plot, maraca_dat$win_odds,
                                 x = (length(endpoints) + 1.5),
                                 y = max(wo_bar_nc$percentage) * 1.4,
-                                hjust = 1)
+                                hjust = 0.85)
 
   return(plot)
 }

@@ -2,6 +2,7 @@
 title: "Maraca Plots - Validation"
 author: "Monika Huhn"
 date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Maraca Plots - Validation}
   %\VignetteEngine{knitr::rmarkdown}

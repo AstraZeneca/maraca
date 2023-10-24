@@ -55,7 +55,7 @@ maraca_dat <- maraca(
 ```
 
 Now we can just plot the object using the `component_plot()` function.
-```{r fig.width=9, fig.height=6}
+```{r fig.width=7, fig.height=6}
 component_plot(maraca_dat)
 ```
 
@@ -63,7 +63,7 @@ It is also possible to use the `component_plot()` function directly on
 an `hce` object (created using the
 [hce package](https://cran.r-project.org/package=hce)).
 
-```{r fig.width=9, fig.height=6}
+```{r fig.width=7, fig.height=6}
 library(hce)
 
 Rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
@@ -82,21 +82,21 @@ The resulting plot is a normal ggplot2 object that can be styled accordingly.
 There are also different themes available to style the plot.
 
 The default style is called `theme = "maraca"`.
-```{r fig.width=9, fig.height=6}
+```{r fig.width=7, fig.height=6}
 component_plot(maraca_dat, theme = "maraca")
 ```
 
 There are 2 different themes with different color
 schemes, `theme = "color1"` and `theme = "color2"`.
-```{r fig.width=9, fig.height=6}
+```{r fig.width=7, fig.height=6}
 component_plot(maraca_dat, theme = "color1")
 ```
 
-```{r fig.width=9, fig.height=6}
+```{r fig.width=7, fig.height=6}
 component_plot(maraca_dat, theme = "color2")
 ```
 
 There is also a theme without any styling `theme = "none"`.
-```{r fig.width=9, fig.height=6}
+```{r fig.width=8, fig.height=6}
 component_plot(maraca_dat, theme = "none")
 ```
