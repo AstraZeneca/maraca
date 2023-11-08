@@ -16,8 +16,13 @@ library(ggplot2)
 library(maraca)
 ```
 
-# Introduction
+This vignette is largely based on the
+publication 'The maraca plot -- a novel visualization of hierarchical composite endpoints'
+<a href="https://doi.org/10.1177/17407745221134949" target="_blank">doi:10.1177/17407745221134949</a> as well as
+pages 1-6 of the <a href="https://doi.org/10.25384/SAGE.21558565.v1" 
+target="_blank">supplement</a>.
 
+# Introduction
 
 Hierarchical composite endpoints (HCE) are complex endpoints combining events of different clinical importance into an ordinal outcome that prioritize the most severe event of a patient. Up to now, one of the difficulties in interpreting HCEs has been the lack of proper tools for visualizing the treatment effect captured by HCE. This package makes it possible to visualize endpoints consisting of the combination of one to several time-to-event (TTE) outcomes (like Death, Hospitalization for heart failure, …) with one continuous outcome (like a symptom score).
 
@@ -144,9 +149,13 @@ Conveniently, you can customize your maraca plot with the comprehensive toolbox 
 ```{r maraca11, eval = TRUE, fig.width = 7, fig.height = 6, message=FALSE, warning=FALSE}
 p <- plot_maraca(mar, continuous_grid_spacing_x = 20, density_plot_type = "scatter", vline_type = "mean")
 p + 
-  theme_bw() + scale_color_manual(values=c("#999999", "#E69F00")) + 
+  scale_color_manual(values = c("#E69F00", "#999999")) + 
   theme(axis.text.x.bottom = element_text(vjust = 0.5, hjust = 0.5))
 ```
+
+Note that some styling settings are already specified in the default plot version. The maraca package contains different styling
+themes for the convenience of the user, including a version without any preset stylings. For more details, please take a look at
+the vignette [Maraca Plots - Themes and Styling](themes.html).
 
 # References
 

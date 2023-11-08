@@ -7,7 +7,6 @@
 \format{
 A data frame with 1000 rows.
 \describe{
-  \item{X}{Row number}
   \item{SUBJID}{The patient identifier}
   \item{GROUP}{Which type of outcome the row belongs to}
   \item{GROUPN}{Not required for computation.

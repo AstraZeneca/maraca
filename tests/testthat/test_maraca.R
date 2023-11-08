@@ -44,7 +44,7 @@ test_that("createMaracaObject", {
     data, tte_outcomes, continuous_outcome, arm_levels,
     column_names,
     fixed_followup_days
-    )
+  )
   expect_s3_class(mar, "maraca")
   expect_equal(mar$fixed_followup_days, fixed_followup_days)
 
@@ -60,12 +60,14 @@ test_that("createMaracaObject", {
     outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
   data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
-    arm_levels, column_names = column_names)
+                                   arm_levels, column_names = column_names)
   meta <- .compute_metainfo(data)
-  HCE_ecdf <- .compute_ecdf_by_outcome(
-    data, meta, tte_outcomes, continuous_outcome, arm_levels, 3 * 365)
-  continuous <- .compute_continuous(
-    data, meta, HCE_ecdf, tte_outcomes, continuous_outcome, arm_levels)
+  hce_ecdf <- .compute_ecdf_by_outcome(data, meta, tte_outcomes,
+                                       continuous_outcome,
+                                       arm_levels, 3 * 365)
+  continuous <- .compute_continuous(data, meta, hce_ecdf,
+                                    tte_outcomes, continuous_outcome,
+                                    arm_levels)
   expect_equal(sum(abs(continuous$data$x)), 40828.387)
   expect_equal(sum(abs(continuous$data$y_level)), 24451)
 
@@ -90,7 +92,7 @@ test_that("createMaracaObject", {
 
   expect_equal(class(data), "data.frame")
   expect_equal(class(data$arm), "factor")
-  expect_equal(levels(data$arm), names(arm_levels))
+  expect_equal(levels(data$arm), unname(arm_levels))
   expect_equal(class(data$outcome), "factor")
   expect_equal(levels(data$outcome), c(tte_outcomes, continuous_outcome))
 
@@ -106,11 +108,11 @@ test_that("createMaracaObject", {
     outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
   data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
-    arm_levels,
-    column_names = column_names)
+                                   arm_levels,
+                                   column_names = column_names)
   metainfo <- .compute_metainfo(data)
-  expect_equal(
-    as.character(metainfo$outcome), c(tte_outcomes, continuous_outcome))
+  expect_equal(as.character(metainfo$outcome),
+               c(tte_outcomes, continuous_outcome))
   expect_equal(metainfo$n, c(129, 115, 110, 77, 569))
   expect_equal(metainfo$proportion, c(12.9, 11.5, 11, 7.7, 56.9))
   expect_equal(
@@ -141,22 +143,22 @@ test_that("createMaracaObject", {
     column_names
   )
   meta <- .compute_metainfo(data)
-  HCE_ecdf <- .compute_ecdf_by_outcome(
-    data, meta, tte_outcomes, continuous_outcome, arm_levels, 3 * 365)
+  hce_ecdf <- .compute_ecdf_by_outcome(data, meta, tte_outcomes,
+                                       continuous_outcome, arm_levels, 3 * 365)
 
   # Checking the abssum along the columns to check that values remain the same.
-  expect_equal(sum(abs(HCE_ecdf$data$value)), 221627.7286)
-  expect_equal(sum(abs(HCE_ecdf$data$t_cdf)), 841397.7286)
-  expect_equal(sum(abs(HCE_ecdf$data$ecdf_values)), 9367.6)
-  expect_equal(sum(abs(HCE_ecdf$data$adjusted.time)), 9142.184244)
+  expect_equal(sum(abs(hce_ecdf$data$value)), 221627.7286)
+  expect_equal(sum(abs(hce_ecdf$data$t_cdf)), 841397.7286)
+  expect_equal(sum(abs(hce_ecdf$data$ecdf_values)), 9367.6)
+  expect_equal(sum(abs(hce_ecdf$data$adjusted.time)), 9142.184244)
 
-  expect_equal(
-    HCE_ecdf$meta$max,
-    c(12.6, 23.6, 33.6, 40.4, 13.2, 25.2, 37.2, 45.8), tol = 1e-6)
-  expect_equal(HCE_ecdf$meta$sum.event, c(
+  expect_equal(hce_ecdf$meta$max,
+               c(12.6, 23.6, 33.6, 40.4, 13.2,
+                 25.2, 37.2, 45.8), tol = 1e-6)
+  expect_equal(hce_ecdf$meta$sum.event, c(
     63, 55, 50, 34, 66, 60, 60, 43
   ))
-  expect_equal(HCE_ecdf$meta$ecdf_end,
+  expect_equal(hce_ecdf$meta$ecdf_end,
     c(40.4, 40.4, 40.4, 40.4, 45.8, 45.8, 45.8, 45.8), tol = 1e-6
   )
 
@@ -172,7 +174,7 @@ test_that("createMaracaObject", {
     outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
   hce <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
-    arm_levels, column_names)
+                                  arm_levels, column_names)
 
   hce <- .with_ordered_column(hce)
 
@@ -207,7 +209,7 @@ test_that("alternativeActiveControl", {
     data, tte_outcomes, continuous_outcome, arm_levels,
     column_names,
     fixed_followup_days
-    )
+  )
   expect_s3_class(mar, "maraca")
 })
 
@@ -228,7 +230,7 @@ test_that("alternativeColumnNames", {
     data, tte_outcomes, continuous_outcome, arm_levels,
     column_names,
     fixed_followup_days
-    )
+  )
   expect_s3_class(mar, "maraca")
 })
 
@@ -270,29 +272,28 @@ test_that("wrongParameters", {
     regexp = "Must be of type 'character'"
   )
   expect_error(
-    maraca(
-      data, tte_outcomes, continuous_outcome,
-      c(active = "foo", control = "bar", whatever = "baz"),
-      column_names,
-      fixed_followup_days), regexp = "Must have length 2"
+    maraca(data, tte_outcomes, continuous_outcome,
+           c(active = "foo", control = "bar", whatever = "baz"),
+           column_names,
+           fixed_followup_days), regexp = "Must have length 2"
   )
   expect_error(
     maraca(data, tte_outcomes, continuous_outcome, arm_levels,
-           column_names,
-           fixed_followup_days = 12.3
-          ),
+      column_names,
+      fixed_followup_days = 12.3
+    ),
     regexp = "single integerish value"
   )
   expect_error(
     maraca(data, tte_outcomes, continuous_outcome, arm_levels,
-           column_names,
-           fixed_followup_days = NULL
+      column_names,
+      fixed_followup_days = NULL
     )
   )
   expect_error(
     maraca(data, tte_outcomes, continuous_outcome, arm_levels,
-           column_names,
-           fixed_followup_days = 12
+      column_names,
+      fixed_followup_days = 12
     ),
     regexp = "Time-to-event data contain events after the fixed_followup_days"
   )
@@ -318,8 +319,7 @@ test_that("wrongParameters", {
       data, tte_outcomes, continuous_outcome, arm_levels,
       c(foo = "a", bar = "b", baz = "c"),
       fixed_followup_days
-    ),
-    regexp = "Names must be a identical to"
+    )
   )
 
   expect_error(
@@ -333,44 +333,45 @@ test_that("wrongParameters", {
     regexp = "Can't rename columns that don't exist"
   )
 
-  data2 <- data.frame(data)
-  data2$TRTP <- as.factor(data2$TRTP)
   expect_error(
     maraca(
-      data2, tte_outcomes, continuous_outcome, arm_levels,
+      data, tte_outcomes, continuous_outcome,
+      arm_levels = c(active = "A", control = "C"),
       c(
         outcome = "GROUP", arm = "TRTP",
         value = "AVAL0"
       ), fixed_followup_days
     ),
-    regexp = "The arm column must be characters"
+    regexp = list(paste("Arm variable contains different",
+                        "values then given in parameter arm_levels"))
   )
 
-  data2 <- data.frame(data)
-  data2$GROUP <- as.factor(data2$GROUP)
   expect_error(
     maraca(
-      data2, tte_outcomes, continuous_outcome, arm_levels,
+      data, tte_outcomes, continuous_outcome = "C", arm_levels,
       c(
         outcome = "GROUP", arm = "TRTP",
         value = "AVAL0"
       ), fixed_followup_days
     ),
-    regexp = "The outcome column must be characters"
+    regexp = list(paste("Outcome variable contains different",
+                        "values then given in parameters",
+                        "tte_outcomes and continuous_outcome"))
   )
 
   # Test plot functions only work with maraca objects
   expect_error(plot_maraca(123), regexp = "Must inherit")
 
   # Test plot.hce input
-  rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
-  rates_P <- c(2.47, 2.24, 2.9, 4, 6)
-  HCE <- hce::simHCE(
-    n = 2500, TTE_A = rates_A, TTE_P = rates_P,
-    CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3,
-    seed = 31337)
-  HCE$TTEfixed <- NULL
-  expect_error(plot(HCE))
+  rates_a <- c(1.72, 1.74, 0.58, 1.5, 1)
+  rates_p <- c(2.47, 2.24, 2.9, 4, 6)
+  hce_dat <- hce::simHCE(n = 2500, TTE_A = rates_a,
+                         TTE_P = rates_p, CM_A = -3,
+                         CM_P = -6, CSD_A = 16, CSD_P = 15,
+                         fixedfy = 3, seed = 31337)
+  hce_dat$TTEfixed <- NULL
+  hce_dat$PADY <- NULL
+  expect_error(plot(hce_dat))
 
   # Validation function only works for maraca plot
   tmp <- data.frame("a" = 1:10, "b" = 10:1)
@@ -378,7 +379,7 @@ test_that("wrongParameters", {
     ggplot2::geom_point()
 
   expect_error(validate_maraca_plot(plot), regexp =
-              "Must inherit from class")
+                 "Must inherit from class")
 
   # Check missing outcome
   file <- fixture_path("hce_scenario_c.csv")
@@ -395,7 +396,9 @@ test_that("wrongParameters", {
   expect_error(
     maraca(data, tte_outcomes, continuous_outcome, arm_levels,
            column_names, 3 * 365),
-    regexp = "Outcome Outcome XXX is not present in column GROUP"
+    regexp = list(paste("Outcome variable contains different",
+                        "values then given in parameters",
+                        "tte_outcomes and continuous_outcome"))
   )
 })
 
@@ -427,44 +430,44 @@ test_that("winOddsData", {
   )
 
   res <- capture.output(mar)
-  exp <- list(
-    "Maraca object for plotting maraca graph created for 1000 patients.",
-    "", "Win odds (95% CI): 1.31 (1.14, 1.52)",
-    "Win odds p-value: <0.001", "",
-    "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
-    "          Outcome I 129       12.9       63        66       0",
-    "         Outcome II 115       11.5       55        60       0",
-    "        Outcome III 110       11.0       50        60       0",
-    "         Outcome IV  77        7.7       34        43       0",
-    " Continuous outcome 569       56.9      298       271       0")
+  exp <- list(paste0("Maraca object for plotting maraca ",
+                     "graph created for 1000 patients."),
+              "", "Win odds (95% CI): 1.31 (1.14, 1.52)",
+              "Win odds p-value: <0.001", "",
+              "            Outcome   N Proportion N Active N Control Missing",
+              "          Outcome I 129       12.9       63        66       0",
+              "         Outcome II 115       11.5       55        60       0",
+              "        Outcome III 110       11.0       50        60       0",
+              "         Outcome IV  77        7.7       34        43       0",
+              " Continuous outcome 569       56.9      298       271       0")
 
   expect_text_equal(res, exp)
 
   res <- capture.output(mar_no_win_odds)
-  exp <- list(
-    "Maraca object for plotting maraca graph created for 1000 patients.",
-    "", "Win odds not calculated.", "",
-    "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
-    "          Outcome I 129       12.9       63        66       0",
-    "         Outcome II 115       11.5       55        60       0",
-    "        Outcome III 110       11.0       50        60       0",
-    "         Outcome IV  77        7.7       34        43       0",
-    " Continuous outcome 569       56.9      298       271       0")
+  exp <- list(paste0("Maraca object for plotting maraca ",
+                     "graph created for 1000 patients."),
+              "", "Win odds not calculated.", "",
+              "            Outcome   N Proportion N Active N Control Missing",
+              "          Outcome I 129       12.9       63        66       0",
+              "         Outcome II 115       11.5       55        60       0",
+              "        Outcome III 110       11.0       50        60       0",
+              "         Outcome IV  77        7.7       34        43       0",
+              " Continuous outcome 569       56.9      298       271       0")
 
   expect_text_equal(res, exp)
 
   res <- capture.output(mar_na)
-  exp <- list(
-    "Maraca object for plotting maraca graph created for 999 patients.",
-    "", "1 patient(s) removed because of missing values.", "",
-    "Win odds (95% CI): 1.32 (1.14, 1.52)",
-    "Win odds p-value: <0.001", "",
-    "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
-    "          Outcome I 129       12.9       63        66       0",
-    "         Outcome II 115       11.5       55        60       0",
-    "        Outcome III 110       11.0       50        60       0",
-    "         Outcome IV  76        7.6       33        43       1",
-    " Continuous outcome 569       56.9      298       271       0")
+  exp <- list(paste0("Maraca object for plotting maraca ",
+                     "graph created for 999 patients."),
+              "", "1 patient(s) removed because of missing values.", "",
+              "Win odds (95% CI): 1.32 (1.14, 1.52)",
+              "Win odds p-value: <0.001", "",
+              "            Outcome   N Proportion N Active N Control Missing",
+              "          Outcome I 129       12.9       63        66       0",
+              "         Outcome II 115       11.5       55        60       0",
+              "        Outcome III 110       11.0       50        60       0",
+              "         Outcome IV  76        7.6       33        43       1",
+              " Continuous outcome 569       56.9      298       271       0")
 
   expect_text_equal(res, exp)
 
@@ -481,12 +484,67 @@ test_that("winOddsData", {
   data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
     arm_levels, column_names = column_names
   )
-  win_odds <- .compute_win_odds(data)
+
+  win_odds_list <- .compute_win_odds(data, arm_levels)
+  win_odds <- win_odds_list[["win_odds"]]
 
   expect_equal(class(win_odds), "numeric")
   expect_equal(
     unname(win_odds), c(1.3143433745, 1.1364670136, 1.5200604024, 0.000191286)
   )
+
+  win_odds_by_outcome <- win_odds_list[["win_odds_outcome"]]
+  expect_equal(class(win_odds_by_outcome), "list")
+  expect_equal(class(win_odds_by_outcome[["summary"]]), "data.frame")
+  expect_equal(class(win_odds_by_outcome[["summary_by_GROUP"]]), "data.frame")
+  expect_equal(class(win_odds_by_outcome[["WO"]]), "data.frame")
+  expect_equal(names(win_odds_by_outcome[["summary"]]),
+               c("TRTP", "WIN", "LOSS", "TIE", "TOTAL", "WR", "WO"))
+  expect_equal(names(win_odds_by_outcome[["summary_by_GROUP"]]),
+               c("TRTP", "GROUP", "WIN", "LOSS", "TIE", "TOTAL"))
+  expect_equal(names(win_odds_by_outcome[["WO"]]),
+               c("WO", "SE", "WP", "SE_WP"))
+
+  wo_smry <- win_odds_by_outcome[["summary"]]
+  wo_smry_grp <- win_odds_by_outcome[["summary_by_GROUP"]]
+
+  expect_equal(wo_smry[wo_smry$TRTP == "A", "WIN"],
+               sum(wo_smry_grp[wo_smry_grp$TRTP == "A", "WIN"]))
+  expect_equal(wo_smry[wo_smry$TRTP == "P", "WIN"],
+               sum(wo_smry_grp[wo_smry_grp$TRTP == "P", "WIN"]))
+  expect_equal(wo_smry[wo_smry$TRTP == "P", "LOSS"],
+               sum(wo_smry_grp[wo_smry_grp$TRTP == "P", "LOSS"]))
+  expect_equal(wo_smry[wo_smry$TRTP == "A", "TIE"],
+               sum(wo_smry_grp[wo_smry_grp$TRTP == "A", "TIE"]))
+
+  wins_II_A <-
+    sum(sapply(data[data$arm == "Active" & data$outcome == "Outcome II",
+                    "value"],
+               function(vl) {
+                 sum(vl > data[data$arm == "Control" &
+                                 data$outcome == "Outcome II", "value"]) +
+                   nrow(data[data$arm == "Control" &
+                               data$outcome == "Outcome I", ])
+               }))
+  expect_equal(wo_smry_grp[wo_smry_grp$TRTP == "A" &
+                             wo_smry_grp$GROUP == "Outcome II", "WIN"],
+               wins_II_A)
+
+  loss_III_A <-
+    sum(sapply(data[data$arm == "Active" & data$outcome == "Outcome III",
+                    "value"],
+               function(vl) {
+                 sum(vl < data[data$arm == "Control" &
+                                 data$outcome == "Outcome III", "value"]) +
+                   nrow(data[data$arm == "Control" &
+                               !(data$outcome %in% c("Outcome I",
+                                                     "Outcome II",
+                                                     "Outcome III")), ])
+               }))
+
+  expect_equal(wo_smry_grp[wo_smry_grp$TRTP == "A" &
+                             wo_smry_grp$GROUP == "Outcome III", "LOSS"],
+               loss_III_A)
 
   # win odds missing if set to false
   file <- fixture_path("hce_scenario_c.csv")
@@ -506,6 +564,7 @@ test_that("winOddsData", {
   )
 
   expect_true(is.null(mar$win_odds))
+  expect_true(is.null(mar$win_odds_outcome))
 
 })
 
@@ -531,6 +590,33 @@ test_that("winOddsPlot", {
   plot(mar)
   expect_file_exists(output)
 
+  win_odds_outcome <- mar$win_odds_outcome
+  wo_smry_grp <- win_odds_outcome$summary_by_GROUP
+  endpoints <- c(mar$tte_outcomes, mar$continuous_outcome)
+  wo_bar_nc <- .prep_data_component_plot(win_odds_outcome, endpoints,
+                                         mar$arm_levels)
+
+  expect_equal(wo_smry_grp[wo_smry_grp$TRTP == "A", "WIN"],
+               unname(unlist(wo_bar_nc[wo_bar_nc$name == "Active wins" &
+                                         wo_bar_nc$GROUP %in%
+                                           c(tte_outcomes, continuous_outcome),
+                                       "value"])))
+  expect_equal(wo_smry_grp[wo_smry_grp$TRTP == "P", "WIN"],
+               unname(unlist(wo_bar_nc[wo_bar_nc$name == "Control wins" &
+                                         wo_bar_nc$GROUP %in%
+                                           c(tte_outcomes, continuous_outcome),
+                                       "value"])))
+  expect_equal(win_odds_outcome$summary[win_odds_outcome$summary$TRTP == "A",
+                                        "TOTAL"],
+               unname(unlist(wo_bar_nc[wo_bar_nc$name == "Active wins",
+                                       "total"][1, ])))
+
+  output <- artifacts_path("componentPlot-with.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
+  component_plot(mar)
+  expect_file_exists(output)
+
   mar <- maraca(
     data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
     compute_win_odds = FALSE
@@ -540,6 +626,30 @@ test_that("winOddsPlot", {
   expect_file_not_exists(output)
   set_pdf_output(output)
   plot(mar)
+  expect_file_exists(output)
+
+  expect_error(component_plot(mar), regexp =
+                 list(paste0("Win odds not calculated for maraca object.\n",
+                             "  Make sure to set compute_win_odds = TRUE when ",
+                             "creating the maraca object.")))
+
+  expect_text_equal(component_plot(data),
+                    list(paste0("component_plot() function can only handle ",
+                                "inputs of class 'hce' or 'maraca'. ",
+                                "Your input has class data.frame.")))
+
+  rates_a <- c(1.72, 1.74, 0.58, 1.5, 1)
+  rates_p <- c(2.47, 2.24, 2.9, 4, 6)
+  hce_dat <- hce::simHCE(n = 2500, TTE_A = rates_a,
+                         TTE_P = rates_p, CM_A = -3,
+                         CM_P = -6, CSD_A = 16,
+                         CSD_P = 15, fixedfy = 3,
+                         seed = 31337)
+
+  output <- artifacts_path("componentPlot-hce.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
+  component_plot(hce_dat)
   expect_file_exists(output)
 
 })
@@ -573,44 +683,44 @@ test_that("winOddsPrinting", {
   )
 
   res <- capture.output(mar)
-  exp <- list(
-    "Maraca object for plotting maraca graph created for 1000 patients.",
-    "", "Win odds (95% CI): 1.31 (1.14, 1.52)",
-    "Win odds p-value: <0.001", "",
-    "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
-    "          Outcome I 129       12.9       63        66       0",
-    "         Outcome II 115       11.5       55        60       0",
-    "        Outcome III 110       11.0       50        60       0",
-    "         Outcome IV  77        7.7       34        43       0",
-    " Continuous outcome 569       56.9      298       271       0")
+  exp <- list(paste0("Maraca object for plotting maraca ",
+                     "graph created for 1000 patients."),
+              "", "Win odds (95% CI): 1.31 (1.14, 1.52)",
+              "Win odds p-value: <0.001", "",
+              "            Outcome   N Proportion N Active N Control Missing",
+              "          Outcome I 129       12.9       63        66       0",
+              "         Outcome II 115       11.5       55        60       0",
+              "        Outcome III 110       11.0       50        60       0",
+              "         Outcome IV  77        7.7       34        43       0",
+              " Continuous outcome 569       56.9      298       271       0")
 
   expect_text_equal(res, exp)
 
   res <- capture.output(mar_no_win_odds)
-  exp <- list(
-    "Maraca object for plotting maraca graph created for 1000 patients.",
-    "", "Win odds not calculated.", "",
-    "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
-    "          Outcome I 129       12.9       63        66       0",
-    "         Outcome II 115       11.5       55        60       0",
-    "        Outcome III 110       11.0       50        60       0",
-    "         Outcome IV  77        7.7       34        43       0",
-    " Continuous outcome 569       56.9      298       271       0")
+  exp <- list(paste0("Maraca object for plotting maraca ",
+                     "graph created for 1000 patients."),
+              "", "Win odds not calculated.", "",
+              "            Outcome   N Proportion N Active N Control Missing",
+              "          Outcome I 129       12.9       63        66       0",
+              "         Outcome II 115       11.5       55        60       0",
+              "        Outcome III 110       11.0       50        60       0",
+              "         Outcome IV  77        7.7       34        43       0",
+              " Continuous outcome 569       56.9      298       271       0")
 
   expect_text_equal(res, exp)
 
   res <- capture.output(mar_na)
-  exp <- list(
-    "Maraca object for plotting maraca graph created for 999 patients.",
-    "", "1 patient(s) removed because of missing values.", "",
-    "Win odds (95% CI): 1.32 (1.14, 1.52)",
-    "Win odds p-value: <0.001", "",
-    "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
-    "          Outcome I 129       12.9       63        66       0",
-    "         Outcome II 115       11.5       55        60       0",
-    "        Outcome III 110       11.0       50        60       0",
-    "         Outcome IV  76        7.6       33        43       1",
-    " Continuous outcome 569       56.9      298       271       0")
+  exp <- list(paste0("Maraca object for plotting maraca ",
+                     "graph created for 999 patients."),
+              "", "1 patient(s) removed because of missing values.", "",
+              "Win odds (95% CI): 1.32 (1.14, 1.52)",
+              "Win odds p-value: <0.001", "",
+              "            Outcome   N Proportion N Active N Control Missing",
+              "          Outcome I 129       12.9       63        66       0",
+              "         Outcome II 115       11.5       55        60       0",
+              "        Outcome III 110       11.0       50        60       0",
+              "         Outcome IV  76        7.6       33        43       1",
+              " Continuous outcome 569       56.9      298       271       0")
 
   expect_text_equal(res, exp)
 
@@ -644,44 +754,44 @@ test_that("maracaPrinting", {
   )
 
   res <- capture.output(mar)
-  exp <- list(
-    "Maraca object for plotting maraca graph created for 1000 patients.",
-    "", "Win odds (95% CI): 1.31 (1.14, 1.52)",
-    "Win odds p-value: <0.001", "",
-    "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
-    "          Outcome I 129       12.9       63        66       0",
-    "         Outcome II 115       11.5       55        60       0",
-    "        Outcome III 110       11.0       50        60       0",
-    "         Outcome IV  77        7.7       34        43       0",
-    " Continuous outcome 569       56.9      298       271       0")
+  exp <- list(paste0("Maraca object for plotting maraca ",
+                     "graph created for 1000 patients."),
+              "", "Win odds (95% CI): 1.31 (1.14, 1.52)",
+              "Win odds p-value: <0.001", "",
+              "            Outcome   N Proportion N Active N Control Missing",
+              "          Outcome I 129       12.9       63        66       0",
+              "         Outcome II 115       11.5       55        60       0",
+              "        Outcome III 110       11.0       50        60       0",
+              "         Outcome IV  77        7.7       34        43       0",
+              " Continuous outcome 569       56.9      298       271       0")
 
   expect_text_equal(res, exp)
 
   res <- capture.output(mar_no_win_odds)
-  exp <- list(
-    "Maraca object for plotting maraca graph created for 1000 patients.",
-    "", "Win odds not calculated.", "",
-    "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
-    "          Outcome I 129       12.9       63        66       0",
-    "         Outcome II 115       11.5       55        60       0",
-    "        Outcome III 110       11.0       50        60       0",
-    "         Outcome IV  77        7.7       34        43       0",
-    " Continuous outcome 569       56.9      298       271       0")
+  exp <- list(paste0("Maraca object for plotting maraca ",
+                     "graph created for 1000 patients."),
+              "", "Win odds not calculated.", "",
+              "            Outcome   N Proportion N Active N Control Missing",
+              "          Outcome I 129       12.9       63        66       0",
+              "         Outcome II 115       11.5       55        60       0",
+              "        Outcome III 110       11.0       50        60       0",
+              "         Outcome IV  77        7.7       34        43       0",
+              " Continuous outcome 569       56.9      298       271       0")
 
   expect_text_equal(res, exp)
 
   res <- capture.output(mar_na)
-  exp <- list(
-    "Maraca object for plotting maraca graph created for 999 patients.",
-    "", "1 patient(s) removed because of missing values.", "",
-    "Win odds (95% CI): 1.32 (1.14, 1.52)",
-    "Win odds p-value: <0.001", "",
-    "            OUTCOME   N PROPORTION N_ACTIVE N_CONTROL MISSING",
-    "          Outcome I 129       12.9       63        66       0",
-    "         Outcome II 115       11.5       55        60       0",
-    "        Outcome III 110       11.0       50        60       0",
-    "         Outcome IV  76        7.6       33        43       1",
-    " Continuous outcome 569       56.9      298       271       0")
+  exp <- list(paste0("Maraca object for plotting maraca ",
+                     "graph created for 999 patients."),
+              "", "1 patient(s) removed because of missing values.", "",
+              "Win odds (95% CI): 1.32 (1.14, 1.52)",
+              "Win odds p-value: <0.001", "",
+              "            Outcome   N Proportion N Active N Control Missing",
+              "          Outcome I 129       12.9       63        66       0",
+              "         Outcome II 115       11.5       55        60       0",
+              "        Outcome III 110       11.0       50        60       0",
+              "         Outcome IV  76        7.6       33        43       1",
+              " Continuous outcome 569       56.9      298       271       0")
 
   expect_text_equal(res, exp)
 
@@ -703,13 +813,46 @@ test_that("maracaPlotting", {
     data, tte_outcomes, continuous_outcome, arm_levels,
     column_names,
     fixed_followup_days
-    )
+  )
 
   output <- artifacts_path("maracaPlotting-basic.pdf")
   expect_file_not_exists(output)
   set_pdf_output(output)
   plot(mar)
   expect_file_exists(output)
+
+  output <- artifacts_path("maracaPlotting-none.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
+  plot(mar, theme = "none")
+  expect_file_exists(output)
+
+  output <- artifacts_path("maracaPlotting-maraca.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
+  plot(mar, theme = "maraca")
+  expect_file_exists(output)
+
+  output <- artifacts_path("maracaPlotting-maraca-old.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
+  plot(mar, theme = "maraca_old")
+  expect_file_exists(output)
+
+  output <- artifacts_path("maracaPlotting-color1.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
+  plot(mar, theme = "color1")
+  expect_file_exists(output)
+
+  output <- artifacts_path("maracaPlotting-color2.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
+  plot(mar, theme = "color2")
+  expect_file_exists(output)
+
+  expect_error(plot(mar, theme = "my_theme"),
+               regexp = "Please provide theme that exists")
 })
 
 test_that("validationFunction", {
@@ -774,7 +917,7 @@ test_that("validationFunction", {
   expect_named(val_res_box, expected_names, ignore.order = TRUE)
   expect_named(val_res_scatter, expected_names, ignore.order = TRUE)
 
-  expect_equal(val_res_def$plot_type, "GeomViolin")
+  expect_equal(val_res_def$plot_type, "GeomViolin+GeomBoxplot")
   expect_equal(val_res_violin$plot_type, "GeomViolin")
   expect_equal(val_res_box$plot_type, "GeomBoxplot")
   expect_equal(val_res_scatter$plot_type, "GeomPoint")
@@ -825,8 +968,8 @@ test_that("validationFunction", {
   y_values <- unique(mar$continuous$data[, c("arm", "y_level")])
   y_values <- y_values[order(y_values$arm), ]
   jitter_means <- val_res_scatter$scatter_data %>%
-                        dplyr::group_by(group) %>%
-                        dplyr::summarize("y_level" = mean(y))
+    dplyr::group_by(group) %>%
+    dplyr::summarize("y_level" = mean(y))
   expect_equal(jitter_means$y_level, y_values$y_level, tolerance = 0.1)
 
   boxplot_stats <- mar$continuous$data %>%
@@ -834,10 +977,12 @@ test_that("validationFunction", {
     dplyr::summarize("perc_25th" = unname(quantile(x, probs = 0.25)),
                      "median" = median(x),
                      "perc_75th" = unname(quantile(x, probs = 0.75)),
-                     "lower_whisker" = min(x[x >= (perc_25th - (perc_75th -
-                                                      perc_25th) * 1.5)]),
-                     "upper_whisker" = max(x[x <= (perc_75th + (perc_75th -
-                                                      perc_25th) * 1.5)]),
+                     "lower_whisker" = min(x[x >= (perc_25th -
+                                                     (perc_75th -
+                                                        perc_25th) * 1.5)]),
+                     "upper_whisker" = max(x[x <= (perc_75th +
+                                                     (perc_75th -
+                                                        perc_25th) * 1.5)]),
                      "x_lowest" = min(x),
                      "x_highest" = max(x))
   expect_equal(val_res_def$boxstat_data$x_lowest, boxplot_stats$x_lowest)
@@ -1001,32 +1146,33 @@ test_that("verticalLine", {
 })
 
 test_that("plotHCE", {
-  rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
-  rates_P <- c(2.47, 2.24, 2.9, 4, 6)
-  HCE <- hce::simHCE(
-    n = 2500, TTE_A = rates_A, TTE_P = rates_P,
-    CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3,
-    seed = 31337)
+  rates_a <- c(1.72, 1.74, 0.58, 1.5, 1)
+  rates_p <- c(2.47, 2.24, 2.9, 4, 6)
+  hce_dat <- hce::simHCE(n = 2500, TTE_A = rates_a,
+                         TTE_P = rates_p, CM_A = -3,
+                         CM_P = -6, CSD_A = 16,
+                         CSD_P = 15, fixedfy = 3,
+                         seed = 31337)
   output <- artifacts_path("plotHCE-basic.pdf")
   expect_file_not_exists(output)
   set_pdf_output(output)
-  plot(HCE)
+  plot(hce_dat)
   expect_file_exists(output)
 
   output <- artifacts_path("plotHCE-fixed_follow_up.pdf")
   expect_file_not_exists(output)
   set_pdf_output(output)
-  plot(HCE, fixed_followup_days = 6 * 365)
+  plot(hce_dat, fixed_followup_days = 6 * 365)
   expect_file_exists(output)
 
-  if (!("PADY" %in% names(HCE))) {
-    HCE$PADY <- HCE$TTEfixed
+  if (!("PADY" %in% names(hce_dat))) {
+    hce_dat$PADY <- hce_dat$TTEfixed
   }
-  HCE$TTEfixed <- NULL
+  hce_dat$TTEfixed <- NULL
   output <- artifacts_path("plotHCE-newVersionHCEpkg.pdf")
   expect_file_not_exists(output)
   set_pdf_output(output)
-  plot(HCE)
+  plot(hce_dat)
   expect_file_exists(output)
 
 })

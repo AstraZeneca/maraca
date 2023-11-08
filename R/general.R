@@ -2,6 +2,7 @@
 #'
 #' @docType package
 #' @name maraca
+#' @import hce
 #' @aliases maraca-package
 NULL
 
@@ -13,7 +14,6 @@ NULL
 #' @usage data(hce_scenario_a)
 #' @format A data frame with 1000 rows.
 #' \describe{
-#'   \item{X}{Row number}
 #'   \item{SUBJID}{The patient identifier}
 #'   \item{GROUP}{Which type of outcome the row belongs to}
 #'   \item{GROUPN}{Not required for computation.
@@ -35,7 +35,6 @@ NULL
 #' @usage data(hce_scenario_b)
 #' @format A data frame with 1000 rows.
 #' \describe{
-#'   \item{X}{Row number}
 #'   \item{SUBJID}{The patient identifier}
 #'   \item{GROUP}{Which type of outcome the row belongs to}
 #'   \item{GROUPN}{Not required for computation.
@@ -57,7 +56,6 @@ NULL
 #' @usage data(hce_scenario_c)
 #' @format A data frame with 1000 rows.
 #' \describe{
-#'   \item{X}{Row number}
 #'   \item{SUBJID}{The patient identifier}
 #'   \item{GROUP}{Which type of outcome the row belongs to}
 #'   \item{GROUPN}{Not required for computation.
@@ -79,7 +77,6 @@ NULL
 #' @usage data(hce_scenario_d)
 #' @format A data frame with 1000 rows.
 #' \describe{
-#'   \item{X}{Row number}
 #'   \item{SUBJID}{The patient identifier}
 #'   \item{GROUP}{Which type of outcome the row belongs to}
 #'   \item{GROUPN}{Not required for computation.

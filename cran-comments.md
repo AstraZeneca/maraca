@@ -1,15 +1,8 @@
 ## R CMD check results
 
-0 errors | 0 warnings | 2 notes
+0 errors | 0 warnings | 1 note
 
-### NOTE 1: Maintainer change 
-
-Monika Huhn (<monika.huhn@astrazeneca.com>) has taken over further development
-of the package and because of that will also be maintaining the package going
-forward (this has been agreed with former maintainer Stefano Borini -
-<stefano.borini@astrazeneca.com>).
-
-### Note 2:
+### Note 1:
 
 The following NOTE is given when checking on Windows Server 2022, R-devel, 64-bit: 
 

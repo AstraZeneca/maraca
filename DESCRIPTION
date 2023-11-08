@@ -1,5 +1,5 @@
 Package: maraca
-Version: 0.5.1
+Version: 0.6
 Type: Package
 Title: The Maraca Plot: Visualization of Hierarchical Composite Endpoints in Clinical Trials
 License: Apache License (>= 2)
@@ -19,14 +19,14 @@ BugReports: https://github.com/AstraZeneca/maraca/issues
 Encoding: UTF-8
 LazyData: true
 Depends:
-    R (>= 3.5)
+    R (>= 3.5),
+    hce (>= 0.5)
 Imports:
     dplyr (>= 1.0),
     tidyr (>= 1.2),
     ggplot2 (>= 3.3),
-    hce (>= 0.0.2),
     checkmate (>= 2.1)
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 Suggests:
     knitr (>= 1.39),
     here (>= 1.0.1),
