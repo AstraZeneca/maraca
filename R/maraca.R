@@ -110,7 +110,7 @@ maraca <- function(
   # but will at the same time not include the MI since
   # we don't know about it
   if (any(fixed_followup_days <
-        unlist(meta[meta$outcome %in% tte_outcomes, "maxday"]))) {
+            unlist(meta[meta$outcome %in% tte_outcomes, "maxday"]))) {
     stop(paste("Time-to-event data contain events",
                "after the fixed_followup_days - either",
                "provide a longer follow-up time or",
