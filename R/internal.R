@@ -115,12 +115,18 @@
   n <- dplyr::n
 
   num_tte_outcomes <- length(tte_outcomes)
-  hce_dat$t_cdf <- (num_tte_outcomes + 2) * fixed_followup_days
+
+  if (length(fixed_followup_days) == 1) {
+    fixed_followup_days <- rep(fixed_followup_days, times = num_tte_outcomes)
+  }
+
+  hce_dat$t_cdf <- sum(fixed_followup_days) + 2 * max(fixed_followup_days)
 
   for (i in seq_len(num_tte_outcomes)) {
+    add_previous_end <- ifelse(i == 1, 0, sum(fixed_followup_days[1:(i - 1)]))
     hce_dat[hce_dat$outcome == tte_outcomes[[i]], ]$t_cdf <-
       hce_dat[hce_dat$outcome == tte_outcomes[[i]], ]$value +
-      fixed_followup_days * (i - 1)
+      add_previous_end
   }
 
   hce_ecdf <-
@@ -135,12 +141,13 @@
   hce_ecdf <- hce_ecdf[order(hce_ecdf$ecdf_values), ]
 
   hce_ecdf$adjusted.time <- 0
-  for (entry in tte_outcomes) {
+  for (i in seq_len(num_tte_outcomes)) {
+    entry <- tte_outcomes[i]
     outcome_filter <- hce_ecdf$outcome == entry
     hce_ecdf[outcome_filter, ]$adjusted.time <-
       meta[meta$outcome == entry, ]$startx +
       hce_ecdf[outcome_filter, ]$value /
-      fixed_followup_days *
+      fixed_followup_days[i] *
       meta[meta$outcome == entry, ]$proportion
   }
 
@@ -302,8 +309,11 @@
 
   if (is.null(fixed_followup_days)) {
     checkmate::assertNames(names(x), must.include = "TTEfixed")
-    checkmate::assert_int(x$TTEfixed[[1]])
-    fixed_followup_days <- x$TTEfixed[[1]]
+    checkmate::assert_integerish(x$TTEfixed)
+
+    fixed_followup_days <- unname(sapply(tte, function(tte_ind) {
+      x[x$GROUP == tte_ind, "TTEfixed"][[1]]
+    }))
   }
 
   maraca_obj <- maraca(

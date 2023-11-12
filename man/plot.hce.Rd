@@ -47,9 +47,13 @@ Accepts "default", "violin", "box" and "scatter".}
 on fixed follow-up days in the study
 (column PADY or TTEfixed,
 depending on hce version).
-Otherwise, this argument must be specified.
+Otherwise, this argument must be specified
+to give the fixed follow-up days in the study.
+Can be a single integer value
+for all tte-outcomes or a vector with one
+integer value per tte-outcome.
 Note: If argument is specified and HCE object
-contains PADY or TTEfixed column, then
+also contains PADY or TTEfixed column, then
 fixed_followup_days argument is used.}
 
 \item{compute_win_odds}{If TRUE compute the win odds, otherwise (default)
