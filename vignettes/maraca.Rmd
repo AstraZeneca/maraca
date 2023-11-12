@@ -98,6 +98,8 @@ arm_levels = c(active = "Active", control = "Control")
 Finally, the `original` column must contain numerical values.
 
 We also need to specify the follow-up time for the time-to event outcomes.
+This can be one single timepoint (integer) for all time-to event outcomes
+or individual timepoints for each.
 Note that there can be no observed events in the data after the follow-up
 time specified.
 

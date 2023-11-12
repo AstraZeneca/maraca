@@ -21,8 +21,10 @@
 #'        in the data. The vector names must match in order "outcome", "arm",
 #'        and "value". Note that this parameter only need to be
 #'        specified if you have column names different from the ones above.
-#' @param fixed_followup_days A mandatory specification of the integer number
-#'                            of fixed follow-up days in the study.
+#' @param fixed_followup_days A mandatory specification of the fixed follow-up
+#'                            days in the study. Can be a single integer value
+#'                            for all tte-outcomes or a vector with one
+#'                            integer value per tte-outcome.
 #' @param compute_win_odds If TRUE compute the win odds, otherwise (default)
 #'                         don't compute them.
 #'
@@ -71,7 +73,13 @@ maraca <- function(
     permutation.of = c("outcome", "arm", "value")
   )
 
-  checkmate::assert_int(fixed_followup_days)
+  checkmate::assert_integerish(fixed_followup_days)
+
+  if (!(length(fixed_followup_days) %in% c(1, length(tte_outcomes)))) {
+    stop(paste("fixed_followup_days needs to be either a single value or",
+               "a vector with one value for each tte outcome"))
+  }
+
   checkmate::assert_flag(compute_win_odds)
 
   `%>%` <- dplyr::`%>%`
@@ -101,8 +109,8 @@ maraca <- function(
   # discard the death event for this patient (after 500)
   # but will at the same time not include the MI since
   # we don't know about it
-  if (fixed_followup_days <
-        max(meta[meta$outcome %in% tte_outcomes, "maxday"])) {
+  if (any(fixed_followup_days <
+        unlist(meta[meta$outcome %in% tte_outcomes, "maxday"]))) {
     stop(paste("Time-to-event data contain events",
                "after the fixed_followup_days - either",
                "provide a longer follow-up time or",
@@ -601,9 +609,13 @@ plot.maraca <- function(
 #'                            on fixed follow-up days in the study
 #'                            (column PADY or TTEfixed,
 #'                            depending on hce version).
-#'                            Otherwise, this argument must be specified.
+#'                            Otherwise, this argument must be specified
+#'                            to give the fixed follow-up days in the study.
+#'                            Can be a single integer value
+#'                            for all tte-outcomes or a vector with one
+#'                            integer value per tte-outcome.
 #'                            Note: If argument is specified and HCE object
-#'                            contains PADY or TTEfixed column, then
+#'                            also contains PADY or TTEfixed column, then
 #'                            fixed_followup_days argument is used.
 #' @param compute_win_odds If TRUE compute the win odds, otherwise (default)
 #'                         don't compute them.

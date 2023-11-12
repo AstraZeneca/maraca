@@ -45,8 +45,10 @@ in the data. The vector names must match in order "outcome", "arm",
 and "value". Note that this parameter only need to be
 specified if you have column names different from the ones above.}
 
-\item{fixed_followup_days}{A mandatory specification of the integer number
-of fixed follow-up days in the study.}
+\item{fixed_followup_days}{A mandatory specification of the fixed follow-up
+days in the study. Can be a single integer value
+for all tte-outcomes or a vector with one
+integer value per tte-outcome.}
 
 \item{compute_win_odds}{If TRUE compute the win odds, otherwise (default)
 don't compute them.}

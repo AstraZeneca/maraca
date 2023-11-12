@@ -234,6 +234,31 @@ test_that("alternativeColumnNames", {
   expect_s3_class(mar, "maraca")
 })
 
+test_that("vectorFixedFollowUp", {
+  file <- fixture_path("hce_scenario_c.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+
+  tte_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  continuous_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
+  )
+
+  fixed_followup_days <- ceiling(unname(sapply(tte_outcomes, function(tte) {
+    max(data[data$GROUP == tte, "AVAL0"])
+  })))
+
+  mar <- maraca(
+    data, tte_outcomes, continuous_outcome, arm_levels,
+    column_names,
+    fixed_followup_days
+  )
+  expect_s3_class(mar, "maraca")
+})
+
 test_that("wrongParameters", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
@@ -282,7 +307,7 @@ test_that("wrongParameters", {
       column_names,
       fixed_followup_days = 12.3
     ),
-    regexp = "single integerish value"
+    regexp = "Must be of type 'integerish'"
   )
   expect_error(
     maraca(data, tte_outcomes, continuous_outcome, arm_levels,
