@@ -38,9 +38,9 @@ component_plot.default <- function(x,
 #' data(hce_scenario_a)
 #'
 #' maraca_dat <- maraca(data = hce_scenario_a,
-#'                      tte_outcomes = c("Outcome I", "Outcome II",
+#'                      step_outcomes = c("Outcome I", "Outcome II",
 #'                                       "Outcome III", "Outcome IV"),
-#'                      continuous_outcome = "Continuous outcome",
+#'                      last_outcome = "Continuous outcome",
 #'                      fixed_followup_days = 3 * 365,
 #'                      column_names = c(outcome = "GROUP",
 #'                                       arm = "TRTP",
@@ -67,7 +67,7 @@ component_plot.maraca <- function(x,
   # Get win odds by outcome from maraca object
   win_odds_outcome <- x$win_odds_outcome
   # List of outcomes in order of plotting
-  endpoints <- c(x$tte_outcomes, x$continuous_outcome)
+  endpoints <- c(x$step_outcomes, x$last_outcome)
   # Create data set for potting
   wo_bar_nc <- .prep_data_component_plot(win_odds_outcome, endpoints,
                                          x$arm_levels)
@@ -89,8 +89,9 @@ component_plot.maraca <- function(x,
 #'
 #' @param x an object of S3 class 'hce'.
 #' @param \dots not used
-#' @param continuous_outcome A single string containing the continuous
-#'                           outcome label. Default value "C".
+#' @param last_outcome A single string containing the last outcome label
+#'                     displayed on the right side of the plot.
+#'                     Default value "C".
 #' @param arm_levels A named vector of exactly two strings, mapping the
 #'                   values used for the active and control arms to the values
 #'                   used in the data. The names must be "active" and "control"
@@ -109,6 +110,9 @@ component_plot.maraca <- function(x,
 #'        Options are "maraca", "color1", "color2" and none".
 #'        For more details, check the vignette called
 #'        "Maraca Plots - Plotting win odds".
+#' @param continuous_outcome Deprecated and substituted by the more general
+#'                           'last_outcome'. A single string containing the
+#'                           continuous outcome label.
 #' @return Component plot as a ggplot2 object.
 #' @examples
 #' Rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
@@ -120,21 +124,22 @@ component_plot.maraca <- function(x,
 #' component_plot(hce_dat)
 #' @export
 #'
-component_plot.hce <- function(x, continuous_outcome = "C",
+component_plot.hce <- function(x, last_outcome = "C",
                                arm_levels = c(active = "A", control = "P"),
                                fixed_followup_days = NULL,
                                theme = "maraca",
+                               continuous_outcome = lifecycle::deprecated(),
                                ...) {
 
   # Create maraca object
-  maraca_dat <- .maraca_from_hce_data(x, continuous_outcome, arm_levels,
+  maraca_dat <- .maraca_from_hce_data(x, last_outcome, arm_levels,
                                       fixed_followup_days,
                                       compute_win_odds = TRUE)
 
   # Get win odds by outcome from maraca object
   win_odds_outcome <- maraca_dat$win_odds_outcome
   # List of outcomes in order of plotting
-  endpoints <- c(maraca_dat$tte_outcomes, maraca_dat$continuous_outcome)
+  endpoints <- c(maraca_dat$step_outcomes, maraca_dat$last_outcome)
   # Create data set for potting
   wo_bar_nc <- .prep_data_component_plot(win_odds_outcome, endpoints,
                                          maraca_dat$arm_levels)

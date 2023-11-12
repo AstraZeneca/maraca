@@ -6,10 +6,12 @@
 #'               labels
 #'             - arm column, containing the arm a given row belongs to.
 #'             - value column, containing the values.
-#' @param tte_outcomes A vector of strings containing the time-to-event
-#'                     outcome labels. The order is kept for the plot.
-#' @param continuous_outcome A single string containing the continuous
-#'                           outcome label.
+#' @param step_outcomes A vector of strings containing the outcome labels
+#'                      for all outcomes displayed as part of the step function
+#'                      on the left side of the plot.
+#'                      The order is kept for the plot.
+#' @param last_outcome A single string containing the last outcome label
+#'                     displayed on the right side of the plot.
 #' @param arm_levels A named vector of exactly two strings, mapping the
 #'                   values used for the active and control arms to the values
 #'                   used in the data. The names must be "active" and "control"
@@ -27,15 +29,28 @@
 #'                            integer value per tte-outcome.
 #' @param compute_win_odds If TRUE compute the win odds, otherwise (default)
 #'                         don't compute them.
-#'
+#' @param step_types The type of each outcome in the step_outcomes vector.
+#'                   Can be a single string (if all outcomes of same type) or
+#'                   a vector of same length as step_outcomes. Possible values
+#'                   in the vector are "tte" (default) or "binary".
+#' @param last_type A single string giving the type of the last outcome.
+#'                  Possible values are "continuous" (default), "binary" or
+#'                  "multinomial".
+#' @param tte_outcomes Deprecated and substituted by the more general
+#'                     'step_outcomes'. A vector of strings containing the
+#'                     time-to-event outcome labels. The order is kept for the
+#'                     plot.
+#' @param continuous_outcome Deprecated and substituted by the more general
+#'                           'last_outcome'. A single string containing the
+#'                           continuous outcome label.
 #' @return An object of class 'maraca'. The object information must be
 #'         considered private.
 #' @examples
 #' data(hce_scenario_a)
 #' hce_test <- maraca(
 #'   data = hce_scenario_a,
-#'   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
-#'   continuous_outcome = "Continuous outcome",
+#'   step_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
+#'   last_outcome = "Continuous outcome",
 #'   fixed_followup_days = 3 * 365,
 #'   column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
 #'   arm_levels = c(active = "Active", control = "Control"),
@@ -44,8 +59,8 @@
 #' @export
 maraca <- function(
   data,
-  tte_outcomes,
-  continuous_outcome,
+  step_outcomes,
+  last_outcome,
   arm_levels = c(
     active = "active",
     control = "control"
@@ -56,12 +71,29 @@ maraca <- function(
     value = "value"
   ),
   fixed_followup_days,
-  compute_win_odds = FALSE
+  compute_win_odds = FALSE,
+  step_types = "tte",
+  last_type = "continuous",
+  tte_outcomes = lifecycle::deprecated(),
+  continuous_outcome = lifecycle::deprecated()
 ) {
 
   checkmate::assert_data_frame(data)
-  checkmate::assert_character(tte_outcomes, any.missing = FALSE)
-  checkmate::assert_string(continuous_outcome)
+
+  if (lifecycle::is_present(tte_outcomes)) {
+    lifecycle::deprecate_warn("0.7.0", "maraca(tte_outcomes)",
+                              "maraca(step_outcomes)")
+    step_outcomes <- tte_outcomes
+  }
+
+  if (lifecycle::is_present(continuous_outcome)) {
+    lifecycle::deprecate_warn("0.7.0", "maraca(continuous_outcome)",
+                              "maraca(last_outcome)")
+    last_outcome <- continuous_outcome
+  }
+
+  checkmate::assert_character(step_outcomes, any.missing = FALSE)
+  checkmate::assert_string(last_outcome)
   checkmate::assert_character(arm_levels, len = 2, any.missing = FALSE)
   checkmate::assert_names(
     names(arm_levels),
@@ -75,7 +107,7 @@ maraca <- function(
 
   checkmate::assert_integerish(fixed_followup_days)
 
-  if (!(length(fixed_followup_days) %in% c(1, length(tte_outcomes)))) {
+  if (!(length(fixed_followup_days) %in% c(1, length(step_outcomes)))) {
     stop(paste("fixed_followup_days needs to be either a single value or",
                "a vector with one value for each tte outcome"))
   }
@@ -91,8 +123,8 @@ maraca <- function(
   # in the internal data.
   # Note: We use HCE to refer to our internal, normalised data frame.
   # and with "data" to the user-provided, external, dirty data frame.
-  hce_dat <- .reformat_and_check_data(data, tte_outcomes,
-                                      continuous_outcome,
+  hce_dat <- .reformat_and_check_data(data, step_outcomes,
+                                      last_outcome,
                                       arm_levels, column_names)
 
   # Calculate meta information from the entire HCE dataset needed for plotting
@@ -110,7 +142,7 @@ maraca <- function(
   # but will at the same time not include the MI since
   # we don't know about it
   if (any(fixed_followup_days <
-            unlist(meta[meta$outcome %in% tte_outcomes, "maxday"]))) {
+            unlist(meta[meta$outcome %in% step_outcomes, "maxday"]))) {
     stop(paste("Time-to-event data contain events",
                "after the fixed_followup_days - either",
                "provide a longer follow-up time or",
@@ -126,12 +158,12 @@ maraca <- function(
     dplyr::filter(!is.na(value))
 
   ecdf_by_outcome <- .compute_ecdf_by_outcome(
-    hce_dat, meta, tte_outcomes, continuous_outcome, arm_levels,
+    hce_dat, meta, step_outcomes, last_outcome, arm_levels,
     fixed_followup_days
   )
 
   continuous <- .compute_continuous(
-    hce_dat, meta, ecdf_by_outcome, tte_outcomes, continuous_outcome, arm_levels
+    hce_dat, meta, ecdf_by_outcome, step_outcomes, last_outcome, arm_levels
   )
 
   win_odds <- list("win_odds" = NULL, "win_odds_outcome" = NULL)
@@ -142,8 +174,8 @@ maraca <- function(
   return(
     structure(
       list(
-        tte_outcomes = tte_outcomes,
-        continuous_outcome = continuous_outcome,
+        step_outcomes = step_outcomes,
+        last_outcome = last_outcome,
         arm_levels = arm_levels,
         fixed_followup_days = fixed_followup_days,
         column_names = column_names,
@@ -218,8 +250,8 @@ print.maraca <- function(x, ...) {
 #' data(hce_scenario_a)
 #' hce_test <- maraca(
 #'   data = hce_scenario_a,
-#'   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
-#'   continuous_outcome = "Continuous outcome",
+#'   step_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
+#'   last_outcome = "Continuous outcome",
 #'   fixed_followup_days = 3 * 365,
 #'   column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
 #'   arm_levels = c(active = "Active", control = "Control"),
@@ -249,7 +281,7 @@ plot_maraca <- function(
   ecdf_mod <- obj$ecdf_by_outcome
   win_odds <- obj$win_odds
   start_continuous_endpoint <-
-    meta[meta$outcome == obj$continuous_outcome, ]$startx
+    meta[meta$outcome == obj$last_outcome, ]$startx
 
   plotdata_ecdf <- ecdf_mod$data[, c("outcome", "arm",
                                      "adjusted.time", "ecdf_values")]
@@ -386,7 +418,7 @@ plot_maraca <- function(
     ggplot2::scale_x_continuous(
       limits = c(0, 100),
       breaks = c(meta$proportion / 2 + meta$startx),
-      labels = c(obj$tte_outcomes, obj$continuous_outcome),
+      labels = c(obj$step_outcomes, obj$last_outcome),
       minor_breaks = .to_rangeab(
         minor_grid,
         start_continuous_endpoint,
@@ -458,8 +490,8 @@ plot_maraca <- function(
 #' data(hce_scenario_a)
 #' hce_test <- maraca(
 #'   data = hce_scenario_a,
-#'   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
-#'   continuous_outcome = "Continuous outcome",
+#'   step_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
+#'   last_outcome = "Continuous outcome",
 #'   fixed_followup_days = 3 * 365,
 #'   column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
 #'   arm_levels = c(active = "Active", control = "Control"),
@@ -565,8 +597,8 @@ validate_maraca_plot <- function(x,  ...) {
 #' data(hce_scenario_a)
 #' hce_test <- maraca(
 #'   data = hce_scenario_a,
-#'   tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
-#'   continuous_outcome = "Continuous outcome",
+#'   step_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
+#'   last_outcome = "Continuous outcome",
 #'   fixed_followup_days = 3 * 365,
 #'   column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
 #'   arm_levels = c(active = "Active", control = "Control"),
@@ -589,14 +621,15 @@ plot.maraca <- function(
 #'
 #' @param x an object of S3 class 'hce'.
 #' @param \dots not used
-#' @param continuous_outcome A single string containing the continuous
-#'                           outcome label. Default value "C".
+#' @param last_outcome A single string containing the last outcome label
+#'                     displayed on the right side of the plot.
+#'                     Default value "C".
 #' @param arm_levels A named vector of exactly two strings, mapping the
 #'                   values used for the active and control arms to the values
 #'                   used in the data. The names must be "active" and "control"
 #'                   in this order. Note that this parameter only need to
 #'                   be specified if you have labels different from
-#'                    "active" and "control".
+#'                   "active" and "control".
 #' @param continuous_grid_spacing_x The spacing of the x grid to use for the
 #'        continuous section of the plot.
 #' @param trans the transformation to apply to the data before plotting.
@@ -619,11 +652,17 @@ plot.maraca <- function(
 #'                            fixed_followup_days argument is used.
 #' @param compute_win_odds If TRUE compute the win odds, otherwise (default)
 #'                         don't compute them.
+#' @param last_type A single string giving the type of the last outcome.
+#'                  Possible values are "continuous" (default), "binary" or
+#'                  "multinomial".
 #' @param theme Choose theme to style the plot. The default theme is "maraca".
 #'        Options are "maraca", "maraca_old", "color1", "color2" and none".
 #'        For more details, check the vignette called
 #'        "Maraca Plots - Themes and Styling".
 #'        [companion vignette for package users](themes.html)
+#' @param continuous_outcome Deprecated and substituted by the more general
+#'                           'last_outcome'. A single string containing the
+#'                           continuous outcome label.
 #' @return Used for side effect. Returns ggplot2 plot of the hce object.
 #'
 #' @examples
@@ -636,7 +675,7 @@ plot.maraca <- function(
 #' plot(hce_dat, fixed_followup_days = 3 * 365)
 #'
 #' @export
-plot.hce <- function(x, continuous_outcome = "C",
+plot.hce <- function(x, last_outcome = "C",
                      arm_levels = c(active = "A", control = "P"),
                      continuous_grid_spacing_x = 10,
                      trans = "identity",
@@ -644,7 +683,10 @@ plot.hce <- function(x, continuous_outcome = "C",
                      vline_type = "median",
                      fixed_followup_days = NULL,
                      compute_win_odds = FALSE,
-                     theme = "maraca", ...) {
+                     last_type = "continuous",
+                     theme = "maraca",
+                     continuous_outcome = lifecycle::deprecated(),
+                     ...) {
 
   checkmate::assert_int(continuous_grid_spacing_x)
   checkmate::assert_string(trans)
@@ -654,7 +696,7 @@ plot.hce <- function(x, continuous_outcome = "C",
     vline_type, c("median", "mean", "none")
   )
 
-  maraca_obj <- .maraca_from_hce_data(x, continuous_outcome, arm_levels,
+  maraca_obj <- .maraca_from_hce_data(x, last_outcome, arm_levels,
                                       fixed_followup_days,
                                       compute_win_odds)
 

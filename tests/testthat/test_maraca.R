@@ -1,9 +1,9 @@
 .maraca_args <- function(file) {
   data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
+  step_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
-  continuous_outcome <- "Continuous outcome"
+  last_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", value = "AVAL0"
@@ -11,8 +11,8 @@
 
   return(list(
     data = data,
-    tte_outcomes = tte_outcomes,
-    continuous_outcome = continuous_outcome,
+    step_outcomes = step_outcomes,
+    last_outcome = last_outcome,
     arm_levels = arm_levels,
     column_names = column_names
   ))
@@ -31,17 +31,17 @@ test_that("createMaracaObject", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
 
-  tte_outcomes <- c(
+  step_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
-  continuous_outcome <- "Continuous outcome"
+  last_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
   fixed_followup_days <- 3 * 365
   mar <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels,
+    data, step_outcomes, last_outcome, arm_levels,
     column_names,
     fixed_followup_days
   )
@@ -51,22 +51,22 @@ test_that("createMaracaObject", {
   # Internal checks
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
+  step_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
-  continuous_outcome <- "Continuous outcome"
+  last_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
-  data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
+  data <- .reformat_and_check_data(data, step_outcomes, last_outcome,
                                    arm_levels, column_names = column_names)
   meta <- .compute_metainfo(data)
-  hce_ecdf <- .compute_ecdf_by_outcome(data, meta, tte_outcomes,
-                                       continuous_outcome,
+  hce_ecdf <- .compute_ecdf_by_outcome(data, meta, step_outcomes,
+                                       last_outcome,
                                        arm_levels, 3 * 365)
   continuous <- .compute_continuous(data, meta, hce_ecdf,
-                                    tte_outcomes, continuous_outcome,
+                                    step_outcomes, last_outcome,
                                     arm_levels)
   expect_equal(sum(abs(continuous$data$x)), 40828.387)
   expect_equal(sum(abs(continuous$data$y_level)), 24451)
@@ -78,41 +78,41 @@ test_that("createMaracaObject", {
   # Test reformatting of data
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
+  step_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
-  continuous_outcome <- "Continuous outcome"
+  last_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
   data <- .reformat_and_check_data(
-    data, tte_outcomes, continuous_outcome, arm_levels, column_names
+    data, step_outcomes, last_outcome, arm_levels, column_names
   )
 
   expect_equal(class(data), "data.frame")
   expect_equal(class(data$arm), "factor")
   expect_equal(levels(data$arm), unname(arm_levels))
   expect_equal(class(data$outcome), "factor")
-  expect_equal(levels(data$outcome), c(tte_outcomes, continuous_outcome))
+  expect_equal(levels(data$outcome), c(step_outcomes, last_outcome))
 
   # Test compute metainfo
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
+  step_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
-  continuous_outcome <- "Continuous outcome"
+  last_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
-  data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
+  data <- .reformat_and_check_data(data, step_outcomes, last_outcome,
                                    arm_levels,
                                    column_names = column_names)
   metainfo <- .compute_metainfo(data)
   expect_equal(as.character(metainfo$outcome),
-               c(tte_outcomes, continuous_outcome))
+               c(step_outcomes, last_outcome))
   expect_equal(metainfo$n, c(129, 115, 110, 77, 569))
   expect_equal(metainfo$proportion, c(12.9, 11.5, 11, 7.7, 56.9))
   expect_equal(
@@ -130,21 +130,21 @@ test_that("createMaracaObject", {
   # Test Compute ECDF
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
+  step_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
-  continuous_outcome <- "Continuous outcome"
+  last_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
-  data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
+  data <- .reformat_and_check_data(data, step_outcomes, last_outcome,
     arm_levels,
     column_names
   )
   meta <- .compute_metainfo(data)
-  hce_ecdf <- .compute_ecdf_by_outcome(data, meta, tte_outcomes,
-                                       continuous_outcome, arm_levels, 3 * 365)
+  hce_ecdf <- .compute_ecdf_by_outcome(data, meta, step_outcomes,
+                                       last_outcome, arm_levels, 3 * 365)
 
   # Checking the abssum along the columns to check that values remain the same.
   expect_equal(sum(abs(hce_ecdf$data$value)), 221627.7286)
@@ -165,15 +165,15 @@ test_that("createMaracaObject", {
   # test ordered column
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
+  step_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
-  continuous_outcome <- "Continuous outcome"
+  last_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
-  hce <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
+  hce <- .reformat_and_check_data(data, step_outcomes, last_outcome,
                                   arm_levels, column_names)
 
   hce <- .with_ordered_column(hce)
@@ -196,17 +196,17 @@ test_that("alternativeActiveControl", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
 
-  tte_outcomes <- c(
+  step_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
-  continuous_outcome <- "Continuous outcome"
+  last_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
   fixed_followup_days <- 3 * 365
   mar <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels,
+    data, step_outcomes, last_outcome, arm_levels,
     column_names,
     fixed_followup_days
   )
@@ -217,17 +217,17 @@ test_that("alternativeColumnNames", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
 
-  tte_outcomes <- c(
+  step_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
-  continuous_outcome <- "Continuous outcome"
+  last_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
   fixed_followup_days <- 3 * 365
   mar <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels,
+    data, step_outcomes, last_outcome, arm_levels,
     column_names,
     fixed_followup_days
   )
@@ -238,21 +238,21 @@ test_that("vectorFixedFollowUp", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
 
-  tte_outcomes <- c(
+  step_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
-  continuous_outcome <- "Continuous outcome"
+  last_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
 
-  fixed_followup_days <- ceiling(unname(sapply(tte_outcomes, function(tte) {
+  fixed_followup_days <- ceiling(unname(sapply(step_outcomes, function(tte) {
     max(data[data$GROUP == tte, "AVAL0"])
   })))
 
   mar <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels,
+    data, step_outcomes, last_outcome, arm_levels,
     column_names,
     fixed_followup_days
   )
@@ -262,10 +262,10 @@ test_that("vectorFixedFollowUp", {
 test_that("wrongParameters", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
+  step_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
-  continuous_outcome <- "Continuous outcome"
+  last_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   fixed_followup_days <- 3 * 365
   column_names <- c(
@@ -274,49 +274,49 @@ test_that("wrongParameters", {
 
   expect_error(
     maraca(
-      "hello", tte_outcomes, continuous_outcome, arm_levels,
+      "hello", step_outcomes, last_outcome, arm_levels,
       fixed_followup_days = fixed_followup_days
     ), regexp = "Must be of type 'data\\.frame'"
   )
   expect_error(
     maraca(
-      data, c(1, 2, 3), continuous_outcome, arm_levels,
+      data, c(1, 2, 3), last_outcome, arm_levels,
       fixed_followup_days = fixed_followup_days
     ), regexp = "Must be of type 'character'"
 
   )
   expect_error(
-    maraca(data, tte_outcomes, 3, arm_levels,
+    maraca(data, step_outcomes, 3, arm_levels,
       fixed_followup_days = fixed_followup_days
     ),
     regexp = "Must be of type 'string'"
   )
   expect_error(
-    maraca(data, tte_outcomes, continuous_outcome, c(1, 2),
+    maraca(data, step_outcomes, last_outcome, c(1, 2),
            fixed_followup_days = fixed_followup_days),
     regexp = "Must be of type 'character'"
   )
   expect_error(
-    maraca(data, tte_outcomes, continuous_outcome,
+    maraca(data, step_outcomes, last_outcome,
            c(active = "foo", control = "bar", whatever = "baz"),
            column_names,
            fixed_followup_days), regexp = "Must have length 2"
   )
   expect_error(
-    maraca(data, tte_outcomes, continuous_outcome, arm_levels,
+    maraca(data, step_outcomes, last_outcome, arm_levels,
       column_names,
       fixed_followup_days = 12.3
     ),
     regexp = "Must be of type 'integerish'"
   )
   expect_error(
-    maraca(data, tte_outcomes, continuous_outcome, arm_levels,
+    maraca(data, step_outcomes, last_outcome, arm_levels,
       column_names,
       fixed_followup_days = NULL
     )
   )
   expect_error(
-    maraca(data, tte_outcomes, continuous_outcome, arm_levels,
+    maraca(data, step_outcomes, last_outcome, arm_levels,
       column_names,
       fixed_followup_days = 12
     ),
@@ -325,7 +325,7 @@ test_that("wrongParameters", {
 
   expect_error(
     maraca(
-      data, tte_outcomes, continuous_outcome, arm_levels,
+      data, step_outcomes, last_outcome, arm_levels,
       c("a"),
       fixed_followup_days
     ),
@@ -333,7 +333,7 @@ test_that("wrongParameters", {
   )
   expect_error(
     maraca(
-      data, tte_outcomes, continuous_outcome, arm_levels,
+      data, step_outcomes, last_outcome, arm_levels,
       c("a", "b", "c"),
       fixed_followup_days
     ),
@@ -341,7 +341,7 @@ test_that("wrongParameters", {
   )
   expect_error(
     maraca(
-      data, tte_outcomes, continuous_outcome, arm_levels,
+      data, step_outcomes, last_outcome, arm_levels,
       c(foo = "a", bar = "b", baz = "c"),
       fixed_followup_days
     )
@@ -349,7 +349,7 @@ test_that("wrongParameters", {
 
   expect_error(
     maraca(
-      data, tte_outcomes, continuous_outcome, arm_levels,
+      data, step_outcomes, last_outcome, arm_levels,
       c(
         outcome = "GROUP", arm = "notexistent",
         value = "AVAL0"
@@ -360,7 +360,7 @@ test_that("wrongParameters", {
 
   expect_error(
     maraca(
-      data, tte_outcomes, continuous_outcome,
+      data, step_outcomes, last_outcome,
       arm_levels = c(active = "A", control = "C"),
       c(
         outcome = "GROUP", arm = "TRTP",
@@ -373,7 +373,7 @@ test_that("wrongParameters", {
 
   expect_error(
     maraca(
-      data, tte_outcomes, continuous_outcome = "C", arm_levels,
+      data, step_outcomes, last_outcome = "C", arm_levels,
       c(
         outcome = "GROUP", arm = "TRTP",
         value = "AVAL0"
@@ -381,7 +381,7 @@ test_that("wrongParameters", {
     ),
     regexp = list(paste("Outcome variable contains different",
                         "values then given in parameters",
-                        "tte_outcomes and continuous_outcome"))
+                        "step_outcomes and last_outcome"))
   )
 
   # Test plot functions only work with maraca objects
@@ -409,48 +409,48 @@ test_that("wrongParameters", {
   # Check missing outcome
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
+  step_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome XXX"
   )
-  continuous_outcome <- "Continuous outcome"
+  last_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
 
   expect_error(
-    maraca(data, tte_outcomes, continuous_outcome, arm_levels,
+    maraca(data, step_outcomes, last_outcome, arm_levels,
            column_names, 3 * 365),
     regexp = list(paste("Outcome variable contains different",
                         "values then given in parameters",
-                        "tte_outcomes and continuous_outcome"))
+                        "step_outcomes and last_outcome"))
   )
 })
 
 test_that("winOddsData", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
+  step_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
-  continuous_outcome <- "Continuous outcome"
+  last_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
   mar <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
+    data, step_outcomes, last_outcome, arm_levels, column_names, 3 * 365,
     compute_win_odds = TRUE
   )
 
   mar_no_win_odds <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
+    data, step_outcomes, last_outcome, arm_levels, column_names, 3 * 365,
     compute_win_odds = FALSE
   )
 
   data$AVAL0[[3]] <- NA
   mar_na <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
+    data, step_outcomes, last_outcome, arm_levels, column_names, 3 * 365,
     compute_win_odds = TRUE
   )
 
@@ -498,15 +498,15 @@ test_that("winOddsData", {
 
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
+  step_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
-  continuous_outcome <- "Continuous outcome"
+  last_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
-  data <- .reformat_and_check_data(data, tte_outcomes, continuous_outcome,
+  data <- .reformat_and_check_data(data, step_outcomes, last_outcome,
     arm_levels, column_names = column_names
   )
 
@@ -574,17 +574,17 @@ test_that("winOddsData", {
   # win odds missing if set to false
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
+  step_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
-  continuous_outcome <- "Continuous outcome"
+  last_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
 
   mar <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
+    data, step_outcomes, last_outcome, arm_levels, column_names, 3 * 365,
     compute_win_odds = FALSE
   )
 
@@ -596,16 +596,16 @@ test_that("winOddsData", {
 test_that("winOddsPlot", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
+  step_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
-  continuous_outcome <- "Continuous outcome"
+  last_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
   mar <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
+    data, step_outcomes, last_outcome, arm_levels, column_names, 3 * 365,
     compute_win_odds = TRUE
   )
 
@@ -617,19 +617,19 @@ test_that("winOddsPlot", {
 
   win_odds_outcome <- mar$win_odds_outcome
   wo_smry_grp <- win_odds_outcome$summary_by_GROUP
-  endpoints <- c(mar$tte_outcomes, mar$continuous_outcome)
+  endpoints <- c(mar$step_outcomes, mar$last_outcome)
   wo_bar_nc <- .prep_data_component_plot(win_odds_outcome, endpoints,
                                          mar$arm_levels)
 
   expect_equal(wo_smry_grp[wo_smry_grp$TRTP == "A", "WIN"],
                unname(unlist(wo_bar_nc[wo_bar_nc$name == "Active wins" &
                                          wo_bar_nc$GROUP %in%
-                                           c(tte_outcomes, continuous_outcome),
+                                           c(step_outcomes, last_outcome),
                                        "value"])))
   expect_equal(wo_smry_grp[wo_smry_grp$TRTP == "P", "WIN"],
                unname(unlist(wo_bar_nc[wo_bar_nc$name == "Control wins" &
                                          wo_bar_nc$GROUP %in%
-                                           c(tte_outcomes, continuous_outcome),
+                                           c(step_outcomes, last_outcome),
                                        "value"])))
   expect_equal(win_odds_outcome$summary[win_odds_outcome$summary$TRTP == "A",
                                         "TOTAL"],
@@ -643,7 +643,7 @@ test_that("winOddsPlot", {
   expect_file_exists(output)
 
   mar <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
+    data, step_outcomes, last_outcome, arm_levels, column_names, 3 * 365,
     compute_win_odds = FALSE
   )
 
@@ -683,27 +683,27 @@ test_that("winOddsPlot", {
 test_that("winOddsPrinting", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
+  step_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
-  continuous_outcome <- "Continuous outcome"
+  last_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
   mar <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
+    data, step_outcomes, last_outcome, arm_levels, column_names, 3 * 365,
     compute_win_odds = TRUE
   )
 
   mar_no_win_odds <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
+    data, step_outcomes, last_outcome, arm_levels, column_names, 3 * 365,
     compute_win_odds = FALSE
   )
 
   data$AVAL0[[3]] <- NA
   mar_na <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
+    data, step_outcomes, last_outcome, arm_levels, column_names, 3 * 365,
     compute_win_odds = TRUE
   )
 
@@ -754,27 +754,27 @@ test_that("winOddsPrinting", {
 test_that("maracaPrinting", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
+  step_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
-  continuous_outcome <- "Continuous outcome"
+  last_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
   mar <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
+    data, step_outcomes, last_outcome, arm_levels, column_names, 3 * 365,
     compute_win_odds = TRUE
   )
 
   mar_no_win_odds <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
+    data, step_outcomes, last_outcome, arm_levels, column_names, 3 * 365,
     compute_win_odds = FALSE
   )
 
   data$AVAL0[[3]] <- NA
   mar_na <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365,
+    data, step_outcomes, last_outcome, arm_levels, column_names, 3 * 365,
     compute_win_odds = TRUE
   )
 
@@ -825,17 +825,17 @@ test_that("maracaPrinting", {
 test_that("maracaPlotting", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
+  step_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
-  continuous_outcome <- "Continuous outcome"
+  last_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   fixed_followup_days <- 3 * 365
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
   mar <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels,
+    data, step_outcomes, last_outcome, arm_levels,
     column_names,
     fixed_followup_days
   )
@@ -883,17 +883,17 @@ test_that("maracaPlotting", {
 test_that("validationFunction", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
+  step_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
-  continuous_outcome <- "Continuous outcome"
+  last_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   fixed_followup_days <- 3 * 365
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", value = "AVAL0"
   )
   mar <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels,
+    data, step_outcomes, last_outcome, arm_levels,
     column_names,
     fixed_followup_days,
     compute_win_odds = TRUE
@@ -947,7 +947,7 @@ test_that("validationFunction", {
   expect_equal(val_res_box$plot_type, "GeomBoxplot")
   expect_equal(val_res_scatter$plot_type, "GeomPoint")
 
-  expected_names <- c(tte_outcomes, continuous_outcome)
+  expected_names <- c(step_outcomes, last_outcome)
   expect_named(val_res_def$proportions, expected_names, ignore.order = TRUE)
   expect_named(val_res_violin$proportions, expected_names, ignore.order = TRUE)
   expect_named(val_res_box$proportions, expected_names, ignore.order = TRUE)
@@ -1044,10 +1044,10 @@ test_that("validationFunction", {
 test_that("handleNAData", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
-  tte_outcomes <- c(
+  step_outcomes <- c(
     "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
   )
-  continuous_outcome <- "Continuous outcome"
+  last_outcome <- "Continuous outcome"
   arm_levels <- c(active = "Active", control = "Control")
   column_names <- c(
     outcome = "GROUP", arm = "TRTP", value = "AVAL0"
@@ -1055,7 +1055,7 @@ test_that("handleNAData", {
 
   data$AVAL0[[3]] <- NA
   mar <- maraca(
-    data, tte_outcomes, continuous_outcome, arm_levels, column_names, 3 * 365
+    data, step_outcomes, last_outcome, arm_levels, column_names, 3 * 365
   )
 
   output <- artifacts_path("handleNAData-basic.pdf")
@@ -1070,8 +1070,8 @@ test_that("gridSpacing", {
   args <- .maraca_args(file)
   mar <- maraca(
     args$data,
-    args$tte_outcomes,
-    args$continuous_outcome,
+    args$step_outcomes,
+    args$last_outcome,
     args$arm_levels,
     args$column_names,
     3 * 365
@@ -1089,8 +1089,8 @@ test_that("scaleTransform", {
   args <- .maraca_args(file)
   mar <- maraca(
     args$data,
-    args$tte_outcomes,
-    args$continuous_outcome,
+    args$step_outcomes,
+    args$last_outcome,
     args$arm_levels,
     args$column_names,
     3 * 365
@@ -1109,8 +1109,8 @@ test_that("densityPlotType", {
   args <- .maraca_args(file)
   mar <- maraca(
     args$data,
-    args$tte_outcomes,
-    args$continuous_outcome,
+    args$step_outcomes,
+    args$last_outcome,
     args$arm_levels,
     args$column_names,
     3 * 365
@@ -1148,8 +1148,8 @@ test_that("verticalLine", {
   args <- .maraca_args(file)
   mar <- maraca(
     args$data,
-    args$tte_outcomes,
-    args$continuous_outcome,
+    args$step_outcomes,
+    args$last_outcome,
     args$arm_levels,
     args$column_names,
     3 * 365

@@ -21,8 +21,8 @@ This will produce the 4 validation datasets.
 data(hce_scenario_a)
 hce_test <- maraca(
   data = hce_scenario_a,
-  tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
-  continuous_outcome = "Continuous outcome",
+  step_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
+  last_outcome = "Continuous outcome",
   fixed_followup_days = 3 * 365,
   column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
   arm_levels = c(active = "Active", control = "Control"),

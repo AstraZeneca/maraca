@@ -37,9 +37,9 @@ Check the vignette "Maraca Plots - Plotting win odds" for more details.
 data(hce_scenario_a)
 
 maraca_dat <- maraca(data = hce_scenario_a,
-                     tte_outcomes = c("Outcome I", "Outcome II",
+                     step_outcomes = c("Outcome I", "Outcome II",
                                       "Outcome III", "Outcome IV"),
-                     continuous_outcome = "Continuous outcome",
+                     last_outcome = "Continuous outcome",
                      fixed_followup_days = 3 * 365,
                      column_names = c(outcome = "GROUP",
                                       arm = "TRTP",

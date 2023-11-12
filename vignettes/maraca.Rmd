@@ -69,14 +69,14 @@ unique(data[["GROUP"]])
 ```
 
 The strings associated to each entry are arbitrary, so maraca
-allows you to specify them in the `tte_outcomes` and `continuous_outcome`
+allows you to specify them in the `step_outcomes` and `last_outcome`
 parameters. Make sure to specify the TTE outcomes in the correct order, starting from the most severe outcome to the least severe outcome. There can only be one continuous outcome.
 
 ```{r maraca4, eval = TRUE}
-tte_outcomes <- c(
+step_outcomes <- c(
   "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
 )
-continuous_outcome <- "Continuous outcome"
+last_outcome <- "Continuous outcome"
 ```
 
 the `arm` column must also be a character column describing to which arm
@@ -108,7 +108,7 @@ the given dataset
 
 ```{r maraca7, eval = TRUE}
 mar <- maraca(
-  data, tte_outcomes, continuous_outcome, arm_levels, column_names, 
+  data, step_outcomes, last_outcome, arm_levels, column_names, 
   fixed_followup_days = 3*365,
   compute_win_odds = TRUE
 )
