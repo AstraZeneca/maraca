@@ -9,18 +9,20 @@ Check the vignette "Maraca Plots - Plotting win odds" for more details.}
 \usage{
 \method{component_plot}{hce}(
   x,
-  continuous_outcome = "C",
+  last_outcome = "C",
   arm_levels = c(active = "A", control = "P"),
   fixed_followup_days = NULL,
   theme = "maraca",
+  continuous_outcome = lifecycle::deprecated(),
   ...
 )
 }
 \arguments{
 \item{x}{an object of S3 class 'hce'.}
 
-\item{continuous_outcome}{A single string containing the continuous
-outcome label. Default value "C".}
+\item{last_outcome}{A single string containing the last outcome label
+displayed on the right side of the plot.
+Default value "C".}
 
 \item{arm_levels}{A named vector of exactly two strings, mapping the
 values used for the active and control arms to the values
@@ -42,6 +44,10 @@ fixed_followup_days argument is used.}
 Options are "maraca", "color1", "color2" and none".
 For more details, check the vignette called
 "Maraca Plots - Plotting win odds".}
+
+\item{continuous_outcome}{Deprecated and substituted by the more general
+'last_outcome'. A single string containing the
+continuous outcome label.}
 
 \item{\dots}{not used}
 }

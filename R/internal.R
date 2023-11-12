@@ -107,14 +107,14 @@
 
 # Calculates the cumulative distribution for TTE outcomes
 .compute_ecdf_by_outcome <- function(
-  hce_dat, meta, tte_outcomes, continuous_outcome, arm_levels,
+  hce_dat, meta, step_outcomes, last_outcome, arm_levels,
   fixed_followup_days
 ) {
 
   `%>%` <- dplyr::`%>%`
   n <- dplyr::n
 
-  num_tte_outcomes <- length(tte_outcomes)
+  num_tte_outcomes <- length(step_outcomes)
 
   if (length(fixed_followup_days) == 1) {
     fixed_followup_days <- rep(fixed_followup_days, times = num_tte_outcomes)
@@ -124,8 +124,8 @@
 
   for (i in seq_len(num_tte_outcomes)) {
     add_previous_end <- ifelse(i == 1, 0, sum(fixed_followup_days[1:(i - 1)]))
-    hce_dat[hce_dat$outcome == tte_outcomes[[i]], ]$t_cdf <-
-      hce_dat[hce_dat$outcome == tte_outcomes[[i]], ]$value +
+    hce_dat[hce_dat$outcome == step_outcomes[[i]], ]$t_cdf <-
+      hce_dat[hce_dat$outcome == step_outcomes[[i]], ]$value +
       add_previous_end
   }
 
@@ -136,13 +136,13 @@
               tmp$ecdf_values <- 100 *
                 stats::ecdf(tmp$t_cdf)(tmp$t_cdf)
               tmp %>% dplyr::filter(outcome %in% outcomes)
-            }, df = hce_dat, outcomes = tte_outcomes))
+            }, df = hce_dat, outcomes = step_outcomes))
 
   hce_ecdf <- hce_ecdf[order(hce_ecdf$ecdf_values), ]
 
   hce_ecdf$adjusted.time <- 0
   for (i in seq_len(num_tte_outcomes)) {
-    entry <- tte_outcomes[i]
+    entry <- step_outcomes[i]
     outcome_filter <- hce_ecdf$outcome == entry
     hce_ecdf[outcome_filter, ]$adjusted.time <-
       meta[meta$outcome == entry, ]$startx +
@@ -173,14 +173,14 @@
 
 # Computes the continuous information
 .compute_continuous <- function(
-    hce_dat, meta, ecdf_mod, tte_outcomes, continuous_outcome, arm_levels) {
+    hce_dat, meta, ecdf_mod, step_outcomes, last_outcome, arm_levels) {
   `%>%` <- dplyr::`%>%`
   n <- dplyr::n
 
   ctrl <- unname(arm_levels["control"])
 
-  continuous_data <- hce_dat[hce_dat$outcome == continuous_outcome, ]
-  start_continuous_endpoint <- meta[meta$outcome == continuous_outcome, ]$startx
+  continuous_data <- hce_dat[hce_dat$outcome == last_outcome, ]
+  start_continuous_endpoint <- meta[meta$outcome == last_outcome, ]$startx
 
   continuous_data$x <- .to_rangeab(
     continuous_data$value,
@@ -195,11 +195,11 @@
 
   continuous_data$y_level <- ecdf_mod$meta[
     ecdf_mod$meta$arm == unname(arm_levels["active"]) &
-      ecdf_mod$meta$outcome == utils::tail(tte_outcomes, 1),
+      ecdf_mod$meta$outcome == utils::tail(step_outcomes, 1),
   ]$ecdf_end
   continuous_data[continuous_data$arm == ctrl, ]$y_level <- ecdf_mod$meta[
     ecdf_mod$meta$arm == ctrl &
-      ecdf_mod$meta$outcome == utils::tail(tte_outcomes, 1),
+      ecdf_mod$meta$outcome == utils::tail(step_outcomes, 1),
   ]$ecdf_end
 
   return(list(
@@ -210,7 +210,7 @@
 
 # Reformats the data coming in from outside so that it fits our expectation.
 .reformat_and_check_data <- function(
-    data, tte_outcomes, continuous_outcome, arm_levels, column_names) {
+    data, step_outcomes, last_outcome, arm_levels, column_names) {
   `%>%` <- dplyr::`%>%`
   vars <- dplyr::vars
   all_of <- dplyr::all_of
@@ -223,7 +223,7 @@
   hce_dat$outcome <- as.character(hce_dat$outcome)
   hce_dat$arm <- as.character(hce_dat$arm)
 
-  endpoints <- c(tte_outcomes, continuous_outcome)
+  endpoints <- c(step_outcomes, last_outcome)
 
   if (!all(as.character(unique(hce_dat[, "arm"])) %in%
              unname(arm_levels))) {
@@ -233,8 +233,8 @@
   if (!all(as.character(unique(hce_dat[, "outcome"])) %in%
              unname(endpoints))) {
     stop(paste("Outcome variable contains different values",
-               "then given in parameters tte_outcomes and",
-               "continuous_outcome"))
+               "then given in parameters step_outcomes and",
+               "last_outcome"))
   }
 
   hce_dat <- hce_dat %>%
@@ -244,7 +244,7 @@
                      levels = c(arm_levels)[c("active", "control")])
 
   # Check if the endpoints are all present
-  for (entry in c(tte_outcomes, continuous_outcome)) {
+  for (entry in c(step_outcomes, last_outcome)) {
     if (!any(hce_dat$outcome == entry)) {
       stop(paste(
         "Outcome", entry, "is not present in column",
@@ -284,10 +284,10 @@
   return(minor_grid)
 }
 
-.maraca_from_hce_data <- function(x, continuous_outcome, arm_levels,
+.maraca_from_hce_data <- function(x, last_outcome, arm_levels,
                                   fixed_followup_days, compute_win_odds) {
 
-  checkmate::assert_string(continuous_outcome)
+  checkmate::assert_string(last_outcome)
   checkmate::assert_names(names(x),
                           must.include = c("GROUP", "TRTP", "AVAL0"))
 
@@ -299,7 +299,7 @@
   checkmate::assert_flag(compute_win_odds)
 
   x <- as.data.frame(x, stringsAsFactors = FALSE)
-  tte <- sort(unique(x$GROUP)[unique(x$GROUP) != continuous_outcome])
+  tte <- sort(unique(x$GROUP)[unique(x$GROUP) != last_outcome])
 
   # Small bugfix to allow for name change of variable TTEFixed in newer
   # version of HCE package
@@ -318,8 +318,8 @@
 
   maraca_obj <- maraca(
     data = x,
-    tte_outcomes = tte,
-    continuous_outcome = continuous_outcome,
+    step_outcomes = tte,
+    last_outcome = last_outcome,
     column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
     arm_levels = arm_levels,
     fixed_followup_days = fixed_followup_days,

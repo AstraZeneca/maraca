@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{hce}(
   x,
-  continuous_outcome = "C",
+  last_outcome = "C",
   arm_levels = c(active = "A", control = "P"),
   continuous_grid_spacing_x = 10,
   trans = "identity",
@@ -14,22 +14,25 @@
   vline_type = "median",
   fixed_followup_days = NULL,
   compute_win_odds = FALSE,
+  last_type = "continuous",
   theme = "maraca",
+  continuous_outcome = lifecycle::deprecated(),
   ...
 )
 }
 \arguments{
 \item{x}{an object of S3 class 'hce'.}
 
-\item{continuous_outcome}{A single string containing the continuous
-outcome label. Default value "C".}
+\item{last_outcome}{A single string containing the last outcome label
+displayed on the right side of the plot.
+Default value "C".}
 
 \item{arm_levels}{A named vector of exactly two strings, mapping the
 values used for the active and control arms to the values
 used in the data. The names must be "active" and "control"
 in this order. Note that this parameter only need to
 be specified if you have labels different from
- "active" and "control".}
+"active" and "control".}
 
 \item{continuous_grid_spacing_x}{The spacing of the x grid to use for the
 continuous section of the plot.}
@@ -59,11 +62,19 @@ fixed_followup_days argument is used.}
 \item{compute_win_odds}{If TRUE compute the win odds, otherwise (default)
 don't compute them.}
 
+\item{last_type}{A single string giving the type of the last outcome.
+Possible values are "continuous" (default), "binary" or
+"multinomial".}
+
 \item{theme}{Choose theme to style the plot. The default theme is "maraca".
 Options are "maraca", "maraca_old", "color1", "color2" and none".
 For more details, check the vignette called
 "Maraca Plots - Themes and Styling".
 [companion vignette for package users](themes.html)}
+
+\item{continuous_outcome}{Deprecated and substituted by the more general
+'last_outcome'. A single string containing the
+continuous outcome label.}
 
 \item{\dots}{not used}
 }
