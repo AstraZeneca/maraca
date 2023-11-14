@@ -107,6 +107,11 @@ maraca <- function(
 
   checkmate::assert_integerish(fixed_followup_days)
 
+  checkmate::assert_string(last_type)
+  checkmate::assert_subset(last_type,
+                           choices = c("continuous", "binary"),
+                           empty.ok = FALSE)
+
   if (!(length(fixed_followup_days) %in% c(1, length(step_outcomes)))) {
     stop(paste("fixed_followup_days needs to be either a single value or",
                "a vector with one value for each tte outcome"))
@@ -162,9 +167,17 @@ maraca <- function(
     fixed_followup_days
   )
 
-  continuous <- .compute_continuous(
-    hce_dat, meta, ecdf_by_outcome, step_outcomes, last_outcome, arm_levels
-  )
+  if (last_type == "continuous") {
+    data_last_outcome <- .compute_continuous(
+      hce_dat, meta, ecdf_by_outcome, step_outcomes, last_outcome, arm_levels
+    )
+  } else if (last_type == "binary") {
+    data_last_outcome <- .compute_binary(
+      hce_dat, meta, ecdf_by_outcome, step_outcomes, last_outcome, arm_levels
+    )
+  } else if (last_type == "multinomial") {
+    data_last_outcome <- NULL
+  }
 
   win_odds <- list("win_odds" = NULL, "win_odds_outcome" = NULL)
   if (compute_win_odds) {
@@ -176,12 +189,13 @@ maraca <- function(
       list(
         step_outcomes = step_outcomes,
         last_outcome = last_outcome,
+        last_type = last_type,
         arm_levels = arm_levels,
         fixed_followup_days = fixed_followup_days,
         column_names = column_names,
         meta = meta,
         ecdf_by_outcome = ecdf_by_outcome,
-        continuous = continuous,
+        data_last_outcome = data_last_outcome,
         win_odds = win_odds[["win_odds"]],
         win_odds_outcome = win_odds[["win_odds_outcome"]]
       ),
@@ -260,36 +274,51 @@ print.maraca <- function(x, ...) {
 #' plot <- plot_maraca(hce_test)
 #' @export
 plot_maraca <- function(
-    obj, continuous_grid_spacing_x = 10, trans = "identity",
+    obj, continuous_grid_spacing_x = NULL,
+    trans = "identity",
     density_plot_type = "default",
     vline_type = "median",
     theme = "maraca") {
+
   checkmate::assert_class(obj, "maraca")
-  checkmate::assert_int(continuous_grid_spacing_x)
+
+  if (!(is.null(continuous_grid_spacing_x) ||
+       is.numeric(continuous_grid_spacing_x))) {
+    stop("continuous_grid_spacing_x has to be numeric or NULL")
+  }
+
   checkmate::assert_string(trans)
-  checkmate::assert_choice(
-    density_plot_type, c("default", "violin", "box", "scatter")
-  )
-  checkmate::assert_choice(
-    vline_type, c("median", "mean", "none")
-  )
+
   aes <- ggplot2::aes
   `%>%` <- dplyr::`%>%`
 
   meta <- obj$meta
-  continuous <- obj$continuous
+  last_data <- obj$data_last_outcome
+  last_type <- obj$last_type
+
+  switch(last_type,
+         "continuous" = .checks_continuous_outcome(density_plot_type,
+                                                   vline_type),
+         "binary" = .checks_binary_outcome(density_plot_type,
+                                           vline_type),
+         stop("Unsupported last outcome type"))
+
   ecdf_mod <- obj$ecdf_by_outcome
   win_odds <- obj$win_odds
-  start_continuous_endpoint <-
+  start_last_endpoint <-
     meta[meta$outcome == obj$last_outcome, ]$startx
+
+  if (is.null(continuous_grid_spacing_x)) {
+    continuous_grid_spacing_x <- ifelse(last_type == "continuous", 10, 0.1)
+  }
 
   plotdata_ecdf <- ecdf_mod$data[, c("outcome", "arm",
                                      "adjusted.time", "ecdf_values")]
   plotdata_ecdf$type <- "tte"
   names(plotdata_ecdf) <- c("outcome", "arm", "x", "y", "type")
-  plotdata_cont <- continuous$data[, c("outcome", "arm", "x", "y_level")]
-  plotdata_cont$type <- "cont"
-  names(plotdata_cont) <- c("outcome", "arm", "x", "y", "type")
+  plotdata_last <- last_data$data[, c("outcome", "arm", "x", "y")]
+  plotdata_last$type <- last_type
+  names(plotdata_last) <- c("outcome", "arm", "x", "y", "type")
 
   # Add points at (0, 0) on both curves so that they start from the origin
   add_points <- plotdata_ecdf %>%
@@ -316,54 +345,58 @@ plot_maraca <- function(
     add_points
   )
 
-  plotdata <- as.data.frame(rbind(plotdata_ecdf, plotdata_cont))
+  plotdata <- as.data.frame(rbind(plotdata_ecdf, plotdata_last))
 
   scale <- sign(log10(continuous_grid_spacing_x)) * floor(
     abs(log10(continuous_grid_spacing_x))
   )
 
-  minor_grid <- .minor_grid(
-    continuous$data$value, scale, continuous_grid_spacing_x
-  )
+  if (last_type == "continuous") {
 
-  zeroposition <- .to_rangeab(0,
-    start_continuous_endpoint,
-    min(continuous$data$value, na.rm = TRUE),
-    max(continuous$data$value, na.rm = TRUE)
-  )
+    minor_grid <- .minor_grid(
+      last_data$data$value, scale, continuous_grid_spacing_x
+    )
+
+    range <- c(min(last_data$data$value, na.rm = TRUE),
+               max(last_data$data$value, na.rm = TRUE))
+
+  } else if (last_type == "binary") {
+
+    minor_grid <- seq(0, 1, continuous_grid_spacing_x)
+    range <- c(0, 1)
+
+  }
+
   # Plot the information in the Maraca plot
   plot <- ggplot2::ggplot(plotdata) +
     ggplot2::geom_vline(
       xintercept = cumsum(c(0, meta$proportion)),
       color = "grey80"
-    ) +
-    ggplot2::geom_vline(
-      xintercept = zeroposition,
-      color = "white",
-      linewidth = 1
     )
 
   if (vline_type == "median") {
     plot <- plot +
       ggplot2::geom_vline(
-        mapping = aes(
+        mapping = ggplot2::aes(
           xintercept = median,
           color = arm
         ),
-        data = continuous$meta,
+        data = last_data$meta,
         linetype = "dashed",
-        linewidth = 0.8
+        linewidth = 0.8,
+        show.legend = FALSE
       )
   } else if (vline_type == "mean") {
     plot <- plot +
       ggplot2::geom_vline(
-        mapping = aes(
+        mapping = ggplot2::aes(
           xintercept = average,
           color = arm
         ),
-        data = continuous$meta,
+        data = last_data$meta,
         linetype = "dashed",
-        linewidth = 0.8
+        linewidth = 0.8,
+        show.legend = FALSE
       )
   }
 
@@ -374,33 +407,45 @@ plot_maraca <- function(
     )
 
   if (density_plot_type == "default") {
-    plot <- plot +
-      ggplot2::geom_violin(
-        data = plotdata[plotdata$type == "cont", ],
-        aes(x = x, y = y, colour = arm, fill = arm), alpha = 0.5
-      ) + ggplot2::geom_boxplot(
-      data = plotdata[plotdata$type == "cont", ],
-      aes(x = x, y = y, colour = arm, fill = arm), alpha = 0.5,
-      width =
-        abs(diff(as.numeric(unique(plotdata[plotdata$type == "cont", ]$y)))) /
-        3
-    )
+    if (last_type == "continuous") {
+      plot <- plot +
+        ggplot2::geom_violin(
+          data = plotdata[plotdata$type == "continuous", ],
+          aes(x = x, y = y, colour = arm, fill = arm), alpha = 0.5
+        ) + ggplot2::geom_boxplot(
+        data = plotdata[plotdata$type == "continuous", ],
+        aes(x = x, y = y, colour = arm, fill = arm), alpha = 0.5,
+        width =
+          abs(diff(as.numeric(unique(
+            plotdata[plotdata$type == "continuous", ]$y)))) / 3
+      )
+    } else if (last_type == "binary") {
+      plot <- plot +
+        ggplot2::geom_polygon(
+          data = plotdata[plotdata$type == "binary", ],
+          ggplot2::aes(x = x, y = y, color = arm, fill = arm),
+          alpha = 0.5,
+          show.legend = FALSE) +
+        ggplot2::geom_point(data = last_data$meta,
+                            ggplot2::aes(x = average, y = y,
+                                         color = arm))
+    }
   } else if (density_plot_type == "violin") {
     plot <- plot +
       ggplot2::geom_violin(
-        data = plotdata[plotdata$type == "cont", ],
+        data = plotdata[plotdata$type == "continuous", ],
         aes(x = x, y = y, colour = arm, fill = arm), alpha = 0.5
       )
   } else if (density_plot_type == "box") {
     plot <- plot +
       ggplot2::geom_boxplot(
-        data = plotdata[plotdata$type == "cont", ],
+        data = plotdata[plotdata$type == "continuous", ],
         aes(x = x, y = y, colour = arm, fill = arm), alpha = 0.5
       )
   } else if (density_plot_type == "scatter") {
     plot <- plot +
       ggplot2::geom_jitter(
-        data = plotdata[plotdata$type == "cont", ],
+        data = plotdata[plotdata$type == "continuous", ],
         aes(x = x, y = y, color = arm),
         # Jittering only vertically, keep the correct x-value
         width = 0
@@ -417,13 +462,13 @@ plot_maraca <- function(
   plot <- plot +
     ggplot2::scale_x_continuous(
       limits = c(0, 100),
-      breaks = c(meta$proportion / 2 + meta$startx),
+      breaks = c(meta$proportion / 2 + meta$startx + 0.1),
       labels = c(obj$step_outcomes, obj$last_outcome),
       minor_breaks = .to_rangeab(
         minor_grid,
-        start_continuous_endpoint,
-        min(continuous$data$value, na.rm = TRUE),
-        max(continuous$data$value, na.rm = TRUE)
+        start_last_endpoint,
+        range[1],
+        range[2]
       ),
       trans = trans
     ) +
@@ -431,9 +476,9 @@ plot_maraca <- function(
       geom = "text",
       x = .to_rangeab(
         minor_grid,
-        start_continuous_endpoint,
-        min(continuous$data$value, na.rm = TRUE),
-        max(continuous$data$value, na.rm = TRUE)
+        start_last_endpoint,
+        range[1],
+        range[2]
       ),
       y = 0,
       label = labels,
@@ -507,7 +552,7 @@ validate_maraca_plot <- function(x,  ...) {
   `%>%` <- dplyr::`%>%`
 
   pb <- ggplot2::ggplot_build(x)
-  plot_type <- class(as.list(x$layers[[5]])[["geom"]])[1]
+  plot_type <- class(as.list(x$layers[[4]])[["geom"]])[1]
 
   proportions <- diff(pb$data[[1]][, c("xintercept")])
   names(proportions) <- levels(x$data$outcome)
@@ -515,7 +560,7 @@ validate_maraca_plot <- function(x,  ...) {
   arms <- levels(pb$plot$data[, pb$plot$labels$colour])
 
   tte_data <-
-    utils::tail(utils::head(pb$data[[4]][, c("group", "x", "y")], -2), -2)
+    utils::tail(utils::head(pb$data[[3]][, c("group", "x", "y")], -2), -2)
   tte_data$group <- factor(tte_data$group, labels = arms)
 
   scatter_data <- NULL
@@ -523,10 +568,10 @@ validate_maraca_plot <- function(x,  ...) {
   violin_data <- NULL
 
   if (plot_type == "GeomPoint") {
-    scatter_data <- pb$data[[5]][, c("group", "x", "y")]
+    scatter_data <- pb$data[[4]][, c("group", "x", "y")]
     scatter_data$group <- factor(scatter_data$group, labels = arms)
   } else if (plot_type == "GeomBoxplot") {
-    boxstat_data <- pb$data[[5]] %>%
+    boxstat_data <- pb$data[[4]] %>%
       dplyr::select(group, "x_lowest" = xmin_final,
                     "whisker_lower" = xmin,
                     "hinge_lower" = xlower, "median" = xmiddle,
@@ -535,11 +580,11 @@ validate_maraca_plot <- function(x,  ...) {
     boxstat_data$outliers <- lapply(boxstat_data$outliers, sort)
     boxstat_data$group <- factor(boxstat_data$group, labels = arms)
   } else if (plot_type == "GeomViolin") {
-    violin_data <- pb$data[[5]][, c("group", "x", "y", "density", "width")]
+    violin_data <- pb$data[[4]][, c("group", "x", "y", "density", "width")]
     violin_data$group <- factor(violin_data$group, labels = arms)
-    if (class(as.list(x$layers[[6]])[["geom"]])[1] == "GeomBoxplot") {
+    if (class(as.list(x$layers[[5]])[["geom"]])[1] == "GeomBoxplot") {
       plot_type <- paste(plot_type, "GeomBoxplot", sep = "+")
-      boxstat_data <- pb$data[[6]] %>%
+      boxstat_data <- pb$data[[5]] %>%
         dplyr::select(group, "x_lowest" = xmin_final,
                       "whisker_lower" = xmin,
                       "hinge_lower" = xlower, "median" = xmiddle,
@@ -688,17 +733,16 @@ plot.hce <- function(x, last_outcome = "C",
                      continuous_outcome = lifecycle::deprecated(),
                      ...) {
 
-  checkmate::assert_int(continuous_grid_spacing_x)
-  checkmate::assert_string(trans)
-  checkmate::assert_choice(density_plot_type,
-                           c("default", "violin", "box", "scatter"))
-  checkmate::assert_choice(
-    vline_type, c("median", "mean", "none")
-  )
+  if (lifecycle::is_present(continuous_outcome)) {
+    lifecycle::deprecate_warn("0.7.0", "maraca(continuous_outcome)",
+                              "maraca(last_outcome)")
+    last_outcome <- continuous_outcome
+  }
 
   maraca_obj <- .maraca_from_hce_data(x, last_outcome, arm_levels,
                                       fixed_followup_days,
-                                      compute_win_odds)
+                                      compute_win_odds,
+                                      last_type = last_type)
 
   plot_maraca(maraca_obj, continuous_grid_spacing_x,
               trans, density_plot_type, vline_type, theme)
