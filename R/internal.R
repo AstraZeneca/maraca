@@ -258,9 +258,9 @@
   binary_data <- rbind(data.frame("outcome" = last_outcome,
                                   "arm" = actv,
                                   actv_point),
-                       data.frame("outcome" = last_outcome,
-                                  "arm" = ctrl,
-                                  ctrl_point)
+    data.frame("outcome" = last_outcome,
+               "arm" = ctrl,
+               ctrl_point)
   )
 
   binary_data$x <- .to_rangeab(
@@ -529,7 +529,7 @@
 }
 
 .checks_continuous_outcome <- function(density_plot_type,
-                                   vline_type) {
+                                       vline_type) {
   checkmate::assert_choice(
     density_plot_type, c("default", "violin", "box", "scatter")
   )

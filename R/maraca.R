@@ -283,7 +283,7 @@ plot_maraca <- function(
   checkmate::assert_class(obj, "maraca")
 
   if (!(is.null(continuous_grid_spacing_x) ||
-       is.numeric(continuous_grid_spacing_x))) {
+         is.numeric(continuous_grid_spacing_x))) {
     stop("continuous_grid_spacing_x has to be numeric or NULL")
   }
 
@@ -416,16 +416,16 @@ plot_maraca <- function(
         data = plotdata[plotdata$type == "continuous", ],
         aes(x = x, y = y, colour = arm, fill = arm), alpha = 0.5,
         width =
-          abs(diff(as.numeric(unique(
-            plotdata[plotdata$type == "continuous", ]$y)))) / 3
+          abs(diff(as.numeric(unique(plotdata[plotdata$type == "continuous",
+                                              ]$y)))) / 3
       )
     } else if (last_type == "binary") {
       plot <- plot +
-        ggplot2::geom_polygon(
-          data = plotdata[plotdata$type == "binary", ],
-          ggplot2::aes(x = x, y = y, color = arm, fill = arm),
-          alpha = 0.5,
-          show.legend = FALSE) +
+        ggplot2::geom_polygon(data = plotdata[plotdata$type == "binary", ],
+                              ggplot2::aes(x = x, y = y, color = arm,
+                                           fill = arm),
+                              alpha = 0.5,
+                              show.legend = FALSE) +
         ggplot2::geom_point(data = last_data$meta,
                             ggplot2::aes(x = average, y = y,
                                          color = arm))
