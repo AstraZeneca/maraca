@@ -193,11 +193,11 @@
     dplyr::summarise(n = n(), median = stats::median(x, na.rm = TRUE),
                      average = base::mean(x, na.rm = TRUE))
 
-  continuous_data$y_level <- ecdf_mod$meta[
+  continuous_data$y <- ecdf_mod$meta[
     ecdf_mod$meta$arm == unname(arm_levels["active"]) &
       ecdf_mod$meta$outcome == utils::tail(step_outcomes, 1),
   ]$ecdf_end
-  continuous_data[continuous_data$arm == ctrl, ]$y_level <- ecdf_mod$meta[
+  continuous_data[continuous_data$arm == ctrl, ]$y <- ecdf_mod$meta[
     ecdf_mod$meta$arm == ctrl &
       ecdf_mod$meta$outcome == utils::tail(step_outcomes, 1),
   ]$ecdf_end
@@ -206,6 +206,98 @@
     data = continuous_data,
     meta = continuous_meta
   ))
+}
+
+# Computes the binary information
+.compute_binary <- function(
+    hce_dat, meta, ecdf_mod, step_outcomes, last_outcome, arm_levels) {
+
+  `%>%` <- dplyr::`%>%`
+  n <- dplyr::n
+
+  actv <- unname(arm_levels["active"])
+  ctrl <- unname(arm_levels["control"])
+
+  binary_data <- hce_dat[hce_dat$outcome == last_outcome, ]
+  start_binary_endpoint <- meta[meta$outcome == last_outcome, ]$startx
+
+  actv_y <- ecdf_mod$meta[
+    ecdf_mod$meta$arm == actv &
+      ecdf_mod$meta$outcome == utils::tail(step_outcomes, 1),
+  ]$ecdf_end
+  ctrl_y <- ecdf_mod$meta[
+    ecdf_mod$meta$arm == ctrl &
+      ecdf_mod$meta$outcome == utils::tail(step_outcomes, 1),
+  ]$ecdf_end
+
+  binary_meta <- binary_data %>%
+    dplyr::group_by(arm) %>%
+    dplyr::summarise(n = n(),
+                     average = base::mean(value, na.rm = TRUE),
+                     conf_int = 1.96 * sqrt((average * (1 - average)) / n))
+
+  x_radius <- (100 - start_binary_endpoint) * min(binary_meta$conf_int)
+  y_height <- min(c(0.4 * abs(actv_y - ctrl_y), 0.8 * x_radius))
+
+  actv_point <-
+    .create_ellipsis_points(unlist(binary_meta[binary_meta$arm == actv,
+                                               "average"]),
+                            actv_y,
+                            unlist(binary_meta[binary_meta$arm == actv,
+                                               "conf_int"]),
+                            y_height)
+
+  ctrl_point <-
+    .create_ellipsis_points(unlist(binary_meta[binary_meta$arm == ctrl,
+                                               "average"]),
+                            ctrl_y,
+                            unlist(binary_meta[binary_meta$arm == ctrl,
+                                               "conf_int"]),
+                            y_height)
+
+  binary_data <- rbind(data.frame("outcome" = last_outcome,
+                                  "arm" = actv,
+                                  actv_point),
+    data.frame("outcome" = last_outcome,
+               "arm" = ctrl,
+               ctrl_point)
+  )
+
+  binary_data$x <- .to_rangeab(
+    binary_data$x,
+    start_binary_endpoint,
+    0,
+    1
+  )
+
+  binary_meta$average <- .to_rangeab(
+    binary_meta$average,
+    start_binary_endpoint,
+    0,
+    1
+  )
+
+  binary_meta$y <- 0
+  binary_meta[binary_meta$arm == actv, "y"] <- actv_y
+  binary_meta[binary_meta$arm == ctrl, "y"] <- ctrl_y
+
+  return(list(
+    data = binary_data,
+    meta = binary_meta
+  ))
+}
+
+.create_ellipsis_points <- function(x0, y0, a, b) {
+
+  points <- seq(0, 2 * pi, length.out = 361)
+  cos_p <- cos(points)
+  sin_p <- sin(points)
+  x_tmp <- abs(cos_p) * a * sign(cos_p)
+  y_tmp <- abs(sin_p) * b * sign(sin_p)
+  edata <- data.frame(x = x0 + x_tmp, y = y0 + y_tmp)
+
+  return(edata)
+
 }
 
 # Reformats the data coming in from outside so that it fits our expectation.
@@ -285,7 +377,8 @@
 }
 
 .maraca_from_hce_data <- function(x, last_outcome, arm_levels,
-                                  fixed_followup_days, compute_win_odds) {
+                                  fixed_followup_days, compute_win_odds,
+                                  last_type = "continuous") {
 
   checkmate::assert_string(last_outcome)
   checkmate::assert_names(names(x),
@@ -323,7 +416,8 @@
     column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
     arm_levels = arm_levels,
     fixed_followup_days = fixed_followup_days,
-    compute_win_odds = compute_win_odds
+    compute_win_odds = compute_win_odds,
+    last_type = last_type
   )
 
   return(maraca_obj)
@@ -432,4 +526,24 @@
     )
 
   return(p)
+}
+
+.checks_continuous_outcome <- function(density_plot_type,
+                                       vline_type) {
+  checkmate::assert_choice(
+    density_plot_type, c("default", "violin", "box", "scatter")
+  )
+  checkmate::assert_choice(
+    vline_type, c("median", "mean", "none")
+  )
+}
+
+.checks_binary_outcome <- function(density_plot_type,
+                                   vline_type) {
+  checkmate::assert_choice(
+    density_plot_type, c("default")
+  )
+  checkmate::assert_choice(
+    vline_type, c("mean", "none")
+  )
 }

@@ -69,7 +69,7 @@ test_that("createMaracaObject", {
                                     step_outcomes, last_outcome,
                                     arm_levels)
   expect_equal(sum(abs(continuous$data$x)), 40828.387)
-  expect_equal(sum(abs(continuous$data$y_level)), 24451)
+  expect_equal(sum(abs(continuous$data$y)), 24451)
 
   expect_equal(continuous$meta$n, c(298, 271))
   expect_equal(continuous$meta$median, c(74.360287, 68.354528))
@@ -988,16 +988,16 @@ test_that("validationFunction", {
   expect_null(val_res_scatter$boxstat_data)
 
   expect_equal(sort(val_res_scatter$scatter_data$x),
-               sort(mar$continuous$data$x))
+               sort(mar$data_last_outcome$data$x))
 
-  y_values <- unique(mar$continuous$data[, c("arm", "y_level")])
+  y_values <- unique(mar$data_last_outcome$data[, c("arm", "y")])
   y_values <- y_values[order(y_values$arm), ]
   jitter_means <- val_res_scatter$scatter_data %>%
     dplyr::group_by(group) %>%
     dplyr::summarize("y_level" = mean(y))
-  expect_equal(jitter_means$y_level, y_values$y_level, tolerance = 0.1)
+  expect_equal(jitter_means$y_level, y_values$y, tolerance = 0.1)
 
-  boxplot_stats <- mar$continuous$data %>%
+  boxplot_stats <- mar$data_last_outcome$data %>%
     dplyr::group_by(arm) %>%
     dplyr::summarize("perc_25th" = unname(quantile(x, probs = 0.25)),
                      "median" = median(x),
@@ -1030,13 +1030,13 @@ test_that("validationFunction", {
   expect_equal(val_res_box$boxstat_data$x_highest, boxplot_stats$x_highest)
 
   y_values_violin <- unique(val_res_violin$violin_data$y)
-  violin_stats <- mar$continuous$data %>%
+  violin_stats <- mar$data_last_outcome$data %>%
     dplyr::group_by(arm) %>%
     dplyr::summarize("mean" = mean(x))
   violin_stats_from_plot <- val_res_violin$violin_data %>%
     dplyr::group_by(group) %>%
     dplyr::summarize("mean" = weighted.mean(x, density))
-  expect_equal(y_values_violin, y_values$y_level)
+  expect_equal(y_values_violin, y_values$y)
   expect_equal(violin_stats_from_plot$mean, violin_stats$mean, tolerance = 0.1)
 
 })
