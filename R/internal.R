@@ -121,23 +121,24 @@
   }
 
   hce_dat$t_cdf <- sum(fixed_followup_days) + 2 * max(fixed_followup_days)
+  hce_dat$ecdf_values <- 0
 
   for (i in seq_len(num_tte_outcomes)) {
+
     add_previous_end <- ifelse(i == 1, 0, sum(fixed_followup_days[1:(i - 1)]))
     hce_dat[hce_dat$outcome == step_outcomes[[i]], ]$t_cdf <-
       hce_dat[hce_dat$outcome == step_outcomes[[i]], ]$value +
       add_previous_end
+
+    for (arm in arm_levels) {
+      idx <- hce_dat$outcome == step_outcomes[[i]] & hce_dat$arm == arm
+      hce_dat[idx, ]$ecdf_values <-
+        100 *
+        stats::ecdf(hce_dat[hce_dat$arm == arm, ]$t_cdf)(hce_dat[idx, ]$t_cdf)
+    }
   }
 
-  hce_ecdf <-
-    do.call("rbind",
-            lapply(unique(hce_dat$arm), function(a, df, outcomes) {
-              tmp <- df %>% dplyr::filter(arm == a)
-              tmp$ecdf_values <- 100 *
-                stats::ecdf(tmp$t_cdf)(tmp$t_cdf)
-              tmp %>% dplyr::filter(outcome %in% outcomes)
-            }, df = hce_dat, outcomes = step_outcomes))
-
+  hce_ecdf <- hce_dat[hce_dat$outcome %in% step_outcomes, ]
   hce_ecdf <- hce_ecdf[order(hce_ecdf$ecdf_values), ]
 
   hce_ecdf$adjusted.time <- 0
@@ -546,4 +547,75 @@
   checkmate::assert_choice(
     vline_type, c("mean", "none")
   )
+}
+
+.create_validation_tte <- function(layers, x, arms) {
+
+  tte_layers <- which(layers == "GeomStep")
+
+  if (length(tte_layers) != 0) {
+    tte_data <-
+      do.call("rbind",
+              lapply(tte_layers,
+                     function(i) {
+                       dat <- ggplot2::layer_data(plot = x,
+                                                  i = i)[, c("x", "y",
+                                                             "group")]
+                       dat <- utils::head(dat, -2)
+                       if (i == tte_layers[1]) {
+                         dat <- utils::tail(dat, -2)
+                       }
+                       return(dat)
+                     }))
+
+    tte_data$group <- factor(tte_data$group, labels = arms)
+
+  } else {
+    tte_data <- NULL
+  }
+
+  return(tte_data)
+}
+
+.create_validation_scatter <- function(layers, x, arms) {
+  scatter_data <- do.call("rbind", lapply(which(layers == "GeomPoint"),
+                                          ggplot2::layer_data, plot = x))
+  if (!is.null(scatter_data)) {
+    scatter_data <- scatter_data[, c("group", "x", "y")]
+    scatter_data$group <- factor(scatter_data$group, labels = arms)
+  }
+
+  return(scatter_data)
+}
+
+.create_validation_violin <- function(layers, x, arms) {
+  violin_data <- do.call("rbind", lapply(which(layers == "GeomViolin"),
+                                         ggplot2::layer_data, plot = x))
+  if (!is.null(violin_data)) {
+    violin_data <- violin_data[, c("group", "x", "y", "density", "width")]
+    violin_data$group <- factor(violin_data$group, labels = arms)
+  }
+
+  return(violin_data)
+}
+
+.create_validation_box <- function(layers, x, arms) {
+
+  `%>%` <- dplyr::`%>%`
+
+  boxstat_data <- do.call("rbind", lapply(which(layers == "GeomBoxplot"),
+                                          ggplot2::layer_data, plot = x))
+
+  if (!is.null(boxstat_data)) {
+    boxstat_data <- boxstat_data %>%
+      dplyr::select(group, "x_lowest" = xmin_final,
+                    "whisker_lower" = xmin,
+                    "hinge_lower" = xlower, "median" = xmiddle,
+                    "hinge_upper" = xupper, "whisker_upper" = xmax,
+                    "x_highest" = xmax_final, outliers)
+    boxstat_data$outliers <- lapply(boxstat_data$outliers, sort)
+    boxstat_data$group <- factor(boxstat_data$group, labels = arms)
+  }
+
+  return(boxstat_data)
 }
