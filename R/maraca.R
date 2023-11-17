@@ -347,7 +347,7 @@ plot_maraca <- function(
                        dplyr::slice_head(n = 1) %>%
                        dplyr::ungroup() %>%
                        dplyr::mutate(outcome = step_outcomes[i])
-  }))
+                   }))
 
   plotdata_ecdf <- rbind(
     add_points,
@@ -576,8 +576,8 @@ validate_maraca_plot <- function(x,  ...) {
 
   pb <- ggplot2::ggplot_build(x)
   layers <- sapply(pb$plot$layers, function(lb) {
-      class(lb$geom)[1]
-    })
+    class(lb$geom)[1]
+  })
 
   proportions <- diff(pb$data[[1]][, c("xintercept")])
   names(proportions) <- unique(x$data$outcome)

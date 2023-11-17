@@ -130,12 +130,11 @@
       hce_dat[hce_dat$outcome == step_outcomes[[i]], ]$value +
       add_previous_end
 
-      for (arm in arm_levels) {
-        idx <- hce_dat$outcome == step_outcomes[[i]] & hce_dat$arm == arm
-        hce_dat[idx, ]$ecdf_values <-
-          100 *
-          stats::ecdf(hce_dat[hce_dat$arm == arm,
-                              ]$t_cdf)(hce_dat[idx, ]$t_cdf)
+    for (arm in arm_levels) {
+      idx <- hce_dat$outcome == step_outcomes[[i]] & hce_dat$arm == arm
+      hce_dat[idx, ]$ecdf_values <-
+        100 *
+        stats::ecdf(hce_dat[hce_dat$arm == arm, ]$t_cdf)(hce_dat[idx, ]$t_cdf)
       }
   }
 
@@ -555,19 +554,19 @@
   tte_layers <- which(layers == "GeomStep")
 
   if (length(tte_layers) != 0) {
-    tte_data <- do.call("rbind",
-                      lapply(tte_layers,
-                             function(i) {
-                               dat <- utils::head(
-                                 ggplot2::layer_data(plot = x,
-                                                     i = i)[, c("x", "y",
-                                                               "group")],
-                                 -2)
-                               if (i == tte_layers[1]) {
-                                 dat <- utils::tail(dat, -2)
-                               }
-                               return(dat)
-                             }))
+    tte_data <-
+      do.call("rbind",
+              lapply(tte_layers,
+                     function(i) {
+                       dat <- ggplot2::layer_data(plot = x,
+                                                  i = i)[, c("x", "y",
+                                                             "group")]
+                       dat <- utils::head(dat, -2)
+                       if (i == tte_layers[1]) {
+                         dat <- utils::tail(dat, -2)
+                       }
+                       return(dat)
+                     }))
 
     tte_data$group <- factor(tte_data$group, labels = arms)
 
