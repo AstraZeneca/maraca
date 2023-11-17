@@ -135,7 +135,7 @@
       hce_dat[idx, ]$ecdf_values <-
         100 *
         stats::ecdf(hce_dat[hce_dat$arm == arm, ]$t_cdf)(hce_dat[idx, ]$t_cdf)
-      }
+    }
   }
 
   hce_ecdf <- hce_dat[hce_dat$outcome %in% step_outcomes, ]
