@@ -293,6 +293,7 @@ plot_maraca <- function(
   `%>%` <- dplyr::`%>%`
 
   meta <- obj$meta
+  step_outcomes <- obj$step_outcomes
   last_data <- obj$data_last_outcome
   last_type <- obj$last_type
 
@@ -332,6 +333,27 @@ plot_maraca <- function(
     add_points,
     plotdata_ecdf
   )
+
+  plotdata_ecdf <- plotdata_ecdf[order(plotdata_ecdf$x), ]
+
+  # # Add starting point of next curve to avoid jumps
+  add_points <-
+    do.call("rbind",
+            lapply(1:(length(step_outcomes) - 1),
+                   function(i) {
+                     plotdata_ecdf %>%
+                       dplyr::group_by(arm) %>%
+                       dplyr::filter(outcome == step_outcomes[i + 1]) %>%
+                       dplyr::slice_head(n = 1) %>%
+                       dplyr::ungroup() %>%
+                       dplyr::mutate(outcome = step_outcomes[i])
+  }))
+
+  plotdata_ecdf <- rbind(
+    add_points,
+    plotdata_ecdf
+  )
+  plotdata_ecdf <- plotdata_ecdf[order(plotdata_ecdf$x), ]
 
   # Add points at (100, y) on both curves so that they end at x=100%
   add_points <- plotdata_ecdf %>%
@@ -400,11 +422,14 @@ plot_maraca <- function(
       )
   }
 
-  plot <- plot +
-    ggplot2::geom_step(
-      data = plotdata[plotdata$type == "tte", ],
-      aes(x = x, y = y, color = arm)
-    )
+  for (outcome in step_outcomes) {
+
+    plot <- plot +
+      ggplot2::geom_step(
+        data = plotdata[plotdata$type == "tte" & plotdata$outcome == outcome, ],
+        aes(x = x, y = y, color = arm)
+      )
+  }
 
   if (density_plot_type == "default") {
     if (last_type == "continuous") {
@@ -549,53 +574,24 @@ plot_maraca <- function(
 validate_maraca_plot <- function(x,  ...) {
   checkmate::assert_class(x, "maracaPlot")
 
-  `%>%` <- dplyr::`%>%`
-
   pb <- ggplot2::ggplot_build(x)
-  plot_type <- class(as.list(x$layers[[4]])[["geom"]])[1]
+  layers <- sapply(pb$plot$layers, function(lb) {
+      class(lb$geom)[1]
+    })
 
   proportions <- diff(pb$data[[1]][, c("xintercept")])
-  names(proportions) <- levels(x$data$outcome)
+  names(proportions) <- unique(x$data$outcome)
 
   arms <- levels(pb$plot$data[, pb$plot$labels$colour])
 
-  tte_data <-
-    utils::tail(utils::head(pb$data[[3]][, c("group", "x", "y")], -2), -2)
-  tte_data$group <- factor(tte_data$group, labels = arms)
+  tte_data <- .create_validation_tte(layers, x, arms)
+  scatter_data <- .create_validation_scatter(layers, x, arms)
+  boxstat_data <- .create_validation_box(layers, x, arms)
+  violin_data <- .create_validation_violin(layers, x, arms)
 
-  scatter_data <- NULL
-  boxstat_data <- NULL
-  violin_data <- NULL
-
-  if (plot_type == "GeomPoint") {
-    scatter_data <- pb$data[[4]][, c("group", "x", "y")]
-    scatter_data$group <- factor(scatter_data$group, labels = arms)
-  } else if (plot_type == "GeomBoxplot") {
-    boxstat_data <- pb$data[[4]] %>%
-      dplyr::select(group, "x_lowest" = xmin_final,
-                    "whisker_lower" = xmin,
-                    "hinge_lower" = xlower, "median" = xmiddle,
-                    "hinge_upper" = xupper, "whisker_upper" = xmax,
-                    "x_highest" = xmax_final, outliers)
-    boxstat_data$outliers <- lapply(boxstat_data$outliers, sort)
-    boxstat_data$group <- factor(boxstat_data$group, labels = arms)
-  } else if (plot_type == "GeomViolin") {
-    violin_data <- pb$data[[4]][, c("group", "x", "y", "density", "width")]
-    violin_data$group <- factor(violin_data$group, labels = arms)
-    if (class(as.list(x$layers[[5]])[["geom"]])[1] == "GeomBoxplot") {
-      plot_type <- paste(plot_type, "GeomBoxplot", sep = "+")
-      boxstat_data <- pb$data[[5]] %>%
-        dplyr::select(group, "x_lowest" = xmin_final,
-                      "whisker_lower" = xmin,
-                      "hinge_lower" = xlower, "median" = xmiddle,
-                      "hinge_upper" = xupper, "whisker_upper" = xmax,
-                      "x_highest" = xmax_final, outliers)
-      boxstat_data$outliers <- lapply(boxstat_data$outliers, sort)
-      boxstat_data$group <- factor(boxstat_data$group, labels = arms)
-    }
-  } else {
-    stop(paste0("Unrecognised plot type ", plot_type))
-  }
+  possible_plot_types <- c("GeomViolin", "GeomBoxplot", "GeomPoint")
+  plot_type <- paste(possible_plot_types[possible_plot_types %in% layers],
+                     collapse = "+")
 
   if ("win.odds" %in% names(x$labels)) {
     params <- x$labels$win.odds
