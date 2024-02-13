@@ -123,7 +123,7 @@ maraca <- function(
                            empty.ok = FALSE)
 
   if (!(length(fixed_followup_days) %in%
-        c(1, length(step_outcomes[step_types == "tte"])))) {
+          c(1, length(step_outcomes[step_types == "tte"])))) {
     stop(paste("fixed_followup_days needs to be either a single value or",
                "a vector with one value for each tte outcome"))
   }
@@ -449,9 +449,8 @@ plot_maraca <- function(
 
   for (outcome in step_outcomes[which_tte]) {
     plot <- plot +
-      ggplot2::geom_step(
-        data = plotdata[plotdata$outcome == outcome, ],
-        aes(x = x, y = y, color = arm))
+      ggplot2::geom_step(data = plotdata[plotdata$outcome == outcome, ],
+                         aes(x = x, y = y, color = arm))
   }
 
   if (length(which_binary) > 0) {

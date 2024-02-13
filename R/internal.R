@@ -189,10 +189,10 @@
   hce_ecdf_meta <- hce_ecdf %>%
     dplyr::group_by(arm, outcome) %>%
     dplyr::summarise(max = max(step_values, na.rm = TRUE),
-                     type = unique(type),
-                     sum.event = ifelse(type == "tte", n(),
-                                        unique(t_cdf))
-                     ) %>%
+      type = unique(type),
+      sum.event = ifelse(type == "tte", n(),
+                         unique(t_cdf))
+    ) %>%
     dplyr::arrange(max) %>%
     dplyr::mutate(
       ecdf_end = utils::tail(max, 1)
