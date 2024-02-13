@@ -62,7 +62,10 @@ test_that("createMaracaObject", {
   data <- .reformat_and_check_data(data, step_outcomes, last_outcome,
                                    arm_levels, column_names = column_names)
   meta <- .compute_metainfo(data)
+
+  step_types <- rep("tte", times = length(step_outcomes))
   hce_ecdf <- .compute_ecdf_by_outcome(data, meta, step_outcomes,
+                                       step_types = step_types,
                                        last_outcome,
                                        arm_levels, 3 * 365)
   continuous <- .compute_continuous(data, meta, hce_ecdf,
@@ -143,23 +146,26 @@ test_that("createMaracaObject", {
     column_names
   )
   meta <- .compute_metainfo(data)
+
+  step_types <- rep("tte", times = length(step_outcomes))
   hce_ecdf <- .compute_ecdf_by_outcome(data, meta, step_outcomes,
+                                       step_types = step_types,
                                        last_outcome, arm_levels, 3 * 365)
 
   # Checking the abssum along the columns to check that values remain the same.
   expect_equal(sum(abs(hce_ecdf$data$value)), 221627.7286)
   expect_equal(sum(abs(hce_ecdf$data$t_cdf)), 841397.7286)
-  expect_equal(sum(abs(hce_ecdf$data$ecdf_values)), 9367.6)
+  expect_equal(sum(abs(hce_ecdf$data$step_values)), 9367.6)
   expect_equal(sum(abs(hce_ecdf$data$adjusted.time)), 9142.184244)
 
   expect_equal(hce_ecdf$meta$max,
-               c(12.6, 23.6, 33.6, 40.4, 13.2,
-                 25.2, 37.2, 45.8), tol = 1e-6)
+               c(12.6, 13.2, 23.6, 25.2,
+                 33.6, 37.2, 40.4, 45.8), tol = 1e-6)
   expect_equal(hce_ecdf$meta$sum.event, c(
-    63, 55, 50, 34, 66, 60, 60, 43
+    63, 66, 55, 60, 50, 60, 34, 43
   ))
   expect_equal(hce_ecdf$meta$ecdf_end,
-    c(40.4, 40.4, 40.4, 40.4, 45.8, 45.8, 45.8, 45.8), tol = 1e-6
+    c(40.4, 45.8, 40.4, 45.8, 40.4, 45.8, 40.4, 45.8), tol = 1e-6
   )
 
   # test ordered column
@@ -970,10 +976,10 @@ test_that("validationFunction", {
   expect_equal(val_res_violin$tte_data$x, mar_tte_dat$adjusted.time)
   expect_equal(val_res_box$tte_data$x, mar_tte_dat$adjusted.time)
   expect_equal(val_res_scatter$tte_data$x, mar_tte_dat$adjusted.time)
-  expect_equal(val_res_def$tte_data$y, mar_tte_dat$ecdf_values)
-  expect_equal(val_res_violin$tte_data$y, mar_tte_dat$ecdf_values)
-  expect_equal(val_res_box$tte_data$y, mar_tte_dat$ecdf_values)
-  expect_equal(val_res_scatter$tte_data$y, mar_tte_dat$ecdf_values)
+  expect_equal(val_res_def$tte_data$y, mar_tte_dat$step_values)
+  expect_equal(val_res_violin$tte_data$y, mar_tte_dat$step_values)
+  expect_equal(val_res_box$tte_data$y, mar_tte_dat$step_values)
+  expect_equal(val_res_scatter$tte_data$y, mar_tte_dat$step_values)
   expect_equal(val_res_def$tte_data$group, mar_tte_dat$arm)
   expect_equal(val_res_violin$tte_data$group, mar_tte_dat$arm)
   expect_equal(val_res_box$tte_data$group, mar_tte_dat$arm)

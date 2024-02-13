@@ -48,7 +48,8 @@
     dplyr::group_by(outcome) %>%
     dplyr::summarise(min = min(value), max = max(value)) %>%
     dplyr::mutate(separation = max - min) %>%
-    dplyr::summarise(max_separation = max(separation))
+    dplyr::summarise(max_separation = max(separation)) %>%
+    dplyr::ungroup()
 
   # With the largest window found, we know that if we offset the data at
   # least of this amount, they will never overlap. Bit of clever math here,
@@ -84,20 +85,23 @@
       endx = cumsum(proportion),
       starty = 0,
       n.groups = length(unique(outcome))
-    )
+    ) %>%
+    dplyr::ungroup()
 
   meta2 <- hce_dat  %>%
     dplyr::filter(!is.na(value)) %>%
     dplyr::group_by(outcome, arm) %>%
     dplyr::summarise(n = n(), proportion = n / dim(hce_dat)[[1]] * 100) %>%
     dplyr::mutate("arm" = gsub(" ", "_", tolower(arm))) %>%
-    tidyr::pivot_wider(names_from = arm, values_from = c(n, proportion))
+    tidyr::pivot_wider(names_from = arm, values_from = c(n, proportion)) %>%
+    dplyr::ungroup()
 
   meta_missing <- hce_dat %>%
     dplyr::group_by(outcome) %>%
     dplyr::summarise(
       missing = sum(is.na(value))
-    )
+    ) %>%
+    dplyr::ungroup()
 
   meta <- dplyr::left_join(meta1, meta2, "outcome")
   meta <- dplyr::left_join(meta, meta_missing, "outcome")
@@ -107,42 +111,72 @@
 
 # Calculates the cumulative distribution for TTE outcomes
 .compute_ecdf_by_outcome <- function(
-  hce_dat, meta, step_outcomes, last_outcome, arm_levels,
-  fixed_followup_days
+  hce_dat, meta, step_outcomes, step_types,
+  last_outcome, arm_levels, fixed_followup_days
 ) {
 
   `%>%` <- dplyr::`%>%`
   n <- dplyr::n
 
-  num_tte_outcomes <- length(step_outcomes)
+  num_step_outcomes <- length(step_outcomes)
+
+  tte_outcomes <- step_outcomes[which(step_types == "tte")]
+  binary_outcomes <- step_outcomes[which(step_types == "binary")]
 
   if (length(fixed_followup_days) == 1) {
-    fixed_followup_days <- rep(fixed_followup_days, times = num_tte_outcomes)
+    fixed_followup_days <- sapply(step_types, function(type) {
+      ifelse(type == "binary", 2, fixed_followup_days)
+    }, USE.NAMES = FALSE)
   }
 
   hce_dat$t_cdf <- sum(fixed_followup_days) + 2 * max(fixed_followup_days)
-  hce_dat$ecdf_values <- 0
+  hce_dat$step_values <- 0
 
-  for (i in seq_len(num_tte_outcomes)) {
+  for (i in seq_len(num_step_outcomes)) {
 
+    idx <- hce_dat$outcome == step_outcomes[[i]]
     add_previous_end <- ifelse(i == 1, 0, sum(fixed_followup_days[1:(i - 1)]))
-    hce_dat[hce_dat$outcome == step_outcomes[[i]], ]$t_cdf <-
-      hce_dat[hce_dat$outcome == step_outcomes[[i]], ]$value +
-      add_previous_end
+    hce_dat[idx, ]$t_cdf <- hce_dat[idx, ]$value + add_previous_end
 
     for (arm in arm_levels) {
       idx <- hce_dat$outcome == step_outcomes[[i]] & hce_dat$arm == arm
-      hce_dat[idx, ]$ecdf_values <-
+
+      hce_dat[idx, ]$step_values <-
         100 *
         stats::ecdf(hce_dat[hce_dat$arm == arm, ]$t_cdf)(hce_dat[idx, ]$t_cdf)
+
     }
+
   }
 
-  hce_ecdf <- hce_dat[hce_dat$outcome %in% step_outcomes, ]
-  hce_ecdf <- hce_ecdf[order(hce_ecdf$ecdf_values), ]
+  hce_ecdf <- hce_dat[hce_dat$outcome %in% tte_outcomes,
+                      c("outcome", "arm", "value", "step_values",
+                        "t_cdf")]
+
+  if (length(binary_outcomes) != 0) {
+    hce_ecdf_binary <- hce_dat[hce_dat$outcome %in% binary_outcomes, ]
+    hce_ecdf_binary <- hce_ecdf_binary %>%
+      dplyr::group_by(outcome, arm) %>%
+      dplyr::summarize(t_cdf = sum(value),
+                       step_values = unique(step_values),
+                       value = 1) %>%
+      dplyr::ungroup()
+
+    hce_ecdf <- rbind(hce_ecdf,
+                      hce_ecdf_binary[, c("outcome", "arm", "value",
+                                          "step_values", "t_cdf")])
+  }
+
+  hce_ecdf <- hce_ecdf[order(hce_ecdf$step_values), ]
+
+  endpoint <- data.frame("outcome" = step_outcomes,
+                         "type" = step_types)
+
+  hce_ecdf <- dplyr::left_join(hce_ecdf, endpoint,
+                               by = "outcome")
 
   hce_ecdf$adjusted.time <- 0
-  for (i in seq_len(num_tte_outcomes)) {
+  for (i in seq_len(num_step_outcomes)) {
     entry <- step_outcomes[i]
     outcome_filter <- hce_ecdf$outcome == entry
     hce_ecdf[outcome_filter, ]$adjusted.time <-
@@ -154,11 +188,16 @@
 
   hce_ecdf_meta <- hce_ecdf %>%
     dplyr::group_by(arm, outcome) %>%
-    dplyr::summarise(max = max(ecdf_values, na.rm = TRUE),
-                     sum.event = n()) %>%
+    dplyr::summarise(max = max(step_values, na.rm = TRUE),
+                     type = unique(type),
+                     sum.event = ifelse(type == "tte", n(),
+                                        unique(t_cdf))
+                     ) %>%
+    dplyr::arrange(max) %>%
     dplyr::mutate(
       ecdf_end = utils::tail(max, 1)
-    )
+    ) %>%
+    dplyr::ungroup()
 
   return(list(
     data = hce_ecdf,
@@ -192,7 +231,8 @@
   continuous_meta <- continuous_data %>%
     dplyr::group_by(arm) %>%
     dplyr::summarise(n = n(), median = stats::median(x, na.rm = TRUE),
-                     average = base::mean(x, na.rm = TRUE))
+                     average = base::mean(x, na.rm = TRUE)) %>%
+    dplyr::ungroup()
 
   continuous_data$y <- ecdf_mod$meta[
     ecdf_mod$meta$arm == unname(arm_levels["active"]) &
@@ -235,7 +275,8 @@
     dplyr::group_by(arm) %>%
     dplyr::summarise(n = n(),
                      average = base::mean(value, na.rm = TRUE),
-                     conf_int = 1.96 * sqrt((average * (1 - average)) / n))
+                     conf_int = 1.96 * sqrt((average * (1 - average)) / n)) %>%
+    dplyr::ungroup()
 
   x_radius <- (100 - start_binary_endpoint) * min(binary_meta$conf_int)
   y_height <- min(c(0.4 * abs(actv_y - ctrl_y), 0.8 * x_radius))
@@ -379,6 +420,7 @@
 
 .maraca_from_hce_data <- function(x, last_outcome, arm_levels,
                                   fixed_followup_days, compute_win_odds,
+                                  step_types = "tte",
                                   last_type = "continuous") {
 
   checkmate::assert_string(last_outcome)
@@ -418,6 +460,7 @@
     arm_levels = arm_levels,
     fixed_followup_days = fixed_followup_days,
     compute_win_odds = compute_win_odds,
+    step_types = step_types,
     last_type = last_type
   )
 
@@ -534,9 +577,21 @@
   checkmate::assert_choice(
     density_plot_type, c("default", "violin", "box", "scatter")
   )
-  checkmate::assert_choice(
-    vline_type, c("median", "mean", "none")
-  )
+
+  if (!(is.null(vline_type) ||
+          checkmate::testString(vline_type))) {
+    stop("vline_type has to be a string or NULL")
+  }
+
+  if (is.null(vline_type)) {
+    vline_type <- "median"
+  } else {
+    checkmate::assert_choice(
+      vline_type, c("median", "mean", "none")
+    )
+  }
+
+  return(vline_type)
 }
 
 .checks_binary_outcome <- function(density_plot_type,
@@ -544,9 +599,21 @@
   checkmate::assert_choice(
     density_plot_type, c("default")
   )
-  checkmate::assert_choice(
-    vline_type, c("mean", "none")
-  )
+
+  if (!(is.null(vline_type) ||
+          checkmate::testString(vline_type))) {
+    stop("vline_type has to be a string or NULL")
+  }
+
+  if (is.null(vline_type)) {
+    vline_type <- "mean"
+  } else {
+    checkmate::assert_choice(
+      vline_type, c("mean", "none")
+    )
+  }
+
+  return(vline_type)
 }
 
 .create_validation_tte <- function(layers, x, arms) {

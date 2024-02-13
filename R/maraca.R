@@ -70,7 +70,7 @@ maraca <- function(
     arm = "arm",
     value = "value"
   ),
-  fixed_followup_days,
+  fixed_followup_days = NULL,
   compute_win_odds = FALSE,
   step_types = "tte",
   last_type = "continuous",
@@ -107,12 +107,23 @@ maraca <- function(
 
   checkmate::assert_integerish(fixed_followup_days)
 
+  checkmate::assert_character(step_types)
+  checkmate::assert_subset(step_types,
+                           choices = c("tte", "binary"),
+                           empty.ok = FALSE)
+
+  if (!(length(step_types) %in% c(1, length(step_outcomes)))) {
+    stop(paste("step_types needs to be either a single string or",
+               "a vector with one value for each tte outcome"))
+  }
+
   checkmate::assert_string(last_type)
   checkmate::assert_subset(last_type,
                            choices = c("continuous", "binary"),
                            empty.ok = FALSE)
 
-  if (!(length(fixed_followup_days) %in% c(1, length(step_outcomes)))) {
+  if (!(length(fixed_followup_days) %in%
+        c(1, length(step_outcomes[step_types == "tte"])))) {
     stop(paste("fixed_followup_days needs to be either a single value or",
                "a vector with one value for each tte outcome"))
   }
@@ -162,8 +173,14 @@ maraca <- function(
   hce_dat <- hce_dat %>%
     dplyr::filter(!is.na(value))
 
+  # Vectorize step type if singular value
+  if (length(step_types) == 1) {
+    step_types <- rep(step_types, times = length(step_outcomes))
+  }
+
   ecdf_by_outcome <- .compute_ecdf_by_outcome(
-    hce_dat, meta, step_outcomes, last_outcome, arm_levels,
+    hce_dat, meta, step_outcomes, step_types,
+    last_outcome, arm_levels,
     fixed_followup_days
   )
 
@@ -189,6 +206,7 @@ maraca <- function(
       list(
         step_outcomes = step_outcomes,
         last_outcome = last_outcome,
+        step_types = step_types,
         last_type = last_type,
         arm_levels = arm_levels,
         fixed_followup_days = fixed_followup_days,
@@ -277,7 +295,7 @@ plot_maraca <- function(
     obj, continuous_grid_spacing_x = NULL,
     trans = "identity",
     density_plot_type = "default",
-    vline_type = "median",
+    vline_type = NULL,
     theme = "maraca") {
 
   checkmate::assert_class(obj, "maraca")
@@ -294,15 +312,19 @@ plot_maraca <- function(
 
   meta <- obj$meta
   step_outcomes <- obj$step_outcomes
+  step_types <- obj$step_types
+  which_tte <- which(step_types == "tte")
+  which_binary <- which(step_types == "binary")
   last_data <- obj$data_last_outcome
   last_type <- obj$last_type
 
-  switch(last_type,
-         "continuous" = .checks_continuous_outcome(density_plot_type,
-                                                   vline_type),
-         "binary" = .checks_binary_outcome(density_plot_type,
-                                           vline_type),
-         stop("Unsupported last outcome type"))
+  vline_type <-
+    switch(last_type,
+           "continuous" = .checks_continuous_outcome(density_plot_type,
+                                                     vline_type),
+           "binary" = .checks_binary_outcome(density_plot_type,
+                                             vline_type),
+           stop("Unsupported last outcome type"))
 
   ecdf_mod <- obj$ecdf_by_outcome
   win_odds <- obj$win_odds
@@ -314,8 +336,8 @@ plot_maraca <- function(
   }
 
   plotdata_ecdf <- ecdf_mod$data[, c("outcome", "arm",
-                                     "adjusted.time", "ecdf_values")]
-  plotdata_ecdf$type <- "tte"
+                                     "adjusted.time", "step_values",
+                                     "type")]
   names(plotdata_ecdf) <- c("outcome", "arm", "x", "y", "type")
   plotdata_last <- last_data$data[, c("outcome", "arm", "x", "y")]
   plotdata_last$type <- last_type
@@ -336,17 +358,18 @@ plot_maraca <- function(
 
   plotdata_ecdf <- plotdata_ecdf[order(plotdata_ecdf$x), ]
 
-  # # Add starting point of next curve to avoid jumps
+  # Add end point of previous curve to avoid jumps
   add_points <-
     do.call("rbind",
-            lapply(1:(length(step_outcomes) - 1),
+            lapply(2:length(step_outcomes),
                    function(i) {
                      plotdata_ecdf %>%
                        dplyr::group_by(arm) %>%
-                       dplyr::filter(outcome == step_outcomes[i + 1]) %>%
-                       dplyr::slice_head(n = 1) %>%
+                       dplyr::filter(outcome == step_outcomes[i - 1]) %>%
+                       dplyr::slice_tail(n = 1) %>%
                        dplyr::ungroup() %>%
-                       dplyr::mutate(outcome = step_outcomes[i])
+                       dplyr::mutate(outcome = step_outcomes[i]) %>%
+                       dplyr::ungroup()
                    }))
 
   plotdata_ecdf <- rbind(
@@ -366,6 +389,8 @@ plot_maraca <- function(
     plotdata_ecdf,
     add_points
   )
+
+  plotdata_ecdf <- plotdata_ecdf[order(plotdata_ecdf$x), ]
 
   plotdata <- as.data.frame(rbind(plotdata_ecdf, plotdata_last))
 
@@ -422,12 +447,66 @@ plot_maraca <- function(
       )
   }
 
-  for (outcome in step_outcomes) {
-
+  for (outcome in step_outcomes[which_tte]) {
     plot <- plot +
       ggplot2::geom_step(
-        data = plotdata[plotdata$type == "tte" & plotdata$outcome == outcome, ],
-        aes(x = x, y = y, color = arm)
+        data = plotdata[plotdata$outcome == outcome, ],
+        aes(x = x, y = y, color = arm))
+  }
+
+  if (length(which_binary) > 0) {
+
+    tmp <- plotdata[plotdata$outcome %in% step_outcomes[which_binary], ]
+
+    tmp <- tmp[order(tmp$x), ]
+
+    if (step_types[length(step_types)] == "binary") {
+      tmp <- dplyr::slice_head(tmp, n = -2)
+    }
+
+    tmp1 <- tmp %>%
+      dplyr::group_by(outcome, arm) %>%
+      dplyr::summarize("xend" = max(x),
+                       "x" = min(x),
+                       "y" = min(y)) %>%
+      dplyr::ungroup()
+
+    tmp2 <- tmp %>%
+      dplyr::group_by(outcome, arm) %>%
+      dplyr::summarize("x" = max(x),
+                       "yend" = max(y),
+                       "y" = min(y)) %>%
+      dplyr::ungroup()
+
+    plot <- plot +
+      ggplot2::geom_segment(
+        data = tmp1,
+        aes(x = x, y = y, xend = xend, yend = y,
+            color = arm)
+      ) +
+      ggplot2::geom_segment(
+        data = tmp2,
+        aes(x = x, y = y, xend = x, yend = yend),
+        color = "darkgrey", linetype = 2
+      )
+  }
+
+  if (step_types[length(step_types)] == "binary") {
+
+    tmp <- plotdata %>%
+      dplyr::filter(outcome == step_outcomes[length(step_types)]) %>%
+      dplyr::group_by(arm) %>%
+      dplyr::slice_tail(n = -1) %>%
+      dplyr::summarize("xend" = max(x),
+                       "x" = min(x),
+                       "y" = max(y)) %>%
+      dplyr::ungroup()
+
+    plot <- plot +
+      ggplot2::geom_segment(
+        data = tmp,
+        aes(x = x, y = y, xend = xend, yend = y,
+            color = arm)
       )
   }
 
@@ -435,18 +514,17 @@ plot_maraca <- function(
     if (last_type == "continuous") {
       plot <- plot +
         ggplot2::geom_violin(
-          data = plotdata[plotdata$type == "continuous", ],
+          data = plotdata_last,
           aes(x = x, y = y, colour = arm, fill = arm), alpha = 0.5
         ) + ggplot2::geom_boxplot(
-        data = plotdata[plotdata$type == "continuous", ],
+        data = plotdata_last,
         aes(x = x, y = y, colour = arm, fill = arm), alpha = 0.5,
         width =
-          abs(diff(as.numeric(unique(plotdata[plotdata$type == "continuous",
-                                     ]$y)))) / 3
+          abs(diff(as.numeric(unique(plotdata_last$y)))) / 3
       )
     } else if (last_type == "binary") {
       plot <- plot +
-        ggplot2::geom_polygon(data = plotdata[plotdata$type == "binary", ],
+        ggplot2::geom_polygon(data = plotdata_last,
                               ggplot2::aes(x = x, y = y, color = arm,
                                            fill = arm),
                               alpha = 0.5,
@@ -724,6 +802,7 @@ plot.hce <- function(x, last_outcome = "C",
                      vline_type = "median",
                      fixed_followup_days = NULL,
                      compute_win_odds = FALSE,
+                     step_types = "tte",
                      last_type = "continuous",
                      theme = "maraca",
                      continuous_outcome = lifecycle::deprecated(),
@@ -738,6 +817,7 @@ plot.hce <- function(x, last_outcome = "C",
   maraca_obj <- .maraca_from_hce_data(x, last_outcome, arm_levels,
                                       fixed_followup_days,
                                       compute_win_odds,
+                                      step_types = step_types,
                                       last_type = last_type)
 
   plot_maraca(maraca_obj, continuous_grid_spacing_x,
