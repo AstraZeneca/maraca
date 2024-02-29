@@ -105,7 +105,7 @@ maraca <- function(
     permutation.of = c("outcome", "arm", "value")
   )
 
-  checkmate::assert_integerish(fixed_followup_days)
+  checkmate::assert_numeric(fixed_followup_days)
 
   checkmate::assert_character(step_types)
   checkmate::assert_subset(step_types,

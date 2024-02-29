@@ -311,9 +311,9 @@ test_that("wrongParameters", {
   expect_error(
     maraca(data, step_outcomes, last_outcome, arm_levels,
       column_names,
-      fixed_followup_days = 12.3
+      fixed_followup_days = "12.3"
     ),
-    regexp = "Must be of type 'integerish'"
+    regexp = "Must be of type 'numeric', not 'character'."
   )
   expect_error(
     maraca(data, step_outcomes, last_outcome, arm_levels,

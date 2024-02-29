@@ -92,9 +92,10 @@
     dplyr::filter(!is.na(value)) %>%
     dplyr::group_by(outcome, arm) %>%
     dplyr::summarise(n = n(), proportion = n / dim(hce_dat)[[1]] * 100) %>%
+    dplyr::ungroup() %>%
     dplyr::mutate("arm" = gsub(" ", "_", tolower(arm))) %>%
-    tidyr::pivot_wider(names_from = arm, values_from = c(n, proportion)) %>%
-    dplyr::ungroup()
+    tidyr::pivot_wider(names_from = arm, values_from = c(n, proportion),
+                       values_fill = 0)
 
   meta_missing <- hce_dat %>%
     dplyr::group_by(outcome) %>%
@@ -118,60 +119,106 @@
   `%>%` <- dplyr::`%>%`
   n <- dplyr::n
 
+  # Calculate the number of unique step outcomes
   num_step_outcomes <- length(step_outcomes)
 
-  tte_outcomes <- step_outcomes[which(step_types == "tte")]
-  binary_outcomes <- step_outcomes[which(step_types == "binary")]
-
+  # Vectorize fixed follow-up days if there is only one value provided
+  # For binary values, follow-up time is always 2 (to create a jump
+  # in the middle of the step at 1)
   if (length(fixed_followup_days) == 1) {
     fixed_followup_days <- sapply(step_types, function(type) {
       ifelse(type == "binary", 2, fixed_followup_days)
     }, USE.NAMES = FALSE)
   }
 
+  # Every step outcome will be plotted over an x-axis range from 0
+  # to the fixed_follow_up days associated with the outcome
+
+  # Initialize the cumulative time-to-event (t_cdf) with a maximum
+  # value that is higher than the sum of all x-axis range parts
+  # The reason for this is that when fitting the individual step
+  # parts, we will go chronological and want to make sure that all
+  # steps at a later stage have been initialized with a later time
   hce_dat$t_cdf <- sum(fixed_followup_days) + 2 * max(fixed_followup_days)
+  # Initialize step_values column recording the size of the step (percentage
+  # of number t risk) at each time point
   hce_dat$step_values <- 0
 
+  # Iterate over each step outcome
   for (i in seq_len(num_step_outcomes)) {
 
+    # Filter rows by outcome
     idx <- hce_dat$outcome == step_outcomes[[i]]
+    # By default the value recorded in the data is the actual time of the step.
+    # Since we add concatenate different step functions, we need to update the
+    # x-axis to reflect the time of the step plus the cumulation of all the
+    # x-axis ranges of the previous step functions
     add_previous_end <- ifelse(i == 1, 0, sum(fixed_followup_days[1:(i - 1)]))
     hce_dat[idx, ]$t_cdf <- hce_dat[idx, ]$value + add_previous_end
 
+    # Iterate over each treatment arm
     for (arm in arm_levels) {
+      # Filter rows by outcome and arm
       idx <- hce_dat$outcome == step_outcomes[[i]] & hce_dat$arm == arm
 
+      # Fit the ECDF to the above updated x-axis range for the
+      # cumulative time-to-event by treatment arm
       hce_dat[idx, ]$step_values <-
         100 *
-        stats::ecdf(hce_dat[hce_dat$arm == arm, ]$t_cdf)(hce_dat[idx, ]$t_cdf)
+        stats::ecdf(hce_dat[hce_dat$arm == arm,
+                            ]$t_cdf)(hce_dat[idx, ]$t_cdf)
 
     }
 
   }
 
-  hce_ecdf <- hce_dat[hce_dat$outcome %in% tte_outcomes,
-                      c("outcome", "arm", "value", "step_values",
-                        "t_cdf")]
+  hce_ecdf <- hce_dat %>%
+      dplyr::filter(outcome %in% step_outcomes) %>%
+      unique()
 
-  if (length(binary_outcomes) != 0) {
-    hce_ecdf_binary <- hce_dat[hce_dat$outcome %in% binary_outcomes, ]
-    hce_ecdf_binary <- hce_ecdf_binary %>%
-      dplyr::group_by(outcome, arm) %>%
-      dplyr::summarize(t_cdf = sum(value),
-                       step_values = unique(step_values),
-                       value = 1) %>%
-      dplyr::ungroup()
+    # Double-check that all combinations of treatment and outcome have
+    # been included (not the case if one combination has no patients)
+    poss_comb <- expand.grid("outcome" = step_outcomes,
+                             "arm" = arm_levels)
+    missing_row <- dplyr::anti_join(poss_comb,
+                                    hce_ecdf[, c("outcome", "arm")])
 
-    hce_ecdf <- rbind(hce_ecdf,
-                      hce_ecdf_binary[, c("outcome", "arm", "value",
-                                          "step_values", "t_cdf")])
-  }
+    # If there are missing rows, fill them in
+    if (nrow(missing_row) > 0) {
 
+      for (i in 1:num_step_outcomes) {
+        # Check if current step outcome is missing
+        if (step_outcomes[[i]] %in% missing_row$outcome) {
+          tmp <- missing_row[missing_row$outcome == step_outcomes[[i]], ]
+          # Determine step values based on previous step if available
+          if (i == 1) {
+            step_values <- 0
+          } else {
+            tmp2 <-  hce_ecdf[hce_ecdf$outcome == step_outcomes[i - 1] &
+                              hce_ecdf$arm == tmp$arm, ]
+            step_values <- max(tmp2$step_values)
+          }
+          # Fetch existing data for the same outcome but different arm
+          tmp3 <-  hce_ecdf[hce_ecdf$outcome == step_outcomes[[i]] &
+                            hce_ecdf$arm != tmp$arm, ]
+          # Append missing row to the main data frame
+          hce_ecdf <-
+            rbind(hce_ecdf,
+                  data.frame(outcome = step_outcomes[[i]],
+                             arm = tmp$arm,
+                             t_cdf = mean(tmp3$t_cdf),
+                             step_values = step_values,
+                             value = 0))
+        }
+      }
+    }
+
+  # Order the data frame by step values
   hce_ecdf <- hce_ecdf[order(hce_ecdf$step_values), ]
 
+  # Add names of set outcomes and associated type (tte or binary) to data
   endpoint <- data.frame("outcome" = step_outcomes,
                          "type" = step_types)
-
   hce_ecdf <- dplyr::left_join(hce_ecdf, endpoint,
                                by = "outcome")
 
@@ -186,6 +233,7 @@
       meta[meta$outcome == entry, ]$proportion
   }
 
+  # Summarize maximum step values, type, and sum of events
   hce_ecdf_meta <- hce_ecdf %>%
     dplyr::group_by(arm, outcome) %>%
     dplyr::summarise(max = max(step_values, na.rm = TRUE),
