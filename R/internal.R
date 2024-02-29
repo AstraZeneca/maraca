@@ -166,52 +166,52 @@
       hce_dat[idx, ]$step_values <-
         100 *
         stats::ecdf(hce_dat[hce_dat$arm == arm,
-                            ]$t_cdf)(hce_dat[idx, ]$t_cdf)
+                    ]$t_cdf)(hce_dat[idx, ]$t_cdf)
 
     }
 
   }
 
   hce_ecdf <- hce_dat %>%
-      dplyr::filter(outcome %in% step_outcomes) %>%
-      unique()
+    dplyr::filter(outcome %in% step_outcomes) %>%
+    unique()
 
-    # Double-check that all combinations of treatment and outcome have
-    # been included (not the case if one combination has no patients)
-    poss_comb <- expand.grid("outcome" = step_outcomes,
-                             "arm" = arm_levels)
-    missing_row <- dplyr::anti_join(poss_comb,
-                                    hce_ecdf[, c("outcome", "arm")])
+  # Double-check that all combinations of treatment and outcome have
+  # been included (not the case if one combination has no patients)
+  poss_comb <- expand.grid("outcome" = step_outcomes,
+                           "arm" = arm_levels)
+  missing_row <- dplyr::anti_join(poss_comb,
+                                  hce_ecdf[, c("outcome", "arm")])
 
-    # If there are missing rows, fill them in
-    if (nrow(missing_row) > 0) {
+  # If there are missing rows, fill them in
+  if (nrow(missing_row) > 0) {
 
-      for (i in 1:num_step_outcomes) {
-        # Check if current step outcome is missing
-        if (step_outcomes[[i]] %in% missing_row$outcome) {
-          tmp <- missing_row[missing_row$outcome == step_outcomes[[i]], ]
-          # Determine step values based on previous step if available
-          if (i == 1) {
-            step_values <- 0
-          } else {
-            tmp2 <-  hce_ecdf[hce_ecdf$outcome == step_outcomes[i - 1] &
-                              hce_ecdf$arm == tmp$arm, ]
-            step_values <- max(tmp2$step_values)
-          }
-          # Fetch existing data for the same outcome but different arm
-          tmp3 <-  hce_ecdf[hce_ecdf$outcome == step_outcomes[[i]] &
-                            hce_ecdf$arm != tmp$arm, ]
-          # Append missing row to the main data frame
-          hce_ecdf <-
-            rbind(hce_ecdf,
-                  data.frame(outcome = step_outcomes[[i]],
-                             arm = tmp$arm,
-                             t_cdf = mean(tmp3$t_cdf),
-                             step_values = step_values,
-                             value = 0))
+    for (i in 1:num_step_outcomes) {
+      # Check if current step outcome is missing
+      if (step_outcomes[[i]] %in% missing_row$outcome) {
+        tmp <- missing_row[missing_row$outcome == step_outcomes[[i]], ]
+        # Determine step values based on previous step if available
+        if (i == 1) {
+          step_values <- 0
+        } else {
+          tmp2 <-  hce_ecdf[hce_ecdf$outcome == step_outcomes[i - 1] &
+                            hce_ecdf$arm == tmp$arm, ]
+          step_values <- max(tmp2$step_values)
         }
+        # Fetch existing data for the same outcome but different arm
+        tmp3 <-  hce_ecdf[hce_ecdf$outcome == step_outcomes[[i]] &
+                          hce_ecdf$arm != tmp$arm, ]
+        # Append missing row to the main data frame
+        hce_ecdf <-
+          rbind(hce_ecdf,
+                data.frame(outcome = step_outcomes[[i]],
+                           arm = tmp$arm,
+                           t_cdf = mean(tmp3$t_cdf),
+                           step_values = step_values,
+                           value = 0))
       }
     }
+  }
 
   # Order the data frame by step values
   hce_ecdf <- hce_ecdf[order(hce_ecdf$step_values), ]
