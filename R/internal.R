@@ -195,12 +195,12 @@
           step_values <- 0
         } else {
           tmp2 <-  hce_ecdf[hce_ecdf$outcome == step_outcomes[i - 1] &
-                            hce_ecdf$arm == tmp$arm, ]
+                              hce_ecdf$arm == tmp$arm, ]
           step_values <- max(tmp2$step_values)
         }
         # Fetch existing data for the same outcome but different arm
         tmp3 <-  hce_ecdf[hce_ecdf$outcome == step_outcomes[[i]] &
-                          hce_ecdf$arm != tmp$arm, ]
+                            hce_ecdf$arm != tmp$arm, ]
         # Append missing row to the main data frame
         hce_ecdf <-
           rbind(hce_ecdf,
