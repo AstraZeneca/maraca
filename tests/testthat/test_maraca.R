@@ -940,7 +940,8 @@ test_that("validationFunction", {
   expect_type(val_res_scatter, "list")
 
   expected_names <- c("plot_type", "proportions",
-                      "tte_data", "scatter_data",
+                      "tte_data", "binary_step_data",
+                      "binary_last_data", "scatter_data",
                       "boxstat_data", "violin_data",
                       "wo_stats")
   expect_named(val_res_def, expected_names, ignore.order = TRUE)

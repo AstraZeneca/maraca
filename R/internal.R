@@ -692,10 +692,75 @@
   return(tte_data)
 }
 
+.create_validation_binary_step <- function(layers, x, arms) {
+
+  binary_layers <- which(layers == "GeomSegment")
+
+  if (length(binary_layers) != 0) {
+    binary_step_data <-
+      do.call("rbind",
+              lapply(binary_layers,
+                     function(i) {
+                       dat <- ggplot2::layer_data(plot = x,
+                                                  i = i)[, c("x", "y",
+                                                             "yend",
+                                                             "group",
+                                                             "linetype")]
+                       return(dat)
+                     }))
+
+    binary_step_data <- binary_step_data %>%
+      dplyr::filter(linetype == 2) %>%
+      dplyr::mutate(proportion = yend - y) %>%
+      dplyr::select(x, y, proportion, group)
+
+    binary_step_data$group <- factor(binary_step_data$group, labels = arms)
+
+  } else {
+    binary_step_data <- NULL
+  }
+
+  return(binary_step_data)
+}
+
+.create_validation_binary_last <- function(layers, x, arms) {
+
+  polygon_layers <- which(layers == "GeomPolygon")
+  point_layers <- which(layers == "GeomPoint")
+
+    if (length(polygon_layers) == 1 &&
+          length(point_layers) == 1) {
+
+      point_data <- ggplot2::layer_data(x, point_layers) %>%
+        dplyr::select(x, y, group)
+
+      polygon_data <- unique(ggplot2::layer_data(x, polygon_layers))
+      polygon_data <- polygon_data %>%
+        dplyr::filter(y %in% point_data$y) %>%
+        dplyr::group_by(group) %>%
+        dplyr::summarise("lower_se" = base::min(x, na.rm = TRUE),
+                         "upper_se" = base::max(x, na.rm = TRUE))
+
+      binary_data <- dplyr::left_join(point_data, polygon_data,
+                                      by = "group")
+      binary_data$se <- binary_data$x - binary_data$lower_se
+      binary_data$group <- factor(binary_data$group, labels = arms)
+
+    } else {
+
+      binary_data <- NULL
+
+    }
+
+  return(binary_data)
+}
+
+
+
 .create_validation_scatter <- function(layers, x, arms) {
   scatter_data <- do.call("rbind", lapply(which(layers == "GeomPoint"),
                                           ggplot2::layer_data, plot = x))
-  if (!is.null(scatter_data)) {
+  if (!is.null(scatter_data) && nrow(scatter_data) > 2) {
     scatter_data <- scatter_data[, c("group", "x", "y")]
     scatter_data$group <- factor(scatter_data$group, labels = arms)
   }

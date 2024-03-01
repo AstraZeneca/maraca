@@ -485,7 +485,8 @@ plot_maraca <- function(
       ) +
       ggplot2::geom_segment(
         data = tmp2,
-        aes(x = x, y = y, xend = x, yend = yend),
+        aes(x = x, y = y, xend = x, yend = yend,
+            group = arm),
         color = "darkgrey", linetype = 2
       )
   }
@@ -662,6 +663,8 @@ validate_maraca_plot <- function(x,  ...) {
   arms <- levels(pb$plot$data[, pb$plot$labels$colour])
 
   tte_data <- .create_validation_tte(layers, x, arms)
+  binary_step_data <- .create_validation_binary_step(layers, x, arms)
+  binary_last_data <- .create_validation_binary_last(layers, x, arms)
   scatter_data <- .create_validation_scatter(layers, x, arms)
   boxstat_data <- .create_validation_box(layers, x, arms)
   violin_data <- .create_validation_violin(layers, x, arms)
@@ -685,6 +688,8 @@ validate_maraca_plot <- function(x,  ...) {
       plot_type = plot_type,
       proportions = proportions,
       tte_data = tte_data,
+      binary_step_data = binary_step_data,
+      binary_last_data = binary_last_data,
       scatter_data = scatter_data,
       boxstat_data = boxstat_data,
       violin_data = violin_data,
