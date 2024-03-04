@@ -12,7 +12,9 @@
 }
 
 # Computes the win odds from the internal data.
-.compute_win_odds <- function(hce_dat, arm_levels) {
+.compute_win_odds <- function(hce_dat, arm_levels,
+                              step_outcomes, last_outcome) {
+
   hce_dat <- base::as.data.frame(hce_dat)
   hce_dat <- .with_ordered_column(hce_dat)
   fit <- hce::calcWO(x = hce_dat, AVAL = "ordered",
@@ -27,8 +29,45 @@
                                      ref = unname(arm_levels["control"]),
                                      GROUP = "outcome")
 
+  endpoints <- c(step_outcomes, last_outcome)
+  hce_dat <- hce_dat %>%
+    dplyr::mutate_at(dplyr::vars(outcome), factor, levels = c(endpoints, "X"))
+
+  calcs_lst <- lapply(seq_along(endpoints), function(x) {
+    idx <- !(hce_dat$outcome %in% endpoints[1:x])
+    hce_dat[idx, "outcome"] <- "X"
+    hce_dat[idx, "ordered"] <- 1000000
+    wins <- hce::calcWINS(hce_dat, AVAL = "ordered", TRTP = "arm",
+                          ref = unname(arm_levels["control"]),
+                          GROUP = "outcome")
+    wo <- hce::summaryWO(hce_dat, AVAL = "ordered", TRTP = "arm",
+                           ref = unname(arm_levels["control"]),
+                           GROUP = "outcome")
+    list("wins" = wins, "wo" = wo)
+  })
+
+  wins_forest <- do.call("rbind", lapply(calcs_lst, function(c_lst) {
+    wins <- c_lst$wins
+    nm <- c("value", "LCL", "UCL", "p value")
+    rbind(data.frame(setNames(wins$WO, nm), "method" = "win odds"),
+          data.frame(setNames(wins$WR1, nm), "method" = "win ratio"))
+  }))
+
+  wo_bar <- do.call("rbind", lapply(seq_along(calcs_lst), function(i) {
+    wo <- head(calcs_lst[[i]]$wo$summary, 1)
+    wo$outcome <- endpoints[i]
+    wo %>%
+      dplyr::rename(dplyr::all_of(c(wins = "WIN", losses = "LOSS",
+                                    ties = "TIE"))) %>%
+      tidyr::pivot_longer(cols = c(wins, losses, ties)) %>%
+      dplyr::mutate_at(dplyr::vars(name), factor,
+                       levels = c("wins", "losses", "ties"))
+  }))
+
   return(list("win_odds" = win_odds,
-              "win_odds_outcome" = win_odds_outcome))
+              "win_odds_outcome" = win_odds_outcome,
+              "wins_forest" = wins_forest,
+              "wo_bar" = wo_bar))
 
 }
 
@@ -333,8 +372,9 @@
                      x = base::sum(value, na.rm = TRUE),
                      average = 100 *
                        as.numeric(stats::prop.test(x, n)$estimate),
-                     se = abs(average - (100 *
-                       as.numeric(stats::prop.test(x, n)$conf.int)[1]))) %>%
+                     se = abs(average -
+                                (100 * as.numeric(
+                                  stats::prop.test(x, n)$conf.int)[1]))) %>%
     dplyr::ungroup()
 
   # To create ellipsis shape and avoid overlapping between both of them,

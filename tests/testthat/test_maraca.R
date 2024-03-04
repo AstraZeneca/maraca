@@ -516,7 +516,8 @@ test_that("winOddsData", {
     arm_levels, column_names = column_names
   )
 
-  win_odds_list <- .compute_win_odds(data, arm_levels)
+  win_odds_list <- .compute_win_odds(data, arm_levels,
+                                     step_outcomes, last_outcome)
   win_odds <- win_odds_list[["win_odds"]]
 
   expect_equal(class(win_odds), "numeric")

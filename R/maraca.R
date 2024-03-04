@@ -196,9 +196,11 @@ maraca <- function(
     data_last_outcome <- NULL
   }
 
-  win_odds <- list("win_odds" = NULL, "win_odds_outcome" = NULL)
+  win_odds <- list("win_odds" = NULL, "win_odds_outcome" = NULL,
+                   "wins_forest" = NULL, "wo_bar" = NULL)
   if (compute_win_odds) {
-    win_odds <- .compute_win_odds(hce_dat, arm_levels)
+    win_odds <- .compute_win_odds(hce_dat, arm_levels,
+                                  step_outcomes, last_outcome)
   }
 
   return(
@@ -215,7 +217,9 @@ maraca <- function(
         ecdf_by_outcome = ecdf_by_outcome,
         data_last_outcome = data_last_outcome,
         win_odds = win_odds[["win_odds"]],
-        win_odds_outcome = win_odds[["win_odds_outcome"]]
+        win_odds_outcome = win_odds[["win_odds_outcome"]],
+        wins_forest = win_odds[["wins_forest"]],
+        wo_bar = win_odds[["wo_bar"]]
       ),
       class = c("maraca")
     )
