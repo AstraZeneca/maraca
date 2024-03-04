@@ -6,10 +6,10 @@
 \usage{
 plot_maraca(
   obj,
-  continuous_grid_spacing_x = 10,
+  continuous_grid_spacing_x = NULL,
   trans = "identity",
   density_plot_type = "default",
-  vline_type = "median",
+  vline_type = NULL,
   theme = "maraca"
 )
 }
@@ -25,8 +25,11 @@ The accepted values are the same that ggplot2::scale_x_continuous}
 \item{density_plot_type}{which type of plot to display in the continuous
 part of the plot. Options are "default", "violin", "box", "scatter".}
 
-\item{vline_type}{what the vertical lines in the continuous part of the plot
-should highlight. Options are "median", "mean", "none".}
+\item{vline_type}{what the vertical dashed line should represent. Accepts
+"median" (only for continuous last endpoint), "mean", "none" and
+NULL (default). By default (vline_type = NULL), vline_type will be
+set to "median" for a continuous last endpoint and to "mean" for
+a binary last endpoint.}
 
 \item{theme}{Choose theme to style the plot. The default theme is "maraca".
 Options are "maraca", "maraca_old", "color1", "color2" and none".

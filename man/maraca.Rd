@@ -13,7 +13,7 @@ maraca(
   last_outcome,
   arm_levels = c(active = "active", control = "control"),
   column_names = c(outcome = "outcome", arm = "arm", value = "value"),
-  fixed_followup_days,
+  fixed_followup_days = NULL,
   compute_win_odds = FALSE,
   step_types = "tte",
   last_type = "continuous",

@@ -269,8 +269,11 @@ print.maraca <- function(x, ...) {
 #'        The accepted values are the same that ggplot2::scale_x_continuous
 #' @param density_plot_type which type of plot to display in the continuous
 #'        part of the plot. Options are "default", "violin", "box", "scatter".
-#' @param vline_type what the vertical lines in the continuous part of the plot
-#'        should highlight. Options are "median", "mean", "none".
+#' @param vline_type what the vertical dashed line should represent. Accepts
+#'        "median" (only for continuous last endpoint), "mean", "none" and
+#'        NULL (default). By default (vline_type = NULL), vline_type will be
+#'        set to "median" for a continuous last endpoint and to "mean" for
+#'        a binary last endpoint.
 #' @param theme Choose theme to style the plot. The default theme is "maraca".
 #'        Options are "maraca", "maraca_old", "color1", "color2" and none".
 #'        For more details, check the vignette called
@@ -709,7 +712,10 @@ validate_maraca_plot <- function(x,  ...) {
 #' @param density_plot_type The type of plot to use to represent the density.
 #'        Accepts "default", "violin", "box" and "scatter".
 #' @param vline_type what the vertical dashed line should represent. Accepts
-#'        "median", "mean", "none".
+#'        "median" (only for continuous last endpoint), "mean", "none" and
+#'        NULL (default). By default (vline_type = NULL), vline_type will be
+#'        set to "median" for a continuous last endpoint and to "mean" for
+#'        a binary last endpoint.
 #' @param theme Choose theme to style the plot. The default theme is "maraca".
 #'        Options are "maraca", "maraca_old", "color1", "color2" and none".
 #'        For more details, check the vignette called
@@ -733,7 +739,7 @@ validate_maraca_plot <- function(x,  ...) {
 plot.maraca <- function(
     x, continuous_grid_spacing_x = 10, trans = "identity",
     density_plot_type = "default",
-    vline_type = "median",
+    vline_type = NULL,
     theme = "maraca",
     ...) {
   plot_maraca(x, continuous_grid_spacing_x,
@@ -760,7 +766,10 @@ plot.maraca <- function(
 #' @param density_plot_type The type of plot to use to represent the density.
 #'        Accepts "default", "violin", "box" and "scatter".
 #' @param vline_type what the vertical dashed line should represent. Accepts
-#'        "median", "mean", "none".
+#'        "median" (only for continuous last endpoint), "mean", "none" and
+#'        NULL (default). By default (vline_type = NULL), vline_type will be
+#'        set to "median" for a continuous last endpoint and to "mean" for
+#'        a binary last endpoint.
 #' @param fixed_followup_days Not needed if HCE object contains information
 #'                            on fixed follow-up days in the study
 #'                            (column PADY or TTEfixed,
@@ -803,7 +812,7 @@ plot.hce <- function(x, last_outcome = "C",
                      continuous_grid_spacing_x = 10,
                      trans = "identity",
                      density_plot_type = "default",
-                     vline_type = "median",
+                     vline_type = NULL,
                      fixed_followup_days = NULL,
                      compute_win_odds = FALSE,
                      step_types = "tte",
