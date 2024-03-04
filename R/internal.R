@@ -728,29 +728,29 @@
   polygon_layers <- which(layers == "GeomPolygon")
   point_layers <- which(layers == "GeomPoint")
 
-    if (length(polygon_layers) == 1 &&
-          length(point_layers) == 1) {
+  if (length(polygon_layers) == 1 &&
+        length(point_layers) == 1) {
 
-      point_data <- ggplot2::layer_data(x, point_layers) %>%
-        dplyr::select(x, y, group)
+    point_data <- ggplot2::layer_data(x, point_layers) %>%
+      dplyr::select(x, y, group)
 
-      polygon_data <- unique(ggplot2::layer_data(x, polygon_layers))
-      polygon_data <- polygon_data %>%
-        dplyr::filter(y %in% point_data$y) %>%
-        dplyr::group_by(group) %>%
-        dplyr::summarise("lower_se" = base::min(x, na.rm = TRUE),
-                         "upper_se" = base::max(x, na.rm = TRUE))
+    polygon_data <- unique(ggplot2::layer_data(x, polygon_layers))
+    polygon_data <- polygon_data %>%
+      dplyr::filter(y %in% point_data$y) %>%
+      dplyr::group_by(group) %>%
+      dplyr::summarise("lower_se" = base::min(x, na.rm = TRUE),
+                       "upper_se" = base::max(x, na.rm = TRUE))
 
-      binary_data <- dplyr::left_join(point_data, polygon_data,
-                                      by = "group")
-      binary_data$se <- binary_data$x - binary_data$lower_se
-      binary_data$group <- factor(binary_data$group, labels = arms)
+    binary_data <- dplyr::left_join(point_data, polygon_data,
+                                    by = "group")
+    binary_data$se <- binary_data$x - binary_data$lower_se
+    binary_data$group <- factor(binary_data$group, labels = arms)
 
-    } else {
+  } else {
 
-      binary_data <- NULL
+    binary_data <- NULL
 
-    }
+  }
 
   return(binary_data)
 }
