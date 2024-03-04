@@ -181,7 +181,8 @@
   poss_comb <- expand.grid("outcome" = step_outcomes,
                            "arm" = arm_levels)
   missing_row <- dplyr::anti_join(poss_comb,
-                                  hce_ecdf[, c("outcome", "arm")])
+                                  hce_ecdf[, c("outcome", "arm")],
+                                  by = c("outcome", "arm"))
 
   # If there are missing rows, fill them in
   if (nrow(missing_row) > 0) {
@@ -304,12 +305,16 @@
   `%>%` <- dplyr::`%>%`
   n <- dplyr::n
 
+  # Extract the active and control arm treatment names
   actv <- unname(arm_levels["active"])
   ctrl <- unname(arm_levels["control"])
 
+  # Retrieve hce data for the last outcome as well as the x-axis position
+  # to start from
   binary_data <- hce_dat[hce_dat$outcome == last_outcome, ]
   start_binary_endpoint <- meta[meta$outcome == last_outcome, ]$startx
 
+  # Get the y-values that the step outcomes ended on for both arms
   actv_y <- ecdf_mod$meta[
     ecdf_mod$meta$arm == actv &
       ecdf_mod$meta$outcome == utils::tail(step_outcomes, 1),
@@ -319,30 +324,41 @@
       ecdf_mod$meta$outcome == utils::tail(step_outcomes, 1),
   ]$ecdf_end
 
+  # Calculate difference of proportion statistics for each arm (estimate
+  # and lower confidence interval boundary) using prop.test
+  # Note: we are using percentages rather than proportions (*100)
   binary_meta <- binary_data %>%
     dplyr::group_by(arm) %>%
     dplyr::summarise(n = n(),
-                     average = base::mean(value, na.rm = TRUE),
-                     conf_int = 1.96 * sqrt((average * (1 - average)) / n)) %>%
+                     x = base::sum(value, na.rm = TRUE),
+                     average = 100 *
+                       as.numeric(stats::prop.test(x, n)$estimate),
+                     se = abs(average - (100 *
+                       as.numeric(stats::prop.test(x, n)$conf.int)[1]))) %>%
     dplyr::ungroup()
 
-  x_radius <- (100 - start_binary_endpoint) * min(binary_meta$conf_int)
-  y_height <- min(c(0.4 * abs(actv_y - ctrl_y), 0.8 * x_radius))
+  # To create ellipsis shape and avoid overlapping between both of them,
+  # set the height to 80% of the SE (minimum scaled in x-axis or y-axis range)
+  width <- (100 - start_binary_endpoint) * min(binary_meta$se) / 100
+  y_range <- (max(actv_y, ctrl_y) + 10)  * min(binary_meta$se) / 100
+  y_height <- min(c(0.4 * abs(actv_y - ctrl_y), 0.8 * min(width, y_range)))
 
+  # Create ellipsis centered around proportion estimate (x0) as well as
+  # y-value that the step outcomes ended on for each arm,
+  # with the standard error as width and the height as calculated above
   actv_point <-
     .create_ellipsis_points(unlist(binary_meta[binary_meta$arm == actv,
                                                "average"]),
                             actv_y,
                             unlist(binary_meta[binary_meta$arm == actv,
-                                               "conf_int"]),
+                                               "se"]),
                             y_height)
-
   ctrl_point <-
     .create_ellipsis_points(unlist(binary_meta[binary_meta$arm == ctrl,
                                                "average"]),
                             ctrl_y,
                             unlist(binary_meta[binary_meta$arm == ctrl,
-                                               "conf_int"]),
+                                               "se"]),
                             y_height)
 
   binary_data <- rbind(data.frame("outcome" = last_outcome,
@@ -357,14 +373,14 @@
     binary_data$x,
     start_binary_endpoint,
     0,
-    1
+    100
   )
 
   binary_meta$average <- .to_rangeab(
     binary_meta$average,
     start_binary_endpoint,
     0,
-    1
+    100
   )
 
   binary_meta$y <- 0
@@ -377,13 +393,21 @@
   ))
 }
 
+# Create ellipsis centered around point (x0,y0),
+# with range (x0+a,y0+b)
 .create_ellipsis_points <- function(x0, y0, a, b) {
 
+  # First create equally spaced points on a unit
+  # circle (with x-coordinates cos_p and y-coordinates
+  # sin_p), ranging from -1 to 1
   points <- seq(0, 2 * pi, length.out = 361)
   cos_p <- cos(points)
   sin_p <- sin(points)
+  # Change the shape by changing the x-axis range (to 2*a)
+  # and y axis range (to 2*b)
   x_tmp <- abs(cos_p) * a * sign(cos_p)
   y_tmp <- abs(sin_p) * b * sign(sin_p)
+  # Move x and y values to be centered around x0 and y0
   edata <- data.frame(x = x0 + x_tmp, y = y0 + y_tmp)
 
   return(edata)

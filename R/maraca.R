@@ -412,8 +412,8 @@ plot_maraca <- function(
 
   } else if (last_type == "binary") {
 
-    minor_grid <- seq(0, 1, continuous_grid_spacing_x)
-    range <- c(0, 1)
+    minor_grid <- seq(0, 100, continuous_grid_spacing_x)
+    range <- c(0, 100)
 
   }
 
