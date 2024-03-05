@@ -38,7 +38,6 @@
 
 }
 
-
 .theme_maraca_cp <- function(p) {
 
   p <- .theme_common_cp(p)
