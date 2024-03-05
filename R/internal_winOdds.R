@@ -98,7 +98,7 @@
   wins_forest$method <- factor(wins_forest$method,
                                levels = c("win ratio", "win odds"))
   wo_bar$GROUP <- factor(wo_bar$GROUP, levels = rev(labs))
-  wo_bar$proportion <- wo_bar$value / win_odds_outcome$summary$TOTAL[1]
+  wo_bar$percentage <- 100 * (wo_bar$value / win_odds_outcome$summary$TOTAL[1])
 
   return(list("win_odds" = win_odds,
               "win_odds_outcome" = win_odds_outcome,
@@ -222,10 +222,10 @@
 # Create bar plot part of cumulative plot
 .create_bar_plot <- function(wo_bar, theme) {
 
-  plot <-  ggplot(data = wo_bar, aes(x = GROUP, y = proportion, fill = name)) +
+  plot <-  ggplot(data = wo_bar, aes(x = GROUP, y = percentage, fill = name)) +
     geom_bar(stat = "identity", position = position_dodge(), width = .9) +
     coord_flip() + # make bar plot horizontal
-    geom_text(aes(label = round(proportion, 3) * 100),
+    geom_text(aes(label = round(percentage, 1)),
               position = ggplot2::position_dodge(width = .9),
               vjust = 0.5, hjust = 1.2)
 
