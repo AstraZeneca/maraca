@@ -77,7 +77,7 @@
     wins <- calcs_lst[[i]]$wins
     nm <- c("value", "LCL", "UCL", "p value")
     f <- rbind(data.frame(setNames(wins$WO, nm), "method" = "win odds"),
-          data.frame(setNames(wins$WR1, nm), "method" = "win ratio"))
+               data.frame(setNames(wins$WR1, nm), "method" = "win ratio"))
     f$GROUP <- labs[i]
     return(f)
   }))

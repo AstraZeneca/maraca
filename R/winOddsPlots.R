@@ -169,8 +169,7 @@ cumulative_plot <- function(x, ...) {
 }
 
 #' @export
-cumulative_plot.default <- function(x,
-                                   ...) {
+cumulative_plot.default <- function(x, ...) {
   paste0("cumulative_plot() function can only handle inputs of class ",
          "'hce' or 'maraca'. Your input has class ", class(x), ".")
 }
@@ -209,9 +208,7 @@ cumulative_plot.default <- function(x,
 #' cumulative_plot(maraca_dat)
 #'
 #' @export
-cumulative_plot.maraca <- function(x,
-                                  theme = "maraca",
-                                  ...) {
+cumulative_plot.maraca <- function(x, theme = "maraca", ...) {
 
   # Check that win odds were calculated for the maraca object
   if (is.null(x[["wins_forest"]]) || is.null(x[["wo_bar"]])) {
@@ -279,11 +276,11 @@ cumulative_plot.maraca <- function(x,
 #' @export
 #'
 cumulative_plot.hce <- function(x, last_outcome = "C",
-                               arm_levels = c(active = "A", control = "P"),
-                               fixed_followup_days = NULL,
-                               theme = "maraca",
-                               continuous_outcome = lifecycle::deprecated(),
-                               ...) {
+                                arm_levels = c(active = "A", control = "P"),
+                                fixed_followup_days = NULL,
+                                theme = "maraca",
+                                continuous_outcome = lifecycle::deprecated(),
+                                ...) {
 
   # Create maraca object
   maraca_dat <- .maraca_from_hce_data(x, last_outcome, arm_levels,

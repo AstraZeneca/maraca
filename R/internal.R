@@ -278,8 +278,8 @@
                      average = 100 *
                        as.numeric(stats::prop.test(x, n)$estimate),
                      se = abs(average -
-                       (100 * as.numeric(stats::prop.test(x, n)$conf.int)[1])
-                       )) %>%
+                         (100 * as.numeric(stats::prop.test(x, n)$conf.int)[1])
+                    )) %>%
     dplyr::ungroup()
 
   # To create ellipsis shape and avoid overlapping between both of them,
