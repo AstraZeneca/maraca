@@ -211,7 +211,7 @@
     plot <- plot +
       ggplot2::geom_vline(xintercept =
                             seq(0.5, length(levels(wins_forest$GROUP)) + 1.5,
-                                           1),
+                                1),
                           linetype = 2, linewidth = 0.3, color = "darkgray") +
       scale_color_manual(values = c("black", "grey50")) +
       scale_fill_manual(values = c("black", "grey50")) +
@@ -219,8 +219,8 @@
       theme_bw() +
       theme(legend.position = "bottom",
             legend.title = element_blank(),
-                   panel.grid.major.y = ggplot2::element_blank(),
-                   panel.grid.minor.y = ggplot2::element_blank())
+            panel.grid.major.y = ggplot2::element_blank(),
+            panel.grid.minor.y = ggplot2::element_blank())
   }
 
   return(plot)

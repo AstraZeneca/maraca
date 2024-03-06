@@ -285,7 +285,7 @@
   # To create ellipsis shape and avoid overlapping between both of them,
   # set the height to 80% of the SE (minimum scaled in x-axis or y-axis range)
   width <- (100 - start_binary_endpoint) * min(binary_meta$se) / 100
-  y_range <- ((max(actv_y, ctrl_y) + 10)  * min(binary_meta$se) / 100)  * 0.6
+  y_range <- (max(actv_y, ctrl_y) + 10)  * (width / 100)
   y_height <- min(c(0.4 * abs(actv_y - ctrl_y), 0.8 * min(width, y_range)))
 
   # Create ellipsis centered around proportion estimate (x0) as well as
