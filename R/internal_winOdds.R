@@ -54,8 +54,9 @@
                                      GROUP = "outcome")
 
   endpoints <- c(step_outcomes, last_outcome)
-  labs <- c(Reduce(paste, as.character(endpoints[1:(length(endpoints) - 1)]),
-                   accumulate = TRUE), "All")
+  labs <- c(sapply(head(seq_along(endpoints), -1), function(i) {
+    paste(endpoints[1:i], collapse = " +\n")
+  }), "All")
 
   hce_dat <- hce_dat %>%
     dplyr::mutate_at(dplyr::vars(outcome), factor, levels = c(endpoints, "X"))
@@ -208,11 +209,18 @@
 
   if (theme != "none") {
     plot <- plot +
-      theme_bw() +
-      theme(legend.position = "bottom", legend.title = element_blank()) +
+      ggplot2::geom_vline(xintercept =
+                            seq(0.5, length(levels(wins_forest$GROUP)) + 1.5,
+                                           1),
+                          linetype = 2, linewidth = 0.3, color = "darkgray") +
       scale_color_manual(values = c("black", "grey50")) +
       scale_fill_manual(values = c("black", "grey50")) +
-      ylab("Win Odds / Win Ratio")
+      ylab("Win Odds / Win Ratio") +
+      theme_bw() +
+      theme(legend.position = "bottom",
+            legend.title = element_blank(),
+                   panel.grid.major.y = ggplot2::element_blank(),
+                   panel.grid.minor.y = ggplot2::element_blank())
   }
 
   return(plot)

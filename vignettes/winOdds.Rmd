@@ -76,9 +76,51 @@ hce_dat <- simHCE(n = 2500, TTE_A = Rates_A, TTE_P = Rates_P,
 component_plot(hce_dat)
 ```
 
+## Cumulative plot
+
+Furthermore, there is also a plot called `"cumulative_plot"`.
+Similar as above, this plot shows the different components that
+make up the win odds calculation. Different to the component plot,
+this plot shows the endpoint cumulated instead (adding one
+hierarchical endpoint at a time).
+As explained above, the plot shows how
+often patients in the active arm "won" or "lost" against the other
+arm or if they had a "tie".
+
+As before, in order to use the `cumulative_plot`, we have to first create a
+`maraca` object. Important here is to set the argument
+`compute_win_odds = TRUE`, so that the necessary calculations
+are included.
+```{r}
+maraca_dat <- maraca(
+  data = hce_scenario_a,
+  step_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
+  last_outcome = "Continuous outcome",
+  fixed_followup_days = 3 * 365,
+  column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
+  arm_levels = c(active = "Active", control = "Control"),
+  # Make sure to calculate the win odds
+  compute_win_odds = TRUE
+)
+```
+
+Now we can just plot the object using the `cumulative_plot()` function.
+```{r fig.width=7, fig.height=6}
+cumulative_plot(maraca_dat)
+```
+
+It is also possible to use the `cumulative_plot()` function directly on
+an `hce` object (created using the
+[hce package](https://cran.r-project.org/package=hce)).
+
+```{r fig.width=7, fig.height=6}
+cumulative_plot(hce_dat)
+```
+
 ## Styling
 
-The resulting plot is a normal ggplot2 object that can be styled accordingly.
+The resulting plots for both the `component_plot()` and  `cumulative_plot()` functions
+are normal ggplot2 objects that can be styled accordingly.
 There are also different themes available to style the plot.
 
 The default style is called `theme = "maraca"`.
@@ -89,7 +131,7 @@ component_plot(maraca_dat, theme = "maraca")
 There are 2 different themes with different color
 schemes, `theme = "color1"` and `theme = "color2"`.
 ```{r fig.width=7, fig.height=6}
-component_plot(maraca_dat, theme = "color1")
+cumulative_plot(maraca_dat, theme = "color1")
 ```
 
 ```{r fig.width=7, fig.height=6}
@@ -98,5 +140,5 @@ component_plot(maraca_dat, theme = "color2")
 
 There is also a theme without any styling `theme = "none"`.
 ```{r fig.width=8, fig.height=6}
-component_plot(maraca_dat, theme = "none")
+cumulative_plot(maraca_dat, theme = "none")
 ```
