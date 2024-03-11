@@ -433,9 +433,9 @@ plot_maraca <- function(
 
     if (trans %in% c("log", "log10", "sqrt")) {
       minor_grid <- switch(trans,
-                         "log" = .logTicks(range),
-                         "log10" = .log10Ticks(range),
-                         "sqrt" = pretty(range))
+                           "log" = .logTicks(range),
+                           "log10" = .log10Ticks(range),
+                           "sqrt" = pretty(range))
       minor_grid <- minor_grid[minor_grid >= range[1] &
                                  minor_grid <= range[2]]
       minor_grid_x <- eval(parse(text = paste0(trans, "(minor_grid)")))
@@ -645,7 +645,7 @@ plot_maraca <- function(
     start_last_endpoint,
     range[1],
     range[2]
-    )
+  )
 
   if (trans == "reverse") {
     m_breaks <- start_last_endpoint - m_breaks + 100

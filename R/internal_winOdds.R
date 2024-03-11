@@ -47,8 +47,8 @@
   if (lowerBetter) {
     hce_dat[idx_last, "value"] <-
       (min(hce_dat[idx_last, "value"], na.rm = TRUE) -
-         hce_dat[idx_last, "value"] +
-         max(hce_dat[idx_last, "value"], na.rm = TRUE))
+       hce_dat[idx_last, "value"] +
+       max(hce_dat[idx_last, "value"], na.rm = TRUE))
   }
 
   hce_dat <- .with_ordered_column(hce_dat)
@@ -102,7 +102,7 @@
       dplyr::rename(dplyr::all_of(c(A_wins = "WIN", P_wins = "LOSS",
                                     Ties = "TIE"))) %>%
       tidyr::pivot_longer(cols = c("A_wins", "P_wins", "Ties"),
-                        names_to = "name", values_to = "value")
+                          names_to = "name", values_to = "value")
     # %>%
     #   dplyr::mutate_at(dplyr::vars(name), factor,
     #                    levels = c("wins", "losses", "ties"))
@@ -171,7 +171,7 @@
   bar_data$name <- ifelse(bar_data$name == "A_wins",
                           labels[1],
                           ifelse(bar_data$name == "P_wins",
-                                labels[2], labels[3]))
+                                 labels[2], labels[3]))
 
   bar_data$name <- factor(bar_data$name, levels = labels)
 
