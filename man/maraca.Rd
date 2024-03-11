@@ -17,6 +17,7 @@ maraca(
   compute_win_odds = FALSE,
   step_types = "tte",
   last_type = "continuous",
+  lowerBetter = FALSE,
   tte_outcomes = lifecycle::deprecated(),
   continuous_outcome = lifecycle::deprecated()
 )
@@ -67,6 +68,13 @@ in the vector are "tte" (default) or "binary".}
 \item{last_type}{A single string giving the type of the last outcome.
 Possible values are "continuous" (default), "binary" or
 "multinomial".}
+
+\item{lowerBetter}{Flag for the final outcome variable, indicating if
+lower values are considered better/advantageous.
+This flag is need to make sure the win odds are
+calculated correctly.
+Default value is FALSE, meaning higher values
+are considered advantageous.}
 
 \item{tte_outcomes}{Deprecated and substituted by the more general
 'step_outcomes'. A vector of strings containing the

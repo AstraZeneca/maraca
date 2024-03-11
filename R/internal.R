@@ -204,6 +204,22 @@
     (maxval - minval) + start_continuous_endpoint
 }
 
+.logTicks <- function(range) {
+  a <- floor(log2(range[1]))
+  b <- ceiling(log2(range[2]))
+  steps <- unique(round(pretty(c(a, b))))
+  return((2 ^ steps))
+}
+
+.log10Ticks <- function(range) {
+  range <- log10(range)
+  get_axp <- function(x) 10^c(floor(x[1]), ceiling(x[2]))
+  n <- ifelse(range[2] > 4, 1, 2)
+  steps <- axTicks(side = 1, usr = range, axp = c(get_axp(range), n = n),
+                   log = TRUE)
+  return((steps))
+}
+
 # Computes the continuous information
 .compute_continuous <- function(
     hce_dat, meta, ecdf_mod, step_outcomes, last_outcome, arm_levels) {
@@ -308,9 +324,11 @@
 
   binary_data <- rbind(data.frame("outcome" = last_outcome,
                                   "arm" = actv,
+                                  "value" = 1,
                                   actv_point),
     data.frame("outcome" = last_outcome,
                "arm" = ctrl,
+               "value" = 1,
                ctrl_point)
   )
 
@@ -438,7 +456,8 @@
 .maraca_from_hce_data <- function(x, last_outcome, arm_levels,
                                   fixed_followup_days, compute_win_odds,
                                   step_types = "tte",
-                                  last_type = "continuous") {
+                                  last_type = "continuous",
+                                  lowerBetter = FALSE) {
 
   checkmate::assert_string(last_outcome)
   checkmate::assert_names(names(x),
@@ -478,7 +497,8 @@
     fixed_followup_days = fixed_followup_days,
     compute_win_odds = compute_win_odds,
     step_types = step_types,
-    last_type = last_type
+    last_type = last_type,
+    lowerBetter = lowerBetter
   )
 
   return(maraca_obj)

@@ -13,6 +13,8 @@ Check the vignette "Maraca Plots - Plotting win odds" for more details.}
   arm_levels = c(active = "A", control = "P"),
   fixed_followup_days = NULL,
   theme = "maraca",
+  reverse = FALSE,
+  lowerBetter = FALSE,
   continuous_outcome = lifecycle::deprecated(),
   ...
 )
@@ -44,6 +46,17 @@ fixed_followup_days argument is used.}
 Options are "maraca", "color1", "color2" and none".
 For more details, check the vignette called
 "Maraca Plots - Plotting win odds".}
+
+\item{reverse}{Flag indicating if the cumulated outcomes should be
+displayed in order from top to bottom (FALSE, the default)
+or in reverse (TRUE).}
+
+\item{lowerBetter}{Flag for the final outcome variable, indicating if
+lower values are considered better/advantageous.
+This flag is need to make sure the win odds are
+calculated correctly.
+Default value is FALSE, meaning higher values
+are considered advantageous.}
 
 \item{continuous_outcome}{Deprecated and substituted by the more general
 'last_outcome'. A single string containing the

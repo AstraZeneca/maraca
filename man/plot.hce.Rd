@@ -9,14 +9,15 @@
   last_outcome = "C",
   arm_levels = c(active = "A", control = "P"),
   continuous_grid_spacing_x = 10,
-  trans = "identity",
-  density_plot_type = "default",
+  trans = c("identity", "log", "log10", "sqrt", "reverse")[1],
+  density_plot_type = c("default", "violin", "box", "scatter")[1],
   vline_type = NULL,
   fixed_followup_days = NULL,
   compute_win_odds = FALSE,
   step_types = "tte",
   last_type = "continuous",
   theme = "maraca",
+  lowerBetter = FALSE,
   continuous_outcome = lifecycle::deprecated(),
   ...
 )
@@ -38,8 +39,10 @@ be specified if you have labels different from
 \item{continuous_grid_spacing_x}{The spacing of the x grid to use for the
 continuous section of the plot.}
 
-\item{trans}{the transformation to apply to the data before plotting.
-The accepted values are the same that ggplot2::scale_x_continuous}
+\item{trans}{the transformation to apply to the x-axis scale for the last
+outcome. Possible values are "identity", "log" (only for continuous
+endpoint), "log10" (only for continuous endpoint), "sqrt" (only for
+continuous endpoint) and "reverse". The default value is "identity".}
 
 \item{density_plot_type}{The type of plot to use to represent the density.
 Accepts "default", "violin", "box" and "scatter".}
@@ -75,6 +78,13 @@ Options are "maraca", "maraca_old", "color1", "color2" and none".
 For more details, check the vignette called
 "Maraca Plots - Themes and Styling".
 [companion vignette for package users](themes.html)}
+
+\item{lowerBetter}{Flag for the final outcome variable, indicating if
+lower values are considered better/advantageous.
+This flag is need to make sure the win odds are
+calculated correctly.
+Default value is FALSE, meaning higher values
+are considered advantageous.}
 
 \item{continuous_outcome}{Deprecated and substituted by the more general
 'last_outcome'. A single string containing the

@@ -7,8 +7,8 @@
 plot_maraca(
   obj,
   continuous_grid_spacing_x = NULL,
-  trans = "identity",
-  density_plot_type = "default",
+  trans = c("identity", "log", "log10", "sqrt", "reverse")[1],
+  density_plot_type = c("default", "violin", "box", "scatter")[1],
   vline_type = NULL,
   theme = "maraca"
 )
@@ -19,8 +19,10 @@ plot_maraca(
 \item{continuous_grid_spacing_x}{The spacing of the x grid to use for the
 continuous section of the plot.}
 
-\item{trans}{the transformation to apply to the data before plotting.
-The accepted values are the same that ggplot2::scale_x_continuous}
+\item{trans}{the transformation to apply to the x-axis scale for the last
+outcome. Possible values are "identity", "log" (only for continuous
+endpoint), "log10" (only for continuous endpoint), "sqrt" (only for
+continuous endpoint) and "reverse". The default value is "identity".}
 
 \item{density_plot_type}{which type of plot to display in the continuous
 part of the plot. Options are "default", "violin", "box", "scatter".}

@@ -36,6 +36,12 @@
 #' @param last_type A single string giving the type of the last outcome.
 #'                  Possible values are "continuous" (default), "binary" or
 #'                  "multinomial".
+#' @param lowerBetter Flag for the final outcome variable, indicating if
+#'                    lower values are considered better/advantageous.
+#'                    This flag is need to make sure the win odds are
+#'                    calculated correctly.
+#'                    Default value is FALSE, meaning higher values
+#'                    are considered advantageous.
 #' @param tte_outcomes Deprecated and substituted by the more general
 #'                     'step_outcomes'. A vector of strings containing the
 #'                     time-to-event outcome labels. The order is kept for the
@@ -74,6 +80,7 @@ maraca <- function(
   compute_win_odds = FALSE,
   step_types = "tte",
   last_type = "continuous",
+  lowerBetter = FALSE,
   tte_outcomes = lifecycle::deprecated(),
   continuous_outcome = lifecycle::deprecated()
 ) {
@@ -121,6 +128,8 @@ maraca <- function(
   checkmate::assert_subset(last_type,
                            choices = c("continuous", "binary"),
                            empty.ok = FALSE)
+
+  checkmate::assert_flag(lowerBetter)
 
   if (!(length(fixed_followup_days) %in%
           c(1, length(step_outcomes[step_types == "tte"])))) {
@@ -200,7 +209,8 @@ maraca <- function(
                    "wins_forest" = NULL, "wo_bar" = NULL)
   if (compute_win_odds) {
     win_odds <- .compute_win_odds(hce_dat, arm_levels,
-                                  step_outcomes, last_outcome)
+                                  step_outcomes, last_outcome,
+                                  lowerBetter)
   }
 
   return(
@@ -219,7 +229,8 @@ maraca <- function(
         win_odds = win_odds[["win_odds"]],
         win_odds_outcome = win_odds[["win_odds_outcome"]],
         wins_forest = win_odds[["wins_forest"]],
-        wo_bar = win_odds[["wo_bar"]]
+        wo_bar = win_odds[["wo_bar"]],
+        lowerBetter = lowerBetter
       ),
       class = c("maraca")
     )
@@ -269,8 +280,10 @@ print.maraca <- function(x, ...) {
 #' @param obj an object of S3 class 'maraca'
 #' @param continuous_grid_spacing_x The spacing of the x grid to use for the
 #'        continuous section of the plot.
-#' @param trans the transformation to apply to the data before plotting.
-#'        The accepted values are the same that ggplot2::scale_x_continuous
+#' @param trans the transformation to apply to the x-axis scale for the last
+#'        outcome. Possible values are "identity", "log" (only for continuous
+#'        endpoint), "log10" (only for continuous endpoint), "sqrt" (only for
+#'        continuous endpoint) and "reverse". The default value is "identity".
 #' @param density_plot_type which type of plot to display in the continuous
 #'        part of the plot. Options are "default", "violin", "box", "scatter".
 #' @param vline_type what the vertical dashed line should represent. Accepts
@@ -300,8 +313,8 @@ print.maraca <- function(x, ...) {
 #' @export
 plot_maraca <- function(
     obj, continuous_grid_spacing_x = NULL,
-    trans = "identity",
-    density_plot_type = "default",
+    trans = c("identity", "log", "log10", "sqrt", "reverse")[1],
+    density_plot_type = c("default", "violin", "box", "scatter")[1],
     vline_type = NULL,
     theme = "maraca") {
 
@@ -313,6 +326,10 @@ plot_maraca <- function(
   }
 
   checkmate::assert_string(trans)
+  checkmate::assert_subset(trans,
+                           choices = c("identity", "log", "log10",
+                                       "sqrt", "reverse"),
+                           empty.ok = FALSE)
 
   aes <- ggplot2::aes
   `%>%` <- dplyr::`%>%`
@@ -324,6 +341,11 @@ plot_maraca <- function(
   which_binary <- which(step_types == "binary")
   last_data <- obj$data_last_outcome
   last_type <- obj$last_type
+
+  if (last_type == "binary" && trans %in% c("log", "log10", "sqrt")) {
+    stop(paste(trans, "transformation only implemented for continuous",
+               "last endpoint."))
+  }
 
   vline_type <-
     switch(last_type,
@@ -339,16 +361,15 @@ plot_maraca <- function(
     meta[meta$outcome == obj$last_outcome, ]$startx
 
   if (is.null(continuous_grid_spacing_x)) {
-    continuous_grid_spacing_x <- ifelse(last_type == "continuous", 10, 0.1)
+    continuous_grid_spacing_x <- 10
   }
 
-  plotdata_ecdf <- ecdf_mod$data[, c("outcome", "arm",
+  plotdata_ecdf <- ecdf_mod$data[, c("outcome", "arm", "value",
                                      "adjusted.time", "step_values",
                                      "type")]
-  names(plotdata_ecdf) <- c("outcome", "arm", "x", "y", "type")
-  plotdata_last <- last_data$data[, c("outcome", "arm", "x", "y")]
+  names(plotdata_ecdf) <- c("outcome", "arm", "value", "x", "y", "type")
+  plotdata_last <- last_data$data[, c("outcome", "arm", "value", "x", "y")]
   plotdata_last$type <- last_type
-  names(plotdata_last) <- c("outcome", "arm", "x", "y", "type")
 
   # Add points at (0, 0) on both curves so that they start from the origin
   add_points <- plotdata_ecdf %>%
@@ -399,7 +420,7 @@ plot_maraca <- function(
 
   plotdata_ecdf <- plotdata_ecdf[order(plotdata_ecdf$x), ]
 
-  plotdata <- as.data.frame(rbind(plotdata_ecdf, plotdata_last))
+  plotdata <- rbind(plotdata_ecdf, plotdata_last)
 
   scale <- sign(log10(continuous_grid_spacing_x)) * floor(
     abs(log10(continuous_grid_spacing_x))
@@ -407,18 +428,78 @@ plot_maraca <- function(
 
   if (last_type == "continuous") {
 
-    minor_grid <- .minor_grid(
-      last_data$data$value, scale, continuous_grid_spacing_x
-    )
+    range <- c(min(plotdata_last$value, na.rm = TRUE),
+               max(plotdata_last$value, na.rm = TRUE))
 
-    range <- c(min(last_data$data$value, na.rm = TRUE),
-               max(last_data$data$value, na.rm = TRUE))
+    if (trans %in% c("log", "log10", "sqrt")) {
+      minor_grid <- switch(trans,
+                         "log" = .logTicks(range),
+                         "log10" = .log10Ticks(range),
+                         "sqrt" = pretty(range))
+      minor_grid <- minor_grid[minor_grid >= range[1] &
+                                 minor_grid <= range[2]]
+      minor_grid_x <- eval(parse(text = paste0(trans, "(minor_grid)")))
+    } else {
+      minor_grid <- .minor_grid(plotdata_last$value, scale,
+                                continuous_grid_spacing_x)
+      minor_grid_x <- minor_grid
+    }
 
   } else if (last_type == "binary") {
 
-    minor_grid <- seq(0, 100, continuous_grid_spacing_x)
-    range <- c(0, 100)
+    lowest_value <- min(plotdata_last$value, na.rm = TRUE)
+    highest_value <- max(plotdata_last$value, na.rm = TRUE)
+    range <- c(min(0, floor(lowest_value / 10) * 10),
+               max(100, ceiling(highest_value / 10) * 10))
+    minor_grid <- seq(range[1], range[2], continuous_grid_spacing_x)
+    minor_grid_x <- minor_grid
 
+  }
+
+  vline_data <- NULL
+  if (vline_type == "median") {
+    vline_data <- last_data$meta %>%
+      dplyr::select("x" = median, arm)
+  } else if (vline_type == "mean") {
+    vline_data <- last_data$meta %>%
+      dplyr::select("x" = median, arm)
+  }
+
+  if (trans %in% c("log", "log10", "sqrt")) {
+
+    if (range[1] < 0) {
+      warning(paste("Continuous endpoint has negative values - the",
+                    trans, "transformation will result in missing values"))
+    }
+    plotdata_last$value <- eval(parse(text = paste0(trans,
+                                                    "(plotdata_last$value)")))
+    range <- c(min(plotdata_last$value, na.rm = TRUE),
+               max(plotdata_last$value, na.rm = TRUE))
+    plotdata_last$x <- .to_rangeab(plotdata_last$value, start_last_endpoint,
+                                   range[1], range[2])
+
+    if (!is.null(vline_data)) {
+      vline_data$x <- eval(parse(text = paste0(trans, "(vline_data$x)")))
+    }
+  }
+
+  if (trans == "reverse") {
+    if (!is.null(win_odds) && !obj$lowerBetter) {
+      message(paste("Last endpoint axis has been reversed, which might",
+                    "indicate that lower values are considered advantageuos.",
+                    "Note that the win odds were calculated assuming that",
+                    "higher values are better. If that is not correct, please",
+                    "use the parameter lowerBetter = TRUE in the",
+                    "maraca function."))
+    }
+
+    minor_grid_x <- rev(minor_grid_x)
+    minor_grid <- rev(minor_grid)
+    plotdata_last$x <- start_last_endpoint - plotdata_last$x + 100
+
+    if (!is.null(vline_data)) {
+      vline_data$x <- start_last_endpoint - plotdata_last$x + 100
+    }
   }
 
   # Plot the information in the Maraca plot
@@ -428,26 +509,14 @@ plot_maraca <- function(
       color = "grey80"
     )
 
-  if (vline_type == "median") {
+  if (!is.null(vline_data)) {
     plot <- plot +
       ggplot2::geom_vline(
         mapping = ggplot2::aes(
-          xintercept = median,
+          xintercept = x,
           color = arm
         ),
-        data = last_data$meta,
-        linetype = "dashed",
-        linewidth = 0.8,
-        show.legend = FALSE
-      )
-  } else if (vline_type == "mean") {
-    plot <- plot +
-      ggplot2::geom_vline(
-        mapping = ggplot2::aes(
-          xintercept = average,
-          color = arm
-        ),
-        data = last_data$meta,
+        data = vline_data,
         linetype = "dashed",
         linewidth = 0.8,
         show.legend = FALSE
@@ -456,14 +525,15 @@ plot_maraca <- function(
 
   for (outcome in step_outcomes[which_tte]) {
     plot <- plot +
-      ggplot2::geom_step(data = plotdata[plotdata$outcome == outcome, ],
+      ggplot2::geom_step(data =
+                           plotdata_ecdf[plotdata_ecdf$outcome == outcome, ],
                          aes(x = x, y = y, color = arm))
   }
 
   if (length(which_binary) > 0) {
 
-    tmp <- plotdata[plotdata$outcome %in% step_outcomes[which_binary], ]
-
+    tmp <- plotdata_ecdf[plotdata_ecdf$outcome %in%
+                           step_outcomes[which_binary], ]
     tmp <- tmp[order(tmp$x), ]
 
     if (step_types[length(step_types)] == "binary") {
@@ -500,7 +570,7 @@ plot_maraca <- function(
 
   if (step_types[length(step_types)] == "binary") {
 
-    tmp <- plotdata %>%
+    tmp <- plotdata_ecdf %>%
       dplyr::filter(outcome == step_outcomes[length(step_types)]) %>%
       dplyr::group_by(arm) %>%
       dplyr::slice_tail(n = -1) %>%
@@ -543,19 +613,19 @@ plot_maraca <- function(
   } else if (density_plot_type == "violin") {
     plot <- plot +
       ggplot2::geom_violin(
-        data = plotdata[plotdata$type == "continuous", ],
+        data = plotdata_last,
         aes(x = x, y = y, colour = arm, fill = arm), alpha = 0.5
       )
   } else if (density_plot_type == "box") {
     plot <- plot +
       ggplot2::geom_boxplot(
-        data = plotdata[plotdata$type == "continuous", ],
+        data = plotdata_last,
         aes(x = x, y = y, colour = arm, fill = arm), alpha = 0.5
       )
   } else if (density_plot_type == "scatter") {
     plot <- plot +
       ggplot2::geom_jitter(
-        data = plotdata[plotdata$type == "continuous", ],
+        data = plotdata_last,
         aes(x = x, y = y, color = arm),
         # Jittering only vertically, keep the correct x-value
         width = 0
@@ -569,27 +639,28 @@ plot_maraca <- function(
       return(as.character(round(x, -s + 1)))
     }
   )
+
+  m_breaks <- .to_rangeab(
+    minor_grid_x,
+    start_last_endpoint,
+    range[1],
+    range[2]
+    )
+
+  if (trans == "reverse") {
+    m_breaks <- start_last_endpoint - m_breaks + 100
+  }
+
   plot <- plot +
     ggplot2::scale_x_continuous(
       limits = c(0, 100),
       breaks = c(meta$proportion / 2 + meta$startx + 0.1),
       labels = c(obj$step_outcomes, obj$last_outcome),
-      minor_breaks = .to_rangeab(
-        minor_grid,
-        start_last_endpoint,
-        range[1],
-        range[2]
-      ),
-      trans = trans
+      minor_breaks = m_breaks
     ) +
     ggplot2::annotate(
       geom = "text",
-      x = .to_rangeab(
-        minor_grid,
-        start_last_endpoint,
-        range[1],
-        range[2]
-      ),
+      x = m_breaks,
       y = 0,
       label = labels,
       color = "grey60"
@@ -667,7 +738,7 @@ validate_maraca_plot <- function(x,  ...) {
   proportions <- diff(pb$data[[1]][, c("xintercept")])
   names(proportions) <- unique(x$data$outcome)
 
-  arms <- levels(pb$plot$data[, pb$plot$labels$colour])
+  arms <- levels(unlist(pb$plot$data[, pb$plot$labels$colour]))
 
   tte_data <- .create_validation_tte(layers, x, arms)
   binary_step_data <- .create_validation_binary_step(layers, x, arms)
@@ -711,8 +782,10 @@ validate_maraca_plot <- function(x,  ...) {
 #' @param \dots not used
 #' @param continuous_grid_spacing_x The spacing of the x grid to use for the
 #'        continuous section of the plot.
-#' @param trans the transformation to apply to the data before plotting.
-#'        The accepted values are the same that ggplot2::scale_x_continuous
+#' @param trans the transformation to apply to the x-axis scale for the last
+#'        outcome. Possible values are "identity", "log" (only for continuous
+#'        endpoint), "log10" (only for continuous endpoint), "sqrt" (only for
+#'        continuous endpoint) and "reverse". The default value is "identity".
 #' @param density_plot_type The type of plot to use to represent the density.
 #'        Accepts "default", "violin", "box" and "scatter".
 #' @param vline_type what the vertical dashed line should represent. Accepts
@@ -741,8 +814,10 @@ validate_maraca_plot <- function(x,  ...) {
 #'
 #' @export
 plot.maraca <- function(
-    x, continuous_grid_spacing_x = 10, trans = "identity",
-    density_plot_type = "default",
+    x,
+    continuous_grid_spacing_x = 10,
+    trans = c("identity", "log", "log10", "sqrt", "reverse")[1],
+    density_plot_type = c("default", "violin", "box", "scatter")[1],
     vline_type = NULL,
     theme = "maraca",
     ...) {
@@ -765,8 +840,10 @@ plot.maraca <- function(
 #'                   "active" and "control".
 #' @param continuous_grid_spacing_x The spacing of the x grid to use for the
 #'        continuous section of the plot.
-#' @param trans the transformation to apply to the data before plotting.
-#'        The accepted values are the same that ggplot2::scale_x_continuous
+#' @param trans the transformation to apply to the x-axis scale for the last
+#'        outcome. Possible values are "identity", "log" (only for continuous
+#'        endpoint), "log10" (only for continuous endpoint), "sqrt" (only for
+#'        continuous endpoint) and "reverse". The default value is "identity".
 #' @param density_plot_type The type of plot to use to represent the density.
 #'        Accepts "default", "violin", "box" and "scatter".
 #' @param vline_type what the vertical dashed line should represent. Accepts
@@ -796,6 +873,12 @@ plot.maraca <- function(
 #'        For more details, check the vignette called
 #'        "Maraca Plots - Themes and Styling".
 #'        [companion vignette for package users](themes.html)
+#' @param lowerBetter Flag for the final outcome variable, indicating if
+#'                    lower values are considered better/advantageous.
+#'                    This flag is need to make sure the win odds are
+#'                    calculated correctly.
+#'                    Default value is FALSE, meaning higher values
+#'                    are considered advantageous.
 #' @param continuous_outcome Deprecated and substituted by the more general
 #'                           'last_outcome'. A single string containing the
 #'                           continuous outcome label.
@@ -814,14 +897,17 @@ plot.maraca <- function(
 plot.hce <- function(x, last_outcome = "C",
                      arm_levels = c(active = "A", control = "P"),
                      continuous_grid_spacing_x = 10,
-                     trans = "identity",
-                     density_plot_type = "default",
+                     trans = c("identity", "log", "log10",
+                               "sqrt", "reverse")[1],
+                     density_plot_type = c("default", "violin",
+                                           "box", "scatter")[1],
                      vline_type = NULL,
                      fixed_followup_days = NULL,
                      compute_win_odds = FALSE,
                      step_types = "tte",
                      last_type = "continuous",
                      theme = "maraca",
+                     lowerBetter = FALSE,
                      continuous_outcome = lifecycle::deprecated(),
                      ...) {
 
@@ -835,7 +921,8 @@ plot.hce <- function(x, last_outcome = "C",
                                       fixed_followup_days,
                                       compute_win_odds,
                                       step_types = step_types,
-                                      last_type = last_type)
+                                      last_type = last_type,
+                                      lowerBetter = lowerBetter)
 
   plot_maraca(maraca_obj, continuous_grid_spacing_x,
               trans, density_plot_type, vline_type, theme)

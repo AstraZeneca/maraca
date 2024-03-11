@@ -35,11 +35,22 @@
 
 # Computes the win odds from the internal data.
 .compute_win_odds <- function(hce_dat, arm_levels,
-                              step_outcomes, last_outcome) {
+                              step_outcomes, last_outcome,
+                              lowerBetter) {
 
   `%>%` <- dplyr::`%>%`
 
   hce_dat <- base::as.data.frame(hce_dat)
+  idx_last <- hce_dat$outcome == last_outcome
+
+  # Reversing continous outcome variables if lower is considered better
+  if (lowerBetter) {
+    hce_dat[idx_last, "value"] <-
+      (min(hce_dat[idx_last, "value"], na.rm = TRUE) -
+         hce_dat[idx_last, "value"] +
+         max(hce_dat[idx_last, "value"], na.rm = TRUE))
+  }
+
   hce_dat <- .with_ordered_column(hce_dat)
   fit <- hce::calcWO(x = hce_dat, AVAL = "ordered",
                      TRTP = "arm",
@@ -56,7 +67,7 @@
   endpoints <- c(step_outcomes, last_outcome)
   labs <- c(sapply(head(seq_along(endpoints), -1), function(i) {
     paste(endpoints[1:i], collapse = " +\n")
-  }), "All")
+  }), "Overall")
 
   hce_dat <- hce_dat %>%
     dplyr::mutate_at(dplyr::vars(outcome), factor, levels = c(endpoints, "X"))
@@ -88,12 +99,16 @@
     wo$outcome <- endpoints[i]
     wo$GROUP <- labs[i]
     wo %>%
-      dplyr::rename(dplyr::all_of(c(wins = "WIN", losses = "LOSS",
-                                    ties = "TIE"))) %>%
-      tidyr::pivot_longer(cols = c(wins, losses, ties)) %>%
-      dplyr::mutate_at(dplyr::vars(name), factor,
-                       levels = c("wins", "losses", "ties"))
+      dplyr::rename(dplyr::all_of(c(A_wins = "WIN", P_wins = "LOSS",
+                                    Ties = "TIE"))) %>%
+      tidyr::pivot_longer(cols = c("A_wins", "P_wins", "Ties"),
+                        names_to = "name", values_to = "value")
+    # %>%
+    #   dplyr::mutate_at(dplyr::vars(name), factor,
+    #                    levels = c("wins", "losses", "ties"))
   }))
+
+  wo_bar <- .label_win_odds_plots(wo_bar, arm_levels)
 
   wins_forest$GROUP <- factor(wins_forest$GROUP, levels = rev(labs))
   wins_forest$method <- factor(wins_forest$method,
@@ -143,20 +158,25 @@
   # Calculate percentage results
   wo_bar_nc$percentage <- 100 * (wo_bar_nc$value / wo_bar_nc$total)
 
-  labels <- c(paste(arms["active"], "wins"),
-              paste(arms["control"], "wins"),
-              "Ties")
-
-  wo_bar_nc$name <- ifelse(wo_bar_nc$name == "A_wins",
-                           labels[1],
-                           ifelse(wo_bar_nc$name == "P_wins",
-                                  labels[2], labels[3]))
-
-  wo_bar_nc$name <- factor(wo_bar_nc$name, levels = labels)
+  wo_bar_nc <- .label_win_odds_plots(wo_bar_nc, arms)
 
   return(wo_bar_nc)
 }
 
+.label_win_odds_plots <- function(bar_data, arms) {
+  labels <- c(paste(arms["active"], "wins"),
+              paste(arms["control"], "wins"),
+              "Ties")
+
+  bar_data$name <- ifelse(bar_data$name == "A_wins",
+                          labels[1],
+                          ifelse(bar_data$name == "P_wins",
+                                labels[2], labels[3]))
+
+  bar_data$name <- factor(bar_data$name, levels = labels)
+
+  return(bar_data)
+}
 
 # The main plotting function creating the component plot
 .create_component_plot <- function(wo_bar_nc, endpoints, theme) {
@@ -193,7 +213,12 @@
 }
 
 # Create forest plot part of cumulative plot
-.create_forest_plot <- function(wins_forest, theme) {
+.create_forest_plot <- function(wins_forest, theme, reverse) {
+
+  if (reverse) {
+    wins_forest$GROUP <- factor(wins_forest$GROUP,
+                                levels = rev(levels(wins_forest$GROUP)))
+  }
 
   plot <- ggplot(data = wins_forest) +
     geom_errorbar(aes(x = GROUP, y = value, ymin = LCL, ymax = UCL,
@@ -228,14 +253,18 @@
 }
 
 # Create bar plot part of cumulative plot
-.create_bar_plot <- function(wo_bar, theme) {
+.create_bar_plot <- function(wo_bar, theme, reverse) {
+
+  if (reverse) {
+    wo_bar$GROUP <- factor(wo_bar$GROUP, levels = rev(levels(wo_bar$GROUP)))
+  }
 
   plot <-  ggplot(data = wo_bar, aes(x = GROUP, y = percentage, fill = name)) +
     geom_bar(stat = "identity", position = position_dodge(), width = .9) +
     coord_flip() + # make bar plot horizontal
     geom_text(aes(label = round(percentage, 1)),
               position = ggplot2::position_dodge(width = .9),
-              vjust = 0.5, hjust = 1.2)
+              vjust = 0.5, hjust = -0.2)
 
   plot <- switch(theme,
                  "maraca" = .theme_maraca_cp(plot),

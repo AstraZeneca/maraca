@@ -9,7 +9,7 @@ Note that for this plot, when creating the maraca object using the maraca()
 function, the argument "compute_win_odds" has to be set to TRUE.
 Check the vignette "Maraca Plots - Plotting win odds" for more details.}
 \usage{
-\method{cumulative_plot}{maraca}(x, theme = "maraca", ...)
+\method{cumulative_plot}{maraca}(x, theme = "maraca", reverse = FALSE, ...)
 }
 \arguments{
 \item{x}{an object of S3 class 'maraca'.}
@@ -18,6 +18,10 @@ Check the vignette "Maraca Plots - Plotting win odds" for more details.}
 Options are "maraca", "color1", "color2" and none".
 For more details, check the vignette called
 "Maraca Plots - Plotting win odds".}
+
+\item{reverse}{Flag indicating if the cumulated outcomes should be
+displayed in order from top to bottom (FALSE, the default)
+or in reverse (TRUE).}
 
 \item{\dots}{not used}
 }

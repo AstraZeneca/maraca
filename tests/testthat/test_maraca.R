@@ -517,7 +517,8 @@ test_that("winOddsData", {
   )
 
   win_odds_list <- .compute_win_odds(data, arm_levels,
-                                     step_outcomes, last_outcome)
+                                     step_outcomes, last_outcome,
+                                     lowerBetter = FALSE)
   win_odds <- win_odds_list[["win_odds"]]
 
   expect_equal(class(win_odds), "numeric")
@@ -1095,8 +1096,11 @@ test_that("gridSpacing", {
 test_that("scaleTransform", {
   file <- fixture_path("hce_scenario_c.csv")
   args <- .maraca_args(file)
+  dat <- args$data
+  dat[dat$GROUP == "Continuous outcome", "AVAL0"] <-
+    dat[dat$GROUP == "Continuous outcome", "AVAL0"] + 50
   mar <- maraca(
-    args$data,
+    dat,
     args$step_outcomes,
     args$last_outcome,
     args$arm_levels,

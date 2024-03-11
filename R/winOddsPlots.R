@@ -110,6 +110,12 @@ component_plot.maraca <- function(x,
 #'        Options are "maraca", "color1", "color2" and none".
 #'        For more details, check the vignette called
 #'        "Maraca Plots - Plotting win odds".
+#' @param lowerBetter Flag for the final outcome variable, indicating if
+#'                    lower values are considered better/advantageous.
+#'                    This flag is need to make sure the win odds are
+#'                    calculated correctly.
+#'                    Default value is FALSE, meaning higher values
+#'                    are considered advantageous.
 #' @param continuous_outcome Deprecated and substituted by the more general
 #'                           'last_outcome'. A single string containing the
 #'                           continuous outcome label.
@@ -128,13 +134,15 @@ component_plot.hce <- function(x, last_outcome = "C",
                                arm_levels = c(active = "A", control = "P"),
                                fixed_followup_days = NULL,
                                theme = "maraca",
+                               lowerBetter = FALSE,
                                continuous_outcome = lifecycle::deprecated(),
                                ...) {
 
   # Create maraca object
   maraca_dat <- .maraca_from_hce_data(x, last_outcome, arm_levels,
                                       fixed_followup_days,
-                                      compute_win_odds = TRUE)
+                                      compute_win_odds = TRUE,
+                                      lowerBetter = lowerBetter)
 
   # Get win odds by outcome from maraca object
   win_odds_outcome <- maraca_dat$win_odds_outcome
@@ -182,11 +190,14 @@ cumulative_plot.default <- function(x, ...) {
 #' Check the vignette "Maraca Plots - Plotting win odds" for more details.
 #'
 #' @param x an object of S3 class 'maraca'.
-#' @param \dots not used
 #' @param theme Choose theme to style the plot. The default theme is "maraca".
 #'        Options are "maraca", "color1", "color2" and none".
 #'        For more details, check the vignette called
 #'        "Maraca Plots - Plotting win odds".
+#' @param reverse Flag indicating if the cumulated outcomes should be
+#'        displayed in order from top to bottom (FALSE, the default)
+#'        or in reverse (TRUE).
+#' @param \dots not used
 #' @return Cumulative plot as a patchwork object.
 #' @examples
 #'
@@ -208,7 +219,8 @@ cumulative_plot.default <- function(x, ...) {
 #' cumulative_plot(maraca_dat)
 #'
 #' @export
-cumulative_plot.maraca <- function(x, theme = "maraca", ...) {
+cumulative_plot.maraca <- function(x, theme = "maraca",
+                                   reverse = FALSE, ...) {
 
   # Check that win odds were calculated for the maraca object
   if (is.null(x[["wins_forest"]]) || is.null(x[["wo_bar"]])) {
@@ -221,8 +233,8 @@ cumulative_plot.maraca <- function(x, theme = "maraca", ...) {
   wo_bar <- x$wo_bar
   wins_forest <- x$wins_forest
   # Create forest plot
-  plot_bar <- .create_bar_plot(wo_bar, theme)
-  plot_forest <- .create_forest_plot(wins_forest, theme)
+  plot_bar <- .create_bar_plot(wo_bar, theme, reverse)
+  plot_forest <- .create_forest_plot(wins_forest, theme, reverse)
 
   plot <-  patchwork:::"|.ggplot"(plot_bar, plot_forest) +
     patchwork::plot_layout(widths = c(2.5, 1), nrow = 1)
@@ -261,6 +273,15 @@ cumulative_plot.maraca <- function(x, theme = "maraca", ...) {
 #'        Options are "maraca", "color1", "color2" and none".
 #'        For more details, check the vignette called
 #'        "Maraca Plots - Plotting win odds".
+#' @param reverse Flag indicating if the cumulated outcomes should be
+#'        displayed in order from top to bottom (FALSE, the default)
+#'        or in reverse (TRUE).
+#' @param lowerBetter Flag for the final outcome variable, indicating if
+#'                    lower values are considered better/advantageous.
+#'                    This flag is need to make sure the win odds are
+#'                    calculated correctly.
+#'                    Default value is FALSE, meaning higher values
+#'                    are considered advantageous.
 #' @param continuous_outcome Deprecated and substituted by the more general
 #'                           'last_outcome'. A single string containing the
 #'                           continuous outcome label.
@@ -279,15 +300,18 @@ cumulative_plot.hce <- function(x, last_outcome = "C",
                                 arm_levels = c(active = "A", control = "P"),
                                 fixed_followup_days = NULL,
                                 theme = "maraca",
+                                reverse = FALSE,
+                                lowerBetter = FALSE,
                                 continuous_outcome = lifecycle::deprecated(),
                                 ...) {
 
   # Create maraca object
   maraca_dat <- .maraca_from_hce_data(x, last_outcome, arm_levels,
                                       fixed_followup_days,
-                                      compute_win_odds = TRUE)
+                                      compute_win_odds = TRUE,
+                                      lowerBetter = lowerBetter)
 
-  plot <- cumulative_plot(maraca_dat, theme = theme)
+  plot <- cumulative_plot(maraca_dat, theme = theme, reverse = reverse)
 
   return(plot)
 }
