@@ -25,8 +25,8 @@
     ggplot2::geom_vline(xintercept = seq(0.5, n + 1.5, 1),
                         linetype = 2, linewidth = 0.3, color = "darkgray") +
     # Axis showing percentages
-    ggplot2::scale_y_continuous(labels =
-                                  function(x) paste0(round(x, 2), "%")) +
+    ggplot2::scale_y_continuous(labels = function(x) paste0(round(x, 2), "%"),
+                                expand = expansion(mult = c(0, .2))) +
     ggplot2::ylab("Percent of all comparisons") +
     ggplot2::theme_bw() +
     ggplot2::theme(legend.position = "bottom",

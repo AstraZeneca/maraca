@@ -601,6 +601,176 @@ test_that("winOddsData", {
 
 })
 
+test_that("binaryEndpoints", {
+
+  file <- fixture_path("hce_scenario_a.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+
+  # Create binary data for last outcome
+  idx_cont <- data$GROUP == "Continuous outcome"
+  data[idx_cont, "GROUP"] <- "Binary outcome"
+  data[idx_cont, "AVAL0"] <- data[idx_cont, "AVAL0"] >= 0
+  data[idx_cont, "AVAL"] <- data[idx_cont, "AVAL0"] +
+    data[idx_cont, "GROUPN"]
+
+  column_names <- c(
+    outcome = "GROUP",
+    arm = "TRTP",
+    value = "AVAL0"
+  )
+  step_outcomes <- c("Outcome I", "Outcome II",
+                     "Outcome III", "Outcome IV")
+  last_outcome <- "Binary outcome"
+  arm_levels <- c(active = "Active",
+                  control = "Control")
+
+  mar <- maraca(
+    data, step_outcomes, last_outcome, arm_levels, column_names,
+    fixed_followup_days = 3 * 365, compute_win_odds = TRUE,
+    last_type = "binary"
+  )
+  dt_last <- mar$data_last_outcome$meta
+
+  binary_data <- data[idx_cont, ]
+  idx_active <- binary_data$TRTP == "Active"
+  idx_control <- binary_data$TRTP == "Control"
+  prop_active <- prop.test(sum(binary_data[idx_active, "AVAL0"] == 1),
+                           nrow(binary_data[idx_active, ]))
+  prop_control <- prop.test(sum(binary_data[idx_control, "AVAL0"] == 1),
+                            nrow(binary_data[idx_control, ]))
+
+  expect_equal(as.numeric(dt_last[dt_last$arm == "Active", "estimate"]),
+               100 * unname(prop_active$estimate))
+  expect_equal(as.numeric(dt_last[dt_last$arm == "Control", "estimate"]),
+               100 * unname(prop_control$estimate))
+
+  lowest_value <- dt_last$estimate - dt_last$ci_diff
+  highest_value <- dt_last$estimate + dt_last$ci_diff
+  range <- c(min(0, floor(lowest_value / 10) * 10),
+             max(100, ceiling(highest_value / 10) * 10))
+
+  expect_equal(as.numeric(dt_last[dt_last$arm == "Active", "average"]),
+               unname(.to_rangeab(100 * prop_active$estimate,
+                                  max(mar$meta$startx), range[1], range[2])))
+  expect_equal(as.numeric(dt_last[dt_last$arm == "Control", "average"]),
+               unname(.to_rangeab(100 * prop_control$estimate,
+                                  max(mar$meta$startx), range[1], range[2])))
+
+  expect_equal(as.numeric(dt_last[dt_last$arm == "Active", "ci_diff"]),
+               100 * unname(prop_active$estimate - prop_active$conf.int[1]))
+  expect_equal(as.numeric(dt_last[dt_last$arm == "Control", "ci_diff"]),
+               100 * unname(prop_control$estimate - prop_control$conf.int[1]))
+
+  output <- artifacts_path("binary_plot-last.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
+  plot(mar)
+  expect_file_exists(output)
+
+  p <- plot(mar)
+  val <- validate_maraca_plot(p)
+
+  expect_equal(as.numeric(dt_last[dt_last$arm == "Active", "average"]),
+               val$binary_last_data[val$binary_last_data$group == "Active",
+                                    "x"])
+  expect_equal(as.numeric(dt_last[dt_last$arm == "Control", "average"]),
+               val$binary_last_data[val$binary_last_data$group == "Control",
+                                    "x"])
+
+  expect_equal(.to_rangeab((as.numeric(dt_last[dt_last$arm == "Active",
+                                               "estimate"]) -
+                              as.numeric(dt_last[dt_last$arm == "Active",
+                                                 "ci_diff"])),
+                           max(mar$meta$startx), range[1], range[2]),
+               val$binary_last_data[val$binary_last_data$group == "Active",
+                                    "lower_ci"])
+
+  expect_equal(.to_rangeab((as.numeric(dt_last[dt_last$arm == "Control",
+                                               "estimate"]) +
+                              as.numeric(dt_last[dt_last$arm == "Control",
+                                                 "ci_diff"])),
+                           max(mar$meta$startx), range[1], range[2]),
+               val$binary_last_data[val$binary_last_data$group == "Control",
+                                    "upper_ci"])
+
+  file <- fixture_path("hce_scenario_a.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+
+  # Create binary data for step outcome
+  idx_bin <- data$GROUP %in% c("Outcome III", "Outcome IV")
+  data[idx_bin, "AVAL0"] <- data[idx_bin, "AVAL0"] >= 500
+  data[idx_bin, "AVAL"] <- data[idx_bin, "AVAL0"] + data[idx_bin, "GROUPN"]
+  data <- data[data$AVAL0 != 0, ]
+
+  column_names <- c(
+      outcome = "GROUP",
+      arm = "TRTP",
+      value = "AVAL0"
+  )
+  step_outcomes <- c("Outcome I", "Outcome II",
+                     "Outcome III", "Outcome IV")
+  last_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active",
+                  control = "Control")
+  mar <- maraca(
+    data, step_outcomes, last_outcome, arm_levels, column_names,
+    fixed_followup_days = 3 * 365, compute_win_odds = TRUE,
+    step_types = c("tte", "tte", "binary", "binary")
+  )
+
+  act <- data[data$TRTP == "Active", ]
+  ctrl <- data[data$TRTP == "Control", ]
+
+  step_dt <- mar$ecdf_by_outcome$data
+  step_act <- step_dt[step_dt$arm == "Active", ]
+  step_ctrl <- step_dt[step_dt$arm == "Control", ]
+
+  expect_equal((step_act[step_act$outcome == "Outcome III", "step_values"] -
+                  max(step_act[step_act$outcome == "Outcome II",
+                               "step_values"])),
+               100 * nrow(act[act$GROUP == "Outcome III", ]) / nrow(act))
+  expect_equal((step_ctrl[step_ctrl$outcome == "Outcome III", "step_values"] -
+                  max(step_ctrl[step_ctrl$outcome == "Outcome II",
+                                "step_values"])),
+               100 * nrow(ctrl[ctrl$GROUP == "Outcome III", ]) / nrow(ctrl))
+
+  expect_equal((step_act[step_act$outcome == "Outcome IV", "step_values"] -
+                  step_act[step_act$outcome == "Outcome III", "step_values"]),
+               100 * nrow(act[act$GROUP == "Outcome IV", ]) / nrow(act))
+  expect_equal((step_ctrl[step_ctrl$outcome == "Outcome IV", "step_values"] -
+                  step_ctrl[step_ctrl$outcome == "Outcome III",
+                            "step_values"]),
+               100 * nrow(ctrl[ctrl$GROUP == "Outcome IV", ]) / nrow(ctrl))
+
+  output <- artifacts_path("binary_plot-steps.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
+  plot(mar)
+  expect_file_exists(output)
+
+  p <- plot(mar)
+  val <- validate_maraca_plot(p)
+  val_step <- val$binary_step_data
+
+  expect_equal((step_act[step_act$outcome == "Outcome III", "step_values"] -
+                  max(step_act[step_act$outcome == "Outcome II",
+                               "step_values"])),
+               val_step[val_step$group == "Active", "proportion"][1])
+  expect_equal((step_ctrl[step_ctrl$outcome == "Outcome III", "step_values"] -
+                  max(step_ctrl[step_ctrl$outcome == "Outcome II",
+                                "step_values"])),
+               val_step[val_step$group == "Control", "proportion"][1])
+
+  expect_equal((step_act[step_act$outcome == "Outcome IV", "step_values"] -
+                  step_act[step_act$outcome == "Outcome III", "step_values"]),
+               val_step[val_step$group == "Active", "proportion"][2])
+  expect_equal((step_ctrl[step_ctrl$outcome == "Outcome IV", "step_values"] -
+                  step_ctrl[step_ctrl$outcome == "Outcome III",
+                            "step_values"]),
+               val_step[val_step$group == "Control", "proportion"][2])
+
+})
+
 test_that("winOddsPlot", {
   file <- fixture_path("hce_scenario_c.csv")
   data <- read.csv(file, stringsAsFactors = FALSE)
@@ -650,16 +820,60 @@ test_that("winOddsPlot", {
   component_plot(mar)
   expect_file_exists(output)
 
-  mar <- maraca(
-    data, step_outcomes, last_outcome, arm_levels, column_names, 3 * 365,
-    compute_win_odds = FALSE
-  )
+  output <- artifacts_path("cumulative_plot-with.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
+  cumulative_plot(mar)
+  expect_file_exists(output)
+
+  output <- artifacts_path("cumulative_plot-reverse.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
+  cumulative_plot(mar, reverse = TRUE)
+  expect_file_exists(output)
+
+  bar_p <- mar$wo_bar
+  forest_p <- mar$wins_forest
+  sry_by_grp <- win_odds_outcome$summary_by_GROUP
+  summary <- win_odds_outcome$summary
+
+  expect_equal(as.numeric(bar_p[bar_p$GROUP == "Outcome I" &
+                                  bar_p$name == "Active wins", "value"]),
+               sry_by_grp[sry_by_grp$GROUP == "Outcome I" &
+                            sry_by_grp$TRTP == "P", "LOSS"])
+
+  expect_equal(as.numeric(bar_p[bar_p$GROUP == "Outcome I" &
+                                  bar_p$name == "Control wins", "value"]),
+               sry_by_grp[sry_by_grp$GROUP == "Outcome I" &
+                          sry_by_grp$TRTP == "A", "LOSS"])
+
+  expect_equal(as.numeric(bar_p[bar_p$GROUP == "Overall" &
+                                  bar_p$name == "Active wins", "value"]),
+               summary[summary$TRTP == "P", "LOSS"])
+
+  expect_equal(as.numeric(bar_p[bar_p$GROUP == "Overall" &
+                                  bar_p$name == "Control wins", "value"]),
+               summary[summary$TRTP == "A", "LOSS"])
+
+  expect_equal(forest_p[forest_p$GROUP == "Overall" &
+                          forest_p$method == "win odds", "value"],
+               win_odds_outcome$WO$WO)
+
+  expect_equal(forest_p[forest_p$GROUP == "Overall" &
+                          forest_p$method == "win odds", "LCL"],
+                exp(log(win_odds_outcome$WO$WO) -
+                      qnorm(0.975) * win_odds_outcome$WO$SE))
 
   output <- artifacts_path("winOddsPlot-without.pdf")
   expect_file_not_exists(output)
   set_pdf_output(output)
   plot(mar)
   expect_file_exists(output)
+
+  mar <- maraca(
+    data, step_outcomes, last_outcome, arm_levels, column_names, 3 * 365,
+    compute_win_odds = FALSE
+  )
 
   expect_error(component_plot(mar), regexp =
                  list(paste0("Win odds not calculated for maraca object.\n",
@@ -668,6 +882,16 @@ test_that("winOddsPlot", {
 
   expect_text_equal(component_plot(data),
                     list(paste0("component_plot() function can only handle ",
+                                "inputs of class 'hce' or 'maraca'. ",
+                                "Your input has class data.frame.")))
+
+  expect_error(cumulative_plot(mar), regexp =
+                 list(paste0("Win odds not calculated for maraca object.\n",
+                             "  Make sure to set compute_win_odds = TRUE when ",
+                             "creating the maraca object.")))
+
+  expect_text_equal(cumulative_plot(data),
+                    list(paste0("cumulative_plot() function can only handle ",
                                 "inputs of class 'hce' or 'maraca'. ",
                                 "Your input has class data.frame.")))
 
@@ -683,6 +907,12 @@ test_that("winOddsPlot", {
   expect_file_not_exists(output)
   set_pdf_output(output)
   component_plot(hce_dat)
+  expect_file_exists(output)
+
+  output <- artifacts_path("cumulative_plot-hce.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
+  cumulative_plot(hce_dat)
   expect_file_exists(output)
 
 })
@@ -1097,8 +1327,7 @@ test_that("scaleTransform", {
   file <- fixture_path("hce_scenario_c.csv")
   args <- .maraca_args(file)
   dat <- args$data
-  dat[dat$GROUP == "Continuous outcome", "AVAL0"] <-
-    dat[dat$GROUP == "Continuous outcome", "AVAL0"] + 50
+
   mar <- maraca(
     dat,
     args$step_outcomes,
@@ -1108,11 +1337,137 @@ test_that("scaleTransform", {
     3 * 365
   )
 
+  expect_warning(plot(mar, trans = "log10"),
+                 paste("Continuous endpoint has negative values - the log10",
+                       "transformation will result in missing values."))
+  expect_warning(plot(mar, trans = "log"),
+                 paste("Continuous endpoint has negative values - the log",
+                       "transformation will result in missing values."))
+  expect_warning(plot(mar, trans = "sqrt"),
+                 paste("Continuous endpoint has negative values - the sqrt",
+                       "transformation will result in missing values."))
+
+  dat[dat$GROUP == "Continuous outcome", "AVAL0"] <-
+    dat[dat$GROUP == "Continuous outcome", "AVAL0"] + 50
+  mar <- maraca(
+    dat,
+    args$step_outcomes,
+    args$last_outcome,
+    args$arm_levels,
+    args$column_names,
+    3 * 365,
+    compute_win_odds = TRUE
+  )
+
+  orig_dat <- mar$data_last_outcome$data
+
+  p_log10 <- plot(mar, trans = "log10", density_plot_type = "scatter")
+  p_log <- plot(mar, trans = "log", density_plot_type = "scatter")
+  p_sqrt <- plot(mar, trans = "sqrt", density_plot_type = "scatter")
+  val_log10 <- validate_maraca_plot(p_log10)
+  val_log <- validate_maraca_plot(p_log)
+  val_sqrt <- validate_maraca_plot(p_sqrt)
+  log10_data <- .to_rangeab(log10(orig_dat$value), max(mar$meta$startx),
+                            min(log10(orig_dat$value)),
+                            max(log10(orig_dat$value)))
+
+  expect_equal(log10_data,
+               val_log10$scatter_data$x)
+  expect_equal(.to_rangeab(log(orig_dat$value), max(mar$meta$startx),
+                           min(log(orig_dat$value)),
+                           max(log(orig_dat$value))),
+               val_log$scatter_data$x)
+  expect_equal(.to_rangeab(sqrt(orig_dat$value), max(mar$meta$startx),
+                           min(sqrt(orig_dat$value)),
+                           max(sqrt(orig_dat$value))),
+               val_sqrt$scatter_data$x)
+
+  p_log10 <- plot(mar, trans = "log10")
+  val_log10 <- validate_maraca_plot(p_log10)
+  box_dat <- val_log10$boxstat_data
+
+  idx_act <- orig_dat$arm == "Active"
+  idx_ctrl <- orig_dat$arm == "Control"
+
+  expect_equal(median(log10_data[idx_act]),
+               box_dat[box_dat$group == "Active", "median"])
+  expect_equal(unname(quantile(log10_data[idx_act], probs = 0.25)),
+               box_dat[box_dat$group == "Active", "hinge_lower"])
+  expect_equal(unname(quantile(log10_data[idx_act], probs = 0.75)),
+               box_dat[box_dat$group == "Active", "hinge_upper"])
+  expect_equal(median(log10_data[idx_ctrl]),
+               box_dat[box_dat$group == "Control", "median"])
+  expect_equal(unname(quantile(log10_data[idx_ctrl], probs = 0.25)),
+               box_dat[box_dat$group == "Control", "hinge_lower"])
+  expect_equal(unname(quantile(log10_data[idx_ctrl], probs = 0.75)),
+               box_dat[box_dat$group == "Control", "hinge_upper"])
+
   output <- artifacts_path("scaleTransform-basic.pdf")
   expect_file_not_exists(output)
   set_pdf_output(output)
   plot(mar, trans = "sqrt")
   expect_file_exists(output)
+
+  expect_message(plot(mar, trans = "reverse"),
+                 regexp = paste("Last endpoint axis has been reversed, which",
+                                "might indicate that lower values are",
+                                "considered advantageous. Note that the win",
+                                "odds were calculated assuming that higher",
+                                "values are better. If that is not correct,",
+                                "please use the parameter lowerBetter = TRUE",
+                                "in the maraca function."))
+  mar <- maraca(
+    dat,
+    args$step_outcomes,
+    args$last_outcome,
+    args$arm_levels,
+    args$column_names,
+    3 * 365,
+    lowerBetter = TRUE
+  )
+
+  p_reverse <- plot(mar, trans = "reverse", density_plot_type = "scatter")
+  val_reverse <- validate_maraca_plot(p_reverse)
+
+  expect_equal(max(mar$meta$startx) - mar$data_last_outcome$data$x + 100,
+               val_reverse$scatter_data$x)
+
+  file <- fixture_path("hce_scenario_a.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+
+  # Create binary data for last outcome
+  idx_cont <- data$GROUP == "Continuous outcome"
+  data[idx_cont, "GROUP"] <- "Binary outcome"
+  data[idx_cont, "AVAL0"] <- data[idx_cont, "AVAL0"] >= 0
+  data[idx_cont, "AVAL"] <- data[idx_cont, "AVAL0"] +
+    data[idx_cont, "GROUPN"]
+
+  column_names <- c(
+    outcome = "GROUP",
+    arm = "TRTP",
+    value = "AVAL0"
+  )
+  step_outcomes <- c("Outcome I", "Outcome II",
+                     "Outcome III", "Outcome IV")
+  last_outcome <- "Binary outcome"
+  arm_levels <- c(active = "Active",
+                  control = "Control")
+
+  mar <- maraca(
+    data, step_outcomes, last_outcome, arm_levels, column_names,
+    fixed_followup_days = 3 * 365, compute_win_odds = TRUE,
+    last_type = "binary"
+  )
+
+  expect_error(plot(mar, trans = "log10"),
+               paste("log10 transformation only implemented for continuous",
+                     "last endpoint."))
+  expect_error(plot(mar, trans = "log"),
+               paste("log transformation only implemented for continuous",
+                     "last endpoint."))
+  expect_error(plot(mar, trans = "sqrt"),
+               paste("sqrt transformation only implemented for continuous",
+                     "last endpoint."))
 
 })
 

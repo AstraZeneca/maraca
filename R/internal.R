@@ -212,6 +212,9 @@
 }
 
 .log10Ticks <- function(range) {
+  if (range[1] <= 0) {
+    range[1] <- 0.0000001
+  }
   range <- log10(range)
   get_axp <- function(x) 10^c(floor(x[1]), ceiling(x[2]))
   n <- ifelse(range[2] > 4, 1, 2)
@@ -291,16 +294,16 @@
     dplyr::group_by(arm) %>%
     dplyr::summarise(n = n(),
                      x = base::sum(value, na.rm = TRUE),
-                     average = 100 *
+                     estimate = 100 *
                        as.numeric(stats::prop.test(x, n)$estimate),
-                     se = abs(average -
+                     ci_diff = abs(estimate -
                          (100 * as.numeric(stats::prop.test(x, n)$conf.int)[1])
                      )) %>%
     dplyr::ungroup()
 
   # To create ellipsis shape and avoid overlapping between both of them,
-  # set the height to 80% of the SE (minimum scaled in x-axis or y-axis range)
-  width <- (100 - start_binary_endpoint) * min(binary_meta$se) / 100
+  # set the height to 80% of the CI (minimum scaled in x-axis or y-axis range)
+  width <- (100 - start_binary_endpoint) * min(binary_meta$ci_diff) / 100
   y_range <- (max(actv_y, ctrl_y) + 10)  * (width / 100)
   y_height <- min(c(0.4 * abs(actv_y - ctrl_y), 0.8 * min(width, y_range)))
 
@@ -309,17 +312,17 @@
   # with the standard error as width and the height as calculated above
   actv_point <-
     .create_ellipsis_points(unlist(binary_meta[binary_meta$arm == actv,
-                                               "average"]),
+                                               "estimate"]),
                             actv_y,
                             unlist(binary_meta[binary_meta$arm == actv,
-                                               "se"]),
+                                               "ci_diff"]),
                             y_height)
   ctrl_point <-
     .create_ellipsis_points(unlist(binary_meta[binary_meta$arm == ctrl,
-                                               "average"]),
+                                               "estimate"]),
                             ctrl_y,
                             unlist(binary_meta[binary_meta$arm == ctrl,
-                                               "se"]),
+                                               "ci_diff"]),
                             y_height)
 
   binary_data <- rbind(data.frame("outcome" = last_outcome,
@@ -332,18 +335,23 @@
                ctrl_point)
   )
 
+  lowest_value <- binary_meta$estimate - binary_meta$ci_diff
+  highest_value <- binary_meta$estimate + binary_meta$ci_diff
+  x_range <- c(min(0, floor(lowest_value / 10) * 10),
+               max(100, ceiling(highest_value / 10) * 10))
+
   binary_data$x <- .to_rangeab(
     binary_data$x,
     start_binary_endpoint,
-    0,
-    100
+    x_range[1],
+    x_range[2]
   )
 
   binary_meta$average <- .to_rangeab(
-    binary_meta$average,
+    binary_meta$estimate,
     start_binary_endpoint,
-    0,
-    100
+    x_range[1],
+    x_range[2]
   )
 
   binary_meta$y <- 0

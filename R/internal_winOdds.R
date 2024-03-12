@@ -260,10 +260,10 @@
   }
 
   plot <-  ggplot(data = wo_bar, aes(x = GROUP, y = percentage, fill = name)) +
-    geom_bar(stat = "identity", position = position_dodge(), width = .9) +
+    geom_bar(stat = "identity", position = position_dodge(), width = .8) +
     coord_flip() + # make bar plot horizontal
     geom_text(aes(label = round(percentage, 1)),
-              position = ggplot2::position_dodge(width = .9),
+              position = ggplot2::position_dodge(width = .8),
               vjust = 0.5, hjust = -0.2)
 
   plot <- switch(theme,

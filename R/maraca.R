@@ -447,8 +447,8 @@ plot_maraca <- function(
 
   } else if (last_type == "binary") {
 
-    lowest_value <- min(plotdata_last$value, na.rm = TRUE)
-    highest_value <- max(plotdata_last$value, na.rm = TRUE)
+    lowest_value <- last_data$meta$estimate - last_data$meta$ci_diff
+    highest_value <- last_data$meta$estimate + last_data$meta$ci_diff
     range <- c(min(0, floor(lowest_value / 10) * 10),
                max(100, ceiling(highest_value / 10) * 10))
     minor_grid <- seq(range[1], range[2], continuous_grid_spacing_x)
@@ -462,14 +462,14 @@ plot_maraca <- function(
       dplyr::select("x" = median, arm)
   } else if (vline_type == "mean") {
     vline_data <- last_data$meta %>%
-      dplyr::select("x" = median, arm)
+      dplyr::select("x" = average, arm)
   }
 
   if (trans %in% c("log", "log10", "sqrt")) {
 
     if (range[1] < 0) {
       warning(paste("Continuous endpoint has negative values - the",
-                    trans, "transformation will result in missing values"))
+                    trans, "transformation will result in missing values."))
     }
     plotdata_last$value <- eval(parse(text = paste0(trans,
                                                     "(plotdata_last$value)")))
@@ -486,7 +486,7 @@ plot_maraca <- function(
   if (trans == "reverse") {
     if (!is.null(win_odds) && !obj$lowerBetter) {
       message(paste("Last endpoint axis has been reversed, which might",
-                    "indicate that lower values are considered advantageuos.",
+                    "indicate that lower values are considered advantageous.",
                     "Note that the win odds were calculated assuming that",
                     "higher values are better. If that is not correct, please",
                     "use the parameter lowerBetter = TRUE in the",
@@ -498,7 +498,7 @@ plot_maraca <- function(
     plotdata_last$x <- start_last_endpoint - plotdata_last$x + 100
 
     if (!is.null(vline_data)) {
-      vline_data$x <- start_last_endpoint - plotdata_last$x + 100
+      vline_data$x <- start_last_endpoint - vline_data$x + 100
     }
   }
 
