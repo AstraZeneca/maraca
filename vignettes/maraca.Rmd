@@ -159,6 +159,26 @@ Note that some styling settings are already specified in the default plot versio
 themes for the convenience of the user, including a version without any preset stylings. For more details, please take a look at
 the vignette [Maraca Plots - Themes and Styling](themes.html).
 
+The user can also use transformations on the x-axis for the
+continuous outcomes in order to make the plot more readable,
+such as log-transforming it.
+One such transformation is to reverse the x-axis scale by
+setting `trans = "reverse"`. This
+could be of interest when lower values of the continuous outcome
+are better than higher ones. In such a case, one also has to make
+sure that the win odds are calculated correctly by 
+including the parameter `lowerBetter = TRUE` in the `maraca()` or
+`plot.hce()` function.
+```{r fig.width = 7, fig.height = 6}
+Rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
+Rates_P <- c(2.47, 2.24, 2.9, 4, 6)
+hce_dat <- hce::simHCE(n = 2500, TTE_A = Rates_A, TTE_P = Rates_P,
+              CM_A = -6, CM_P = 3, CSD_A = 15, CSD_P = 16, fixedfy = 3,
+              seed = 31337)
+plot(hce_dat, compute_win_odds = TRUE, lowerBetter = TRUE,
+     trans = "reverse")
+```
+
 # References
 
 Martin Karpefors, Daniel Lindholm and Samvel B. Gasparyan, "The maraca plot -- a novel visualization of hierarchical composite endpoints", Clinical Trials (2022).

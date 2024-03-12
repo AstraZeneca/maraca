@@ -703,9 +703,9 @@ test_that("binaryEndpoints", {
   data <- data[data$AVAL0 != 0, ]
 
   column_names <- c(
-      outcome = "GROUP",
-      arm = "TRTP",
-      value = "AVAL0"
+    outcome = "GROUP",
+    arm = "TRTP",
+    value = "AVAL0"
   )
   step_outcomes <- c("Outcome I", "Outcome II",
                      "Outcome III", "Outcome IV")
@@ -845,7 +845,7 @@ test_that("winOddsPlot", {
   expect_equal(as.numeric(bar_p[bar_p$GROUP == "Outcome I" &
                                   bar_p$name == "Control wins", "value"]),
                sry_by_grp[sry_by_grp$GROUP == "Outcome I" &
-                          sry_by_grp$TRTP == "A", "LOSS"])
+                            sry_by_grp$TRTP == "A", "LOSS"])
 
   expect_equal(as.numeric(bar_p[bar_p$GROUP == "Overall" &
                                   bar_p$name == "Active wins", "value"]),
@@ -861,8 +861,8 @@ test_that("winOddsPlot", {
 
   expect_equal(forest_p[forest_p$GROUP == "Overall" &
                           forest_p$method == "win odds", "LCL"],
-                exp(log(win_odds_outcome$WO$WO) -
-                      qnorm(0.975) * win_odds_outcome$WO$SE))
+               exp(log(win_odds_outcome$WO$WO) -
+                     qnorm(0.975) * win_odds_outcome$WO$SE))
 
   output <- artifacts_path("winOddsPlot-without.pdf")
   expect_file_not_exists(output)
