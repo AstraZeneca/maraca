@@ -81,8 +81,8 @@ component_plot(hce_dat)
 Furthermore, there is also a plot called `"cumulative_plot"`.
 Similar as above, this plot shows the different components that
 make up the win odds calculation. Different to the component plot,
-this plot shows the endpoint cumulated instead (adding one
-hierarchical endpoint at a time).
+this plot shows the endpoints cumulated instead (adding one
+component of the hierarchical endpoint at a time).
 As explained above, the plot shows how
 often patients in the active arm "won" or "lost" against the other
 arm or if they had a "tie".

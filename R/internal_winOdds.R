@@ -223,7 +223,7 @@
   plot <- ggplot(data = wins_forest) +
     geom_errorbar(aes(x = GROUP, y = value, ymin = LCL, ymax = UCL,
                       col = method, group = method), linewidth = 0.3,
-                  width = 0.1,
+                  width = 0.15,
                   position = ggplot2::position_dodge(width = 0.3)) +
     geom_point(aes(x = GROUP, y = value, col = method, shape = method),
                size = 3, position = ggplot2::position_dodge(width = 0.3)) +

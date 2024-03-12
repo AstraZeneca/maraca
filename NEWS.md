@@ -1,3 +1,33 @@
+# maraca 0.7
+
+## New features
+
+- The maraca package has been re-factored to allow flexibility in the type of
+  outcomes that can be visualized. The user can now also include binary endpoints
+  in their hierarchical endpoint. Details are given in the new vignette
+  "Maraca Plots - Alternative Endpoints".
+- Additionally to the `component_plot()`, there has been a new plot added called
+  `cumulative_plot()`. As opposed to the previous plot showing the individual
+  components of the win odds computation, this plot is displaying 
+  the endpoints cumulated instead (adding one component of hierarchical endpoint
+  at a time). Details can be found in the vignette "Maraca Plots - Plotting win odds".
+
+## Parameter change
+- As part of the re-factoring to allow for other endpoint types, the parameter
+  `tte_outcomes` has been changed to `step_outcomes` and the parameter
+  `continuous_outcome` to `last_outcome`.
+
+## Dependency change
+
+- The `ggplot2` is now automatically attached when loading `maraca`.
+- `maraca` has a new dependency - the `patchwork` package.
+
+## Bug fixes
+
+- The `trans` parameter in the plotting functions was not working as
+  intended. It now enables x-axis transformation for the continuous
+  endpoint part of the plot.
+
 # maraca 0.6
 
 ## New features
@@ -15,7 +45,7 @@
 
 - `maraca` now has increased the version dependency for the package `hce`
   to >= 0.5.
-- The `hce` is now automatically attached when loading `maraca`.
+- The `hce` package is now automatically attached when loading `maraca`.
 
 # maraca 0.5.1
 
