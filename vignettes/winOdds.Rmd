@@ -24,8 +24,8 @@ different components that make up the win odds calculation.
 More specifically, for each outcome, the plot shows how
 often patients in each treatment arm "won" against the other
 arm. For the time-to-event endpoints, this means counting how many
-patients of the other arm had no event prior. For the continuous
-outcome this means counting how many patients had a lower value.
+patients of the other arm had no more prioritized event prior.
+For the continuous outcome this means counting how many patients had a lower value.
 The results are separated for each outcome (non-cumulative)
 and also include ties (patients from 2 treatment arms having same
 outcome at the same time/same continuous outcome value).
@@ -79,13 +79,14 @@ component_plot(hce_dat)
 ## Cumulative plot
 
 Furthermore, there is also a plot called `"cumulative_plot"`.
-Similar as above, this plot shows the different components that
+Similar to the `component_plot`, this plot shows the different HCE components that
 make up the win odds calculation. Different to the component plot,
-this plot shows the endpoints cumulated instead (adding one
-component of the hierarchical endpoint at a time).
-As explained above, the plot shows how
-often patients in the active arm "won" or "lost" against the other
-arm or if they had a "tie".
+this plot provides insight into the contributed effect for each of the components as
+they are added in sequence (from top to bottom).
+Additionally, there is also a right-hand panel that shows a forest plot with the win odds
+and win ratio corresponding to the same cumulative sequence. To understand the contribution
+from each outcome, we artificially set all the less prioritized outcomes as ties and calculate
+the win odds/ratio. Thus, for each added outcome there will be less ties.  
 
 As before, in order to use the `cumulative_plot`, we have to first create a
 `maraca` object. Important here is to set the argument
@@ -117,11 +118,38 @@ an `hce` object (created using the
 cumulative_plot(hce_dat)
 ```
 
+The user can also choose to only display one of the statistics (win odds or win ratio)
+by specifying so in the `include` parameter.
+```{r fig.width=7, fig.height=6}
+cumulative_plot(maraca_dat, include = "win odds")
+```
+
+The y-axis can easily be reversed using the `reverse` parameter.
+```{r fig.width=7, fig.height=6}
+cumulative_plot(hce_dat, reverse = TRUE)
+```
+
 ## Styling
 
-The resulting plots for both the `component_plot()` and  `cumulative_plot()` functions
-are normal ggplot2 objects that can be styled accordingly.
-There are also different themes available to style the plot.
+The resulting plot for the `component_plot()` functions
+is a normal ggplot2 object that can be styled accordingly.
+```{r fig.width=7, fig.height=6}
+component_plot(maraca_dat) +
+  ggplot2::scale_fill_manual(values = c("seagreen", "red", "grey"), name = NULL)
+```
+
+Note that the `cumulative_plot()` function is using the
+patchwork package to combine 2 ggplot2 objects. They
+can be accessed as list items and styled accordingly.
+```{r fig.width=7, fig.height=6}
+p <- cumulative_plot(maraca_dat)
+p[[1]] <- p[[1]] +
+  ggplot2::scale_fill_manual(values = c("seagreen", "red", "grey"), name = NULL)
+p
+```
+
+For the users convenience, there are also different themes
+available to style the plot.
 
 The default style is called `theme = "maraca"`.
 ```{r fig.width=7, fig.height=6}
@@ -138,7 +166,8 @@ cumulative_plot(maraca_dat, theme = "color1")
 component_plot(maraca_dat, theme = "color2")
 ```
 
-There is also a theme without any styling `theme = "none"`.
+There is also a theme without any styling `theme = "none"` that
+can be used as a base when the user wants to style the plot themselves.
 ```{r fig.width=8, fig.height=6}
 cumulative_plot(maraca_dat, theme = "none")
 ```

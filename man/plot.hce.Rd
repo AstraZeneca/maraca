@@ -6,6 +6,7 @@
 \usage{
 \method{plot}{hce}(
   x,
+  step_outcomes = NULL,
   last_outcome = "C",
   arm_levels = c(active = "A", control = "P"),
   continuous_grid_spacing_x = 10,
@@ -18,12 +19,21 @@
   last_type = "continuous",
   theme = "maraca",
   lowerBetter = FALSE,
+  tte_outcomes = lifecycle::deprecated(),
   continuous_outcome = lifecycle::deprecated(),
   ...
 )
 }
 \arguments{
 \item{x}{an object of S3 class 'hce'.}
+
+\item{step_outcomes}{A vector of strings containing the outcome labels
+for all outcomes displayed as part of the step function
+on the left side of the plot.
+The order is kept for the plot.
+By default (when set to NULL) this is automatically
+updated by taking the non-continuous outcomes from
+the GROUP variable in alphabetical order.}
 
 \item{last_outcome}{A single string containing the last outcome label
 displayed on the right side of the plot.
@@ -69,6 +79,11 @@ fixed_followup_days argument is used.}
 \item{compute_win_odds}{If TRUE compute the win odds, otherwise (default)
 don't compute them.}
 
+\item{step_types}{The type of each outcome in the step_outcomes vector.
+Can be a single string (if all outcomes of same type) or
+a vector of same length as step_outcomes. Possible values
+in the vector are "tte" (default) or "binary".}
+
 \item{last_type}{A single string giving the type of the last outcome.
 Possible values are "continuous" (default), "binary" or
 "multinomial".}
@@ -86,6 +101,11 @@ calculated correctly.
 Default value is FALSE, meaning higher values
 are considered advantageous.}
 
+\item{tte_outcomes}{Deprecated and substituted by the more general
+'step_outcomes'. A vector of strings containing the
+time-to-event outcome labels. The order is kept for the
+plot.}
+
 \item{continuous_outcome}{Deprecated and substituted by the more general
 'last_outcome'. A single string containing the
 continuous outcome label.}
@@ -93,7 +113,7 @@ continuous outcome label.}
 \item{\dots}{not used}
 }
 \value{
-Used for side effect. Returns ggplot2 plot of the hce object.
+Returns ggplot2 plot of the hce object.
 }
 \description{
 Generic function to plot the hce object using plot().

@@ -65,7 +65,7 @@
                                      GROUP = "outcome")
 
   endpoints <- c(step_outcomes, last_outcome)
-  labs <- c(sapply(head(seq_along(endpoints), -1), function(i) {
+  labs <- c(sapply(utils::head(seq_along(endpoints), -1), function(i) {
     paste(endpoints[1:i], collapse = " +\n")
   }), "Overall")
 
@@ -88,31 +88,29 @@
   wins_forest <- do.call("rbind", lapply(seq_along(calcs_lst), function(i) {
     wins <- calcs_lst[[i]]$wins
     nm <- c("value", "LCL", "UCL", "p value")
-    f <- rbind(data.frame(setNames(wins$WO, nm), "method" = "win odds"),
-               data.frame(setNames(wins$WR1, nm), "method" = "win ratio"))
+    f <- rbind(data.frame(stats::setNames(wins$WO, nm), "method" = "win odds"),
+               data.frame(stats::setNames(wins$WR1, nm),
+                          "method" = "win ratio"))
     f$GROUP <- labs[i]
     return(f)
   }))
 
   wo_bar <- do.call("rbind", lapply(seq_along(calcs_lst), function(i) {
-    wo <- head(calcs_lst[[i]]$wo$summary, 1)
+    wo <- utils::head(calcs_lst[[i]]$wo$summary, 1)
     wo$outcome <- endpoints[i]
     wo$GROUP <- labs[i]
     wo %>%
       dplyr::rename(dplyr::all_of(c(A_wins = "WIN", P_wins = "LOSS",
                                     Ties = "TIE"))) %>%
       tidyr::pivot_longer(cols = c("A_wins", "P_wins", "Ties"),
-                          names_to = "name", values_to = "value")
-    # %>%
-    #   dplyr::mutate_at(dplyr::vars(name), factor,
-    #                    levels = c("wins", "losses", "ties"))
+                          names_to = "count", values_to = "value")
   }))
 
   wo_bar <- .label_win_odds_plots(wo_bar, arm_levels)
 
   wins_forest$GROUP <- factor(wins_forest$GROUP, levels = rev(labs))
   wins_forest$method <- factor(wins_forest$method,
-                               levels = c("win ratio", "win odds"))
+                               levels = c("win odds", "win ratio"))
   wo_bar$GROUP <- factor(wo_bar$GROUP, levels = rev(labs))
   wo_bar$percentage <- 100 * (wo_bar$value / win_odds_outcome$summary$TOTAL[1])
 
@@ -150,7 +148,7 @@
                   "Ties" = TIE_A) %>%
     # Long format for plotting
     tidyr::pivot_longer(cols = c("A_wins", "P_wins", "Ties"),
-                        names_to = "name", values_to = "value")
+                        names_to = "count", values_to = "value")
 
   # Total number of wins/losses/ties to get relative results
   wo_bar_nc$total <- wo_tot$TOTAL[1]
@@ -168,12 +166,12 @@
               paste(arms["control"], "wins"),
               "Ties")
 
-  bar_data$name <- ifelse(bar_data$name == "A_wins",
-                          labels[1],
-                          ifelse(bar_data$name == "P_wins",
-                                 labels[2], labels[3]))
+  bar_data$count <- ifelse(bar_data$count == "A_wins",
+                           labels[1],
+                           ifelse(bar_data$count == "P_wins",
+                                  labels[2], labels[3]))
 
-  bar_data$name <- factor(bar_data$name, levels = labels)
+  bar_data$count <- factor(bar_data$count, levels = labels)
 
   return(bar_data)
 }
@@ -188,7 +186,7 @@
 
   plot <-
     ggplot2::ggplot(data = wo_bar_nc, aes(x = GROUP, y = percentage,
-                                          fill = name)) +
+                                          fill = count)) +
     # Bars
     ggplot2::geom_bar(stat = "identity", position = ggplot2::position_dodge(),
                       width = .8) +
@@ -213,24 +211,29 @@
 }
 
 # Create forest plot part of cumulative plot
-.create_forest_plot <- function(wins_forest, theme, reverse) {
+.create_forest_plot <- function(wins_forest, theme, include, reverse) {
 
+  xlab <- paste(include, collapse = " / ")
   if (reverse) {
     wins_forest$GROUP <- factor(wins_forest$GROUP,
                                 levels = rev(levels(wins_forest$GROUP)))
   }
 
-  plot <- ggplot(data = wins_forest) +
-    geom_errorbar(aes(x = GROUP, y = value, ymin = LCL, ymax = UCL,
-                      col = method, group = method), linewidth = 0.3,
-                  width = 0.15,
-                  position = ggplot2::position_dodge(width = 0.3)) +
-    geom_point(aes(x = GROUP, y = value, col = method, shape = method),
-               size = 3, position = ggplot2::position_dodge(width = 0.3)) +
-    geom_hline(yintercept = 1, linetype = "dashed", color = "#676767") +
-    coord_flip() +
-    scale_y_continuous() +
-    scale_x_discrete(labels = NULL, name = NULL)
+  plot <- ggplot2::ggplot(data = wins_forest) +
+    ggplot2::geom_errorbar(ggplot2::aes(x = GROUP, y = value, ymin = LCL,
+                                        ymax = UCL, col = method,
+                                        group = method),
+                           linewidth = 0.3, width = 0.15,
+                           position = ggplot2::position_dodge(width = 0.3)) +
+    ggplot2::geom_point(ggplot2::aes(x = GROUP, y = value,
+                                     col = method, shape = method),
+                        size = 3,
+                        position = ggplot2::position_dodge(width = 0.3)) +
+    ggplot2::geom_hline(yintercept = 1, linetype = "dashed",
+                        color = "#676767") +
+    ggplot2::coord_flip() +
+    ggplot2::scale_y_continuous() +
+    ggplot2::scale_x_discrete(labels = NULL, name = NULL, breaks = NULL)
 
   if (theme != "none") {
     plot <- plot +
@@ -238,14 +241,25 @@
                             seq(0.5, length(levels(wins_forest$GROUP)) + 1.5,
                                 1),
                           linetype = 2, linewidth = 0.3, color = "darkgray") +
-      scale_color_manual(values = c("black", "grey50")) +
-      scale_fill_manual(values = c("black", "grey50")) +
-      ylab("Win Odds / Win Ratio") +
-      theme_bw() +
-      theme(legend.position = "bottom",
-            legend.title = element_blank(),
-            panel.grid.major.y = ggplot2::element_blank(),
-            panel.grid.minor.y = ggplot2::element_blank())
+      ggplot2::ylab(xlab) +
+      ggplot2::theme_bw()
+
+    if (length(include) == 1) {
+      plot <- plot +
+        ggplot2::scale_color_manual(values = "black") +
+        ggplot2::scale_fill_manual(values = "black") +
+        ggplot2::guides(shape = "none", color = "none", fill = "none") +
+        ggplot2::theme(panel.grid.major.y = ggplot2::element_blank(),
+                       panel.grid.minor.y = ggplot2::element_blank())
+    } else {
+      plot <- plot +
+        ggplot2::scale_color_manual(values = c("black", "grey50")) +
+        ggplot2::scale_fill_manual(values = c("black", "grey50")) +
+        ggplot2::theme(legend.position = "bottom",
+                       legend.title = ggplot2::element_blank(),
+                       panel.grid.major.y = ggplot2::element_blank(),
+                       panel.grid.minor.y = ggplot2::element_blank())
+    }
   }
 
   return(plot)
@@ -259,12 +273,15 @@
     wo_bar$GROUP <- factor(wo_bar$GROUP, levels = rev(levels(wo_bar$GROUP)))
   }
 
-  plot <-  ggplot(data = wo_bar, aes(x = GROUP, y = percentage, fill = name)) +
-    geom_bar(stat = "identity", position = position_dodge(), width = .8) +
-    coord_flip() + # make bar plot horizontal
-    geom_text(aes(label = round(percentage, 1)),
-              position = ggplot2::position_dodge(width = .8),
-              vjust = 0.5, hjust = -0.2)
+  plot <-  ggplot2::ggplot(data = wo_bar, ggplot2::aes(x = GROUP,
+                                                       y = percentage,
+                                                       fill = count)) +
+    ggplot2::geom_bar(stat = "identity", position = ggplot2::position_dodge(),
+                      width = .8) +
+    ggplot2::coord_flip() + # make bar plot horizontal
+    ggplot2::geom_text(ggplot2::aes(label = round(percentage, 1)),
+                       position = ggplot2::position_dodge(width = .8),
+                       vjust = 0.5, hjust = -0.2)
 
   plot <- switch(theme,
                  "maraca" = .theme_maraca_cp(plot),

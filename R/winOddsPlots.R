@@ -27,11 +27,11 @@ component_plot.default <- function(x,
 #' Check the vignette "Maraca Plots - Plotting win odds" for more details.
 #'
 #' @param x an object of S3 class 'maraca'.
-#' @param \dots not used
 #' @param theme Choose theme to style the plot. The default theme is "maraca".
 #'        Options are "maraca", "color1", "color2" and none".
 #'        For more details, check the vignette called
 #'        "Maraca Plots - Plotting win odds".
+#' @param \dots not used
 #' @return Component plot as a ggplot2 object.
 #' @examples
 #'
@@ -88,7 +88,13 @@ component_plot.maraca <- function(x,
 #' Check the vignette "Maraca Plots - Plotting win odds" for more details.
 #'
 #' @param x an object of S3 class 'hce'.
-#' @param \dots not used
+#' @param step_outcomes A vector of strings containing the outcome labels
+#'                      for all outcomes displayed as part of the step function
+#'                      on the left side of the plot.
+#'                      The order is kept for the plot.
+#'                      By default (when set to NULL) this is automatically
+#'                      updated by taking the non-continuous outcomes from
+#'                      the GROUP variable in alphabetical order.
 #' @param last_outcome A single string containing the last outcome label
 #'                     displayed on the right side of the plot.
 #'                     Default value "C".
@@ -116,9 +122,7 @@ component_plot.maraca <- function(x,
 #'                    calculated correctly.
 #'                    Default value is FALSE, meaning higher values
 #'                    are considered advantageous.
-#' @param continuous_outcome Deprecated and substituted by the more general
-#'                           'last_outcome'. A single string containing the
-#'                           continuous outcome label.
+#' @param \dots not used
 #' @return Component plot as a ggplot2 object.
 #' @examples
 #' Rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
@@ -130,16 +134,17 @@ component_plot.maraca <- function(x,
 #' component_plot(hce_dat)
 #' @export
 #'
-component_plot.hce <- function(x, last_outcome = "C",
+component_plot.hce <- function(x, step_outcomes = NULL,
+                               last_outcome = "C",
                                arm_levels = c(active = "A", control = "P"),
                                fixed_followup_days = NULL,
                                theme = "maraca",
                                lowerBetter = FALSE,
-                               continuous_outcome = lifecycle::deprecated(),
                                ...) {
 
   # Create maraca object
-  maraca_dat <- .maraca_from_hce_data(x, last_outcome, arm_levels,
+  maraca_dat <- .maraca_from_hce_data(x, step_outcomes,
+                                      last_outcome, arm_levels,
                                       fixed_followup_days,
                                       compute_win_odds = TRUE,
                                       lowerBetter = lowerBetter)
@@ -194,11 +199,15 @@ cumulative_plot.default <- function(x, ...) {
 #'        Options are "maraca", "color1", "color2" and none".
 #'        For more details, check the vignette called
 #'        "Maraca Plots - Plotting win odds".
+#' @param include Vector or single string indicating which statistics to
+#'        include in the right hand side plot. Acceptable values are
+#'        "win odds" and/or "win ratio". Default is c("win odds", "win ratio").
 #' @param reverse Flag indicating if the cumulated outcomes should be
 #'        displayed in order from top to bottom (FALSE, the default)
 #'        or in reverse (TRUE).
 #' @param \dots not used
-#' @return Cumulative plot as a patchwork object.
+#' @return Cumulative plot as a patchwork list. Individual plots can
+#'         be accessed like list items (plot[[1]] and plot[[2]]).
 #' @examples
 #'
 #' data(hce_scenario_a)
@@ -220,7 +229,12 @@ cumulative_plot.default <- function(x, ...) {
 #'
 #' @export
 cumulative_plot.maraca <- function(x, theme = "maraca",
+                                   include = c("win odds", "win ratio"),
                                    reverse = FALSE, ...) {
+
+  checkmate::assert_subset(include,
+                           choices = c("win odds", "win ratio"),
+                           empty.ok = FALSE)
 
   # Check that win odds were calculated for the maraca object
   if (is.null(x[["wins_forest"]]) || is.null(x[["wo_bar"]])) {
@@ -232,9 +246,11 @@ cumulative_plot.maraca <- function(x, theme = "maraca",
   # Get win odds by outcome from maraca object
   wo_bar <- x$wo_bar
   wins_forest <- x$wins_forest
+  # Include only methods of interest
+  wins_forest <- wins_forest[wins_forest$method %in% include, ]
   # Create forest plot
   plot_bar <- .create_bar_plot(wo_bar, theme, reverse)
-  plot_forest <- .create_forest_plot(wins_forest, theme, reverse)
+  plot_forest <- .create_forest_plot(wins_forest, theme, include, reverse)
 
   plot <-  patchwork:::"|.ggplot"(plot_bar, plot_forest) +
     patchwork::plot_layout(widths = c(2.5, 1), nrow = 1)
@@ -251,7 +267,13 @@ cumulative_plot.maraca <- function(x, theme = "maraca",
 #' Check the vignette "Maraca Plots - Plotting win odds" for more details.
 #'
 #' @param x an object of S3 class 'hce'.
-#' @param \dots not used
+#' @param step_outcomes A vector of strings containing the outcome labels
+#'                      for all outcomes displayed as part of the step function
+#'                      on the left side of the plot.
+#'                      The order is kept for the plot.
+#'                      By default (when set to NULL) this is automatically
+#'                      updated by taking the non-continuous outcomes from
+#'                      the GROUP variable in alphabetical order.
 #' @param last_outcome A single string containing the last outcome label
 #'                     displayed on the right side of the plot.
 #'                     Default value "C".
@@ -273,6 +295,9 @@ cumulative_plot.maraca <- function(x, theme = "maraca",
 #'        Options are "maraca", "color1", "color2" and none".
 #'        For more details, check the vignette called
 #'        "Maraca Plots - Plotting win odds".
+#' @param include Vector or single string indicating which statistics to
+#'        include in the right hand side plot. Acceptable values are
+#'        "win odds" and/or "win ratio". Default is c("win odds", "win ratio").
 #' @param reverse Flag indicating if the cumulated outcomes should be
 #'        displayed in order from top to bottom (FALSE, the default)
 #'        or in reverse (TRUE).
@@ -282,10 +307,9 @@ cumulative_plot.maraca <- function(x, theme = "maraca",
 #'                    calculated correctly.
 #'                    Default value is FALSE, meaning higher values
 #'                    are considered advantageous.
-#' @param continuous_outcome Deprecated and substituted by the more general
-#'                           'last_outcome'. A single string containing the
-#'                           continuous outcome label.
-#' @return Cumulative plot as a patchwork object.
+#' @param \dots not used
+#' @return Cumulative plot as a patchwork list. Individual plots can
+#'         be accessed like list items (plot[[1]] and plot[[2]]).
 #' @examples
 #' Rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
 #' Rates_P <- c(2.47, 2.24, 2.9, 4, 6)
@@ -296,22 +320,25 @@ cumulative_plot.maraca <- function(x, theme = "maraca",
 #' cumulative_plot(hce_dat)
 #' @export
 #'
-cumulative_plot.hce <- function(x, last_outcome = "C",
+cumulative_plot.hce <- function(x, step_outcomes = NULL,
+                                last_outcome = "C",
                                 arm_levels = c(active = "A", control = "P"),
                                 fixed_followup_days = NULL,
                                 theme = "maraca",
+                                include = c("win odds", "win ratio"),
                                 reverse = FALSE,
                                 lowerBetter = FALSE,
-                                continuous_outcome = lifecycle::deprecated(),
                                 ...) {
 
   # Create maraca object
-  maraca_dat <- .maraca_from_hce_data(x, last_outcome, arm_levels,
+  maraca_dat <- .maraca_from_hce_data(x, step_outcomes,
+                                      last_outcome, arm_levels,
                                       fixed_followup_days,
                                       compute_win_odds = TRUE,
                                       lowerBetter = lowerBetter)
 
-  plot <- cumulative_plot(maraca_dat, theme = theme, reverse = reverse)
+  plot <- cumulative_plot(maraca_dat, theme = theme, include = include,
+                          reverse = reverse)
 
   return(plot)
 }

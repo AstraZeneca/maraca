@@ -800,18 +800,18 @@ test_that("winOddsPlot", {
                                          mar$arm_levels)
 
   expect_equal(wo_smry_grp[wo_smry_grp$TRTP == "A", "WIN"],
-               unname(unlist(wo_bar_nc[wo_bar_nc$name == "Active wins" &
+               unname(unlist(wo_bar_nc[wo_bar_nc$count == "Active wins" &
                                          wo_bar_nc$GROUP %in%
                                            c(step_outcomes, last_outcome),
                                        "value"])))
   expect_equal(wo_smry_grp[wo_smry_grp$TRTP == "P", "WIN"],
-               unname(unlist(wo_bar_nc[wo_bar_nc$name == "Control wins" &
+               unname(unlist(wo_bar_nc[wo_bar_nc$count == "Control wins" &
                                          wo_bar_nc$GROUP %in%
                                            c(step_outcomes, last_outcome),
                                        "value"])))
   expect_equal(win_odds_outcome$summary[win_odds_outcome$summary$TRTP == "A",
                                         "TOTAL"],
-               unname(unlist(wo_bar_nc[wo_bar_nc$name == "Active wins",
+               unname(unlist(wo_bar_nc[wo_bar_nc$count == "Active wins",
                                        "total"][1, ])))
 
   output <- artifacts_path("componentPlot-with.pdf")
@@ -838,21 +838,21 @@ test_that("winOddsPlot", {
   summary <- win_odds_outcome$summary
 
   expect_equal(as.numeric(bar_p[bar_p$GROUP == "Outcome I" &
-                                  bar_p$name == "Active wins", "value"]),
+                                  bar_p$count == "Active wins", "value"]),
                sry_by_grp[sry_by_grp$GROUP == "Outcome I" &
                             sry_by_grp$TRTP == "P", "LOSS"])
 
   expect_equal(as.numeric(bar_p[bar_p$GROUP == "Outcome I" &
-                                  bar_p$name == "Control wins", "value"]),
+                                  bar_p$count == "Control wins", "value"]),
                sry_by_grp[sry_by_grp$GROUP == "Outcome I" &
                             sry_by_grp$TRTP == "A", "LOSS"])
 
   expect_equal(as.numeric(bar_p[bar_p$GROUP == "Overall" &
-                                  bar_p$name == "Active wins", "value"]),
+                                  bar_p$count == "Active wins", "value"]),
                summary[summary$TRTP == "P", "LOSS"])
 
   expect_equal(as.numeric(bar_p[bar_p$GROUP == "Overall" &
-                                  bar_p$name == "Control wins", "value"]),
+                                  bar_p$count == "Control wins", "value"]),
                summary[summary$TRTP == "A", "LOSS"])
 
   expect_equal(forest_p[forest_p$GROUP == "Overall" &

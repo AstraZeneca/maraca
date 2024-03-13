@@ -9,17 +9,25 @@ Check the vignette "Maraca Plots - Plotting win odds" for more details.}
 \usage{
 \method{component_plot}{hce}(
   x,
+  step_outcomes = NULL,
   last_outcome = "C",
   arm_levels = c(active = "A", control = "P"),
   fixed_followup_days = NULL,
   theme = "maraca",
   lowerBetter = FALSE,
-  continuous_outcome = lifecycle::deprecated(),
   ...
 )
 }
 \arguments{
 \item{x}{an object of S3 class 'hce'.}
+
+\item{step_outcomes}{A vector of strings containing the outcome labels
+for all outcomes displayed as part of the step function
+on the left side of the plot.
+The order is kept for the plot.
+By default (when set to NULL) this is automatically
+updated by taking the non-continuous outcomes from
+the GROUP variable in alphabetical order.}
 
 \item{last_outcome}{A single string containing the last outcome label
 displayed on the right side of the plot.
@@ -52,10 +60,6 @@ This flag is need to make sure the win odds are
 calculated correctly.
 Default value is FALSE, meaning higher values
 are considered advantageous.}
-
-\item{continuous_outcome}{Deprecated and substituted by the more general
-'last_outcome'. A single string containing the
-continuous outcome label.}
 
 \item{\dots}{not used}
 }

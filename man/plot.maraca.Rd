@@ -42,7 +42,7 @@ For more details, check the vignette called
 \item{\dots}{not used}
 }
 \value{
-Used for side effect. Returns ggplot2 plot of the maraca object.
+Returns ggplot2 plot of the maraca object.
 }
 \description{
 Generic function to plot the maraca object using plot().

@@ -26,10 +26,11 @@
                         linetype = 2, linewidth = 0.3, color = "darkgray") +
     # Axis showing percentages
     ggplot2::scale_y_continuous(labels = function(x) paste0(round(x, 2), "%"),
-                                expand = expansion(mult = c(0, .3))) +
+                                expand = ggplot2::expansion(mult = c(0, .3))) +
     ggplot2::ylab("Percent of all comparisons") +
     ggplot2::theme_bw() +
     ggplot2::theme(legend.position = "bottom",
+                   legend.title = ggplot2::element_blank(),
                    axis.title.y = ggplot2::element_blank(),
                    panel.grid.major.y = ggplot2::element_blank(),
                    panel.grid.minor.y = ggplot2::element_blank())

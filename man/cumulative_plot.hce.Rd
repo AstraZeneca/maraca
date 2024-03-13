@@ -9,18 +9,27 @@ Check the vignette "Maraca Plots - Plotting win odds" for more details.}
 \usage{
 \method{cumulative_plot}{hce}(
   x,
+  step_outcomes = NULL,
   last_outcome = "C",
   arm_levels = c(active = "A", control = "P"),
   fixed_followup_days = NULL,
   theme = "maraca",
+  include = c("win odds", "win ratio"),
   reverse = FALSE,
   lowerBetter = FALSE,
-  continuous_outcome = lifecycle::deprecated(),
   ...
 )
 }
 \arguments{
 \item{x}{an object of S3 class 'hce'.}
+
+\item{step_outcomes}{A vector of strings containing the outcome labels
+for all outcomes displayed as part of the step function
+on the left side of the plot.
+The order is kept for the plot.
+By default (when set to NULL) this is automatically
+updated by taking the non-continuous outcomes from
+the GROUP variable in alphabetical order.}
 
 \item{last_outcome}{A single string containing the last outcome label
 displayed on the right side of the plot.
@@ -47,6 +56,10 @@ Options are "maraca", "color1", "color2" and none".
 For more details, check the vignette called
 "Maraca Plots - Plotting win odds".}
 
+\item{include}{Vector or single string indicating which statistics to
+include in the right hand side plot. Acceptable values are
+"win odds" and/or "win ratio". Default is c("win odds", "win ratio").}
+
 \item{reverse}{Flag indicating if the cumulated outcomes should be
 displayed in order from top to bottom (FALSE, the default)
 or in reverse (TRUE).}
@@ -58,14 +71,11 @@ calculated correctly.
 Default value is FALSE, meaning higher values
 are considered advantageous.}
 
-\item{continuous_outcome}{Deprecated and substituted by the more general
-'last_outcome'. A single string containing the
-continuous outcome label.}
-
 \item{\dots}{not used}
 }
 \value{
-Cumulative plot as a patchwork object.
+Cumulative plot as a patchwork list. Individual plots can
+        be accessed like list items (plot[[1]] and plot[[2]]).
 }
 \description{
 Generic function to create a plot showing the components used in

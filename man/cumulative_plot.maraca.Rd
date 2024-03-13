@@ -9,7 +9,13 @@ Note that for this plot, when creating the maraca object using the maraca()
 function, the argument "compute_win_odds" has to be set to TRUE.
 Check the vignette "Maraca Plots - Plotting win odds" for more details.}
 \usage{
-\method{cumulative_plot}{maraca}(x, theme = "maraca", reverse = FALSE, ...)
+\method{cumulative_plot}{maraca}(
+  x,
+  theme = "maraca",
+  include = c("win odds", "win ratio"),
+  reverse = FALSE,
+  ...
+)
 }
 \arguments{
 \item{x}{an object of S3 class 'maraca'.}
@@ -19,6 +25,10 @@ Options are "maraca", "color1", "color2" and none".
 For more details, check the vignette called
 "Maraca Plots - Plotting win odds".}
 
+\item{include}{Vector or single string indicating which statistics to
+include in the right hand side plot. Acceptable values are
+"win odds" and/or "win ratio". Default is c("win odds", "win ratio").}
+
 \item{reverse}{Flag indicating if the cumulated outcomes should be
 displayed in order from top to bottom (FALSE, the default)
 or in reverse (TRUE).}
@@ -26,7 +36,8 @@ or in reverse (TRUE).}
 \item{\dots}{not used}
 }
 \value{
-Cumulative plot as a patchwork object.
+Cumulative plot as a patchwork list. Individual plots can
+        be accessed like list items (plot[[1]] and plot[[2]]).
 }
 \description{
 Generic function to create a plot showing the components used in

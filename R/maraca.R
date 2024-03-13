@@ -779,7 +779,6 @@ validate_maraca_plot <- function(x,  ...) {
 #' Generic function to plot the maraca object using plot().
 #'
 #' @param x An object of S3 class 'maraca'.
-#' @param \dots not used
 #' @param continuous_grid_spacing_x The spacing of the x grid to use for the
 #'        continuous section of the plot.
 #' @param trans the transformation to apply to the x-axis scale for the last
@@ -797,7 +796,8 @@ validate_maraca_plot <- function(x,  ...) {
 #'        Options are "maraca", "maraca_old", "color1", "color2" and none".
 #'        For more details, check the vignette called
 #'        "Maraca Plots - Themes and Styling".
-#' @return Used for side effect. Returns ggplot2 plot of the maraca object.
+#' @param \dots not used
+#' @return Returns ggplot2 plot of the maraca object.
 #'
 #' @examples
 #' data(hce_scenario_a)
@@ -828,7 +828,13 @@ plot.maraca <- function(
 #' Generic function to plot the hce object using plot().
 #'
 #' @param x an object of S3 class 'hce'.
-#' @param \dots not used
+#' @param step_outcomes A vector of strings containing the outcome labels
+#'                      for all outcomes displayed as part of the step function
+#'                      on the left side of the plot.
+#'                      The order is kept for the plot.
+#'                      By default (when set to NULL) this is automatically
+#'                      updated by taking the non-continuous outcomes from
+#'                      the GROUP variable in alphabetical order.
 #' @param last_outcome A single string containing the last outcome label
 #'                     displayed on the right side of the plot.
 #'                     Default value "C".
@@ -865,6 +871,10 @@ plot.maraca <- function(
 #'                            fixed_followup_days argument is used.
 #' @param compute_win_odds If TRUE compute the win odds, otherwise (default)
 #'                         don't compute them.
+#' @param step_types The type of each outcome in the step_outcomes vector.
+#'                   Can be a single string (if all outcomes of same type) or
+#'                   a vector of same length as step_outcomes. Possible values
+#'                   in the vector are "tte" (default) or "binary".
 #' @param last_type A single string giving the type of the last outcome.
 #'                  Possible values are "continuous" (default), "binary" or
 #'                  "multinomial".
@@ -879,10 +889,15 @@ plot.maraca <- function(
 #'                    calculated correctly.
 #'                    Default value is FALSE, meaning higher values
 #'                    are considered advantageous.
+#' @param tte_outcomes Deprecated and substituted by the more general
+#'                     'step_outcomes'. A vector of strings containing the
+#'                     time-to-event outcome labels. The order is kept for the
+#'                     plot.
 #' @param continuous_outcome Deprecated and substituted by the more general
 #'                           'last_outcome'. A single string containing the
 #'                           continuous outcome label.
-#' @return Used for side effect. Returns ggplot2 plot of the hce object.
+#' @param \dots not used
+#' @return Returns ggplot2 plot of the hce object.
 #'
 #' @examples
 #' Rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
@@ -894,7 +909,9 @@ plot.maraca <- function(
 #' plot(hce_dat, fixed_followup_days = 3 * 365)
 #'
 #' @export
-plot.hce <- function(x, last_outcome = "C",
+plot.hce <- function(x,
+                     step_outcomes = NULL,
+                     last_outcome = "C",
                      arm_levels = c(active = "A", control = "P"),
                      continuous_grid_spacing_x = 10,
                      trans = c("identity", "log", "log10",
@@ -908,8 +925,15 @@ plot.hce <- function(x, last_outcome = "C",
                      last_type = "continuous",
                      theme = "maraca",
                      lowerBetter = FALSE,
+                     tte_outcomes = lifecycle::deprecated(),
                      continuous_outcome = lifecycle::deprecated(),
                      ...) {
+
+  if (lifecycle::is_present(tte_outcomes)) {
+    lifecycle::deprecate_warn("0.7.0", "maraca(tte_outcomes)",
+                              "maraca(step_outcomes)")
+    step_outcomes <- tte_outcomes
+  }
 
   if (lifecycle::is_present(continuous_outcome)) {
     lifecycle::deprecate_warn("0.7.0", "maraca(continuous_outcome)",
@@ -917,7 +941,8 @@ plot.hce <- function(x, last_outcome = "C",
     last_outcome <- continuous_outcome
   }
 
-  maraca_obj <- .maraca_from_hce_data(x, last_outcome, arm_levels,
+  maraca_obj <- .maraca_from_hce_data(x, step_outcomes,
+                                      last_outcome, arm_levels,
                                       fixed_followup_days,
                                       compute_win_odds,
                                       step_types = step_types,

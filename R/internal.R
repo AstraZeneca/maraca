@@ -218,8 +218,9 @@
   range <- log10(range)
   get_axp <- function(x) 10^c(floor(x[1]), ceiling(x[2]))
   n <- ifelse(range[2] > 4, 1, 2)
-  steps <- axTicks(side = 1, usr = range, axp = c(get_axp(range), n = n),
-                   log = TRUE)
+  steps <- graphics::axTicks(side = 1, usr = range, axp = c(get_axp(range),
+                                                            n = n),
+                             log = TRUE)
   return((steps))
 }
 
@@ -461,7 +462,7 @@
   return(minor_grid)
 }
 
-.maraca_from_hce_data <- function(x, last_outcome, arm_levels,
+.maraca_from_hce_data <- function(x, step_outcomes, last_outcome, arm_levels,
                                   fixed_followup_days, compute_win_odds,
                                   step_types = "tte",
                                   last_type = "continuous",
@@ -479,7 +480,14 @@
   checkmate::assert_flag(compute_win_odds)
 
   x <- as.data.frame(x, stringsAsFactors = FALSE)
-  tte <- sort(unique(x$GROUP)[unique(x$GROUP) != last_outcome])
+
+  if (is.null(step_outcomes)) {
+    if (!(last_outcome %in% x$GROUP)) {
+      stop(paste("last_outcome", last_outcome,
+                 "is not in the outcome variable"))
+    }
+    step_outcomes <- sort(unique(x$GROUP)[unique(x$GROUP) != last_outcome])
+  }
 
   # Small bugfix to allow for name change of variable TTEFixed in newer
   # version of HCE package
@@ -491,14 +499,14 @@
     checkmate::assertNames(names(x), must.include = "TTEfixed")
     checkmate::assert_integerish(x$TTEfixed)
 
-    fixed_followup_days <- unname(sapply(tte, function(tte_ind) {
-      x[x$GROUP == tte_ind, "TTEfixed"][[1]]
+    fixed_followup_days <- unname(sapply(step_outcomes, function(tte) {
+      x[x$GROUP == tte, "TTEfixed"][[1]]
     }))
   }
 
   maraca_obj <- maraca(
     data = x,
-    step_outcomes = tte,
+    step_outcomes = step_outcomes,
     last_outcome = last_outcome,
     column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
     arm_levels = arm_levels,
