@@ -9,12 +9,17 @@
 \usage{
 maraca(
   data,
-  tte_outcomes,
-  continuous_outcome,
+  step_outcomes,
+  last_outcome,
   arm_levels = c(active = "active", control = "control"),
   column_names = c(outcome = "outcome", arm = "arm", value = "value"),
-  fixed_followup_days,
-  compute_win_odds = FALSE
+  fixed_followup_days = NULL,
+  compute_win_odds = FALSE,
+  step_types = "tte",
+  last_type = "continuous",
+  lowerBetter = FALSE,
+  tte_outcomes = lifecycle::deprecated(),
+  continuous_outcome = lifecycle::deprecated()
 )
 
 \method{print}{maraca}(x, ...)
@@ -26,11 +31,13 @@ maraca(
 - arm column, containing the arm a given row belongs to.
 - value column, containing the values.}
 
-\item{tte_outcomes}{A vector of strings containing the time-to-event
-outcome labels. The order is kept for the plot.}
+\item{step_outcomes}{A vector of strings containing the outcome labels
+for all outcomes displayed as part of the step function
+on the left side of the plot.
+The order is kept for the plot.}
 
-\item{continuous_outcome}{A single string containing the continuous
-outcome label.}
+\item{last_outcome}{A single string containing the last outcome label
+displayed on the right side of the plot.}
 
 \item{arm_levels}{A named vector of exactly two strings, mapping the
 values used for the active and control arms to the values
@@ -45,11 +52,38 @@ in the data. The vector names must match in order "outcome", "arm",
 and "value". Note that this parameter only need to be
 specified if you have column names different from the ones above.}
 
-\item{fixed_followup_days}{A mandatory specification of the integer number
-of fixed follow-up days in the study.}
+\item{fixed_followup_days}{A mandatory specification of the fixed follow-up
+days in the study. Can be a single integer value
+for all tte-outcomes or a vector with one
+integer value per tte-outcome.}
 
 \item{compute_win_odds}{If TRUE compute the win odds, otherwise (default)
 don't compute them.}
+
+\item{step_types}{The type of each outcome in the step_outcomes vector.
+Can be a single string (if all outcomes of same type) or
+a vector of same length as step_outcomes. Possible values
+in the vector are "tte" (default) or "binary".}
+
+\item{last_type}{A single string giving the type of the last outcome.
+Possible values are "continuous" (default), "binary" or
+"multinomial".}
+
+\item{lowerBetter}{Flag for the final outcome variable, indicating if
+lower values are considered better/advantageous.
+This flag is need to make sure the win odds are
+calculated correctly.
+Default value is FALSE, meaning higher values
+are considered advantageous.}
+
+\item{tte_outcomes}{Deprecated and substituted by the more general
+'step_outcomes'. A vector of strings containing the
+time-to-event outcome labels. The order is kept for the
+plot.}
+
+\item{continuous_outcome}{Deprecated and substituted by the more general
+'last_outcome'. A single string containing the
+continuous outcome label.}
 
 \item{x}{an object of class maraca}
 
@@ -68,8 +102,8 @@ class 'maraca'.
 data(hce_scenario_a)
 hce_test <- maraca(
   data = hce_scenario_a,
-  tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
-  continuous_outcome = "Continuous outcome",
+  step_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
+  last_outcome = "Continuous outcome",
   fixed_followup_days = 3 * 365,
   column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
   arm_levels = c(active = "Active", control = "Control"),

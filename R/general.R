@@ -3,6 +3,7 @@
 #' @docType package
 #' @name maraca
 #' @import hce
+#' @import ggplot2
 #' @aliases maraca-package
 NULL
 

@@ -40,8 +40,8 @@ data(hce_scenario_a)
 
 maraca_dat <- maraca(
   data = hce_scenario_a,
-  tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
-  continuous_outcome = "Continuous outcome",
+  step_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
+  last_outcome = "Continuous outcome",
   fixed_followup_days = 3 * 365,
   column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
   arm_levels = c(active = "Active", control = "Control"),
@@ -71,14 +71,23 @@ with the following items:
 1. `plot_type`: depending on which `density_plot_type` was selected for the plot either
 `GeomPoint`, `GeomViolin` and/or `GeomBoxplot`
 2. `proportions`: the proportions of the HCE components
-3. `tte_data`: the time-to-event data
-4. `scatter_data`: if plot was created with `density_plot_type = "scatter"` then contains 
+3. `tte_data`: time-to-event data if part of the step outcomes has type tte,
+otherwise `NULL`
+4. `binary_step_data`: binary data if part of the step outcomes has type binary,
+otherwise `NULL`
+5. `binary_step_data`: if last endpoint was binary then contains the data
+for the minimum, maximum and middle point x values displayed in the ellipsis,
+otherwise `NULL`
+6. `scatter_data`: if last endpoint was continuous and 
+plot was created with `density_plot_type = "scatter"` then contains 
 dataset that was plotted in scatter plot, otherwise `NULL`  
-5. `boxstat_data`: if plot was created with `density_plot_type = "box"` or
+7. `boxstat_data`: if last endpoint was continuous and 
+if plot was created with `density_plot_type = "box"` or
 `density_plot_type = "default"` then contains the boxplot statistics, otherwise `NULL`
-6. `violin_data`: if plot was created with `density_plot_type = "violin"` or
+8. `violin_data`: if last endpoint was continuous and 
+if plot was created with `density_plot_type = "violin"` or
 `density_plot_type = "default"` then contains the violin distribution data, otherwise `NULL`
-7. `wo_stats`: if maraca object was created with `compute_win_odds = TRUE` then contains 
+9. `wo_stats`: if maraca object was created with `compute_win_odds = TRUE` then contains 
 the win odds statistics, otherwise `NULL`
 
 

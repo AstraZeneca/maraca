@@ -7,9 +7,9 @@
 \method{plot}{maraca}(
   x,
   continuous_grid_spacing_x = 10,
-  trans = "identity",
-  density_plot_type = "default",
-  vline_type = "median",
+  trans = c("identity", "log", "log10", "sqrt", "reverse")[1],
+  density_plot_type = c("default", "violin", "box", "scatter")[1],
+  vline_type = NULL,
   theme = "maraca",
   ...
 )
@@ -20,14 +20,19 @@
 \item{continuous_grid_spacing_x}{The spacing of the x grid to use for the
 continuous section of the plot.}
 
-\item{trans}{the transformation to apply to the data before plotting.
-The accepted values are the same that ggplot2::scale_x_continuous}
+\item{trans}{the transformation to apply to the x-axis scale for the last
+outcome. Possible values are "identity", "log" (only for continuous
+endpoint), "log10" (only for continuous endpoint), "sqrt" (only for
+continuous endpoint) and "reverse". The default value is "identity".}
 
 \item{density_plot_type}{The type of plot to use to represent the density.
 Accepts "default", "violin", "box" and "scatter".}
 
 \item{vline_type}{what the vertical dashed line should represent. Accepts
-"median", "mean", "none".}
+"median" (only for continuous last endpoint), "mean", "none" and
+NULL (default). By default (vline_type = NULL), vline_type will be
+set to "median" for a continuous last endpoint and to "mean" for
+a binary last endpoint.}
 
 \item{theme}{Choose theme to style the plot. The default theme is "maraca".
 Options are "maraca", "maraca_old", "color1", "color2" and none".
@@ -37,7 +42,7 @@ For more details, check the vignette called
 \item{\dots}{not used}
 }
 \value{
-Used for side effect. Returns ggplot2 plot of the maraca object.
+Returns ggplot2 plot of the maraca object.
 }
 \description{
 Generic function to plot the maraca object using plot().
@@ -46,8 +51,8 @@ Generic function to plot the maraca object using plot().
 data(hce_scenario_a)
 hce_test <- maraca(
   data = hce_scenario_a,
-  tte_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
-  continuous_outcome = "Continuous outcome",
+  step_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
+  last_outcome = "Continuous outcome",
   fixed_followup_days = 3 * 365,
   column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
   arm_levels = c(active = "Active", control = "Control"),

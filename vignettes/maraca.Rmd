@@ -69,14 +69,14 @@ unique(data[["GROUP"]])
 ```
 
 The strings associated to each entry are arbitrary, so maraca
-allows you to specify them in the `tte_outcomes` and `continuous_outcome`
+allows you to specify them in the `step_outcomes` and `last_outcome`
 parameters. Make sure to specify the TTE outcomes in the correct order, starting from the most severe outcome to the least severe outcome. There can only be one continuous outcome.
 
 ```{r maraca4, eval = TRUE}
-tte_outcomes <- c(
+step_outcomes <- c(
   "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
 )
-continuous_outcome <- "Continuous outcome"
+last_outcome <- "Continuous outcome"
 ```
 
 the `arm` column must also be a character column describing to which arm
@@ -98,6 +98,8 @@ arm_levels = c(active = "Active", control = "Control")
 Finally, the `original` column must contain numerical values.
 
 We also need to specify the follow-up time for the time-to event outcomes.
+This can be one single timepoint (integer) for all time-to event outcomes
+or individual timepoints for each.
 Note that there can be no observed events in the data after the follow-up
 time specified.
 
@@ -106,7 +108,7 @@ the given dataset
 
 ```{r maraca7, eval = TRUE}
 mar <- maraca(
-  data, tte_outcomes, continuous_outcome, arm_levels, column_names, 
+  data, step_outcomes, last_outcome, arm_levels, column_names, 
   fixed_followup_days = 3*365,
   compute_win_odds = TRUE
 )
@@ -156,6 +158,26 @@ p +
 Note that some styling settings are already specified in the default plot version. The maraca package contains different styling
 themes for the convenience of the user, including a version without any preset stylings. For more details, please take a look at
 the vignette [Maraca Plots - Themes and Styling](themes.html).
+
+The user can also use transformations on the x-axis for the
+continuous outcomes in order to make the plot more readable,
+such as log-transforming it.
+One such transformation is to reverse the x-axis scale by
+setting `trans = "reverse"`. This
+could be of interest when lower values of the continuous outcome
+are better than higher ones. In such a case, one also has to make
+sure that the win odds are calculated correctly by 
+including the parameter `lowerBetter = TRUE` in the `maraca()` or
+`plot.hce()` function.
+```{r fig.width = 7, fig.height = 6}
+Rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
+Rates_P <- c(2.47, 2.24, 2.9, 4, 6)
+hce_dat <- hce::simHCE(n = 2500, TTE_A = Rates_A, TTE_P = Rates_P,
+              CM_A = -6, CM_P = 3, CSD_A = 15, CSD_P = 16, fixedfy = 3,
+              seed = 31337)
+plot(hce_dat, compute_win_odds = TRUE, lowerBetter = TRUE,
+     trans = "reverse")
+```
 
 # References
 

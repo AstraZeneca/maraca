@@ -25,11 +25,12 @@
     ggplot2::geom_vline(xintercept = seq(0.5, n + 1.5, 1),
                         linetype = 2, linewidth = 0.3, color = "darkgray") +
     # Axis showing percentages
-    ggplot2::scale_y_continuous(labels =
-                                  function(x) paste0(round(x, 2), "%")) +
+    ggplot2::scale_y_continuous(labels = function(x) paste0(round(x, 2), "%"),
+                                expand = ggplot2::expansion(mult = c(0, .3))) +
     ggplot2::ylab("Percent of all comparisons") +
     ggplot2::theme_bw() +
     ggplot2::theme(legend.position = "bottom",
+                   legend.title = ggplot2::element_blank(),
                    axis.title.y = ggplot2::element_blank(),
                    panel.grid.major.y = ggplot2::element_blank(),
                    panel.grid.minor.y = ggplot2::element_blank())
@@ -37,7 +38,6 @@
   return(p)
 
 }
-
 
 .theme_maraca_cp <- function(p) {
 
