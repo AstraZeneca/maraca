@@ -4,10 +4,13 @@ Type: Package
 Title: The Maraca Plot: Visualization of Hierarchical Composite Endpoints in Clinical Trials
 License: Apache License (>= 2)
 Authors@R: c(
-    person("Martin Karpefors", "", email = "martin.karpefors@astrazeneca.com", role = "aut"),
-    person("Samvel B. Gasparyan", "", email = "samvel.gasparyan@astrazeneca.com", role = "aut"),
-    person("Monika Huhn", "", email = "monika.huhn@astrazeneca.com", role = c("aut", "cre")),
-    person("Stefano Borini", "", email = "stefano.borini@astrazeneca.com", role = c("ctb")))
+    person("Martin Karpefors", "", email = "martin.karpefors@astrazeneca.com", role = "aut",
+	   comment = c(ORCID = "0000-0003-3136-9882")),
+    person("Samvel B. Gasparyan", "", email = "samvel.gasparyan@astrazeneca.com", role = "aut",
+	   comment = c(ORCID = "0000-0002-4797-2208")),
+    person("Stefano Borini", "", email = "stefano.borini@astrazeneca.com", role = c("ctb")),
+    person("Monika Huhn", "", email = "monika.huhn@astrazeneca.com", role = c("aut", "cre"),
+	   comment = c(ORCID = "0009-0000-7865-6008")))
 Description: Library that supports visual interpretation of hierarchical composite
     endpoints (HCEs). HCEs are complex constructs used as primary endpoints in
     clinical trials, combining outcomes of different types into ordinal endpoints,

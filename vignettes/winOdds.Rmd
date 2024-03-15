@@ -78,7 +78,7 @@ component_plot(hce_dat)
 
 ## Cumulative plot
 
-Furthermore, there is also a plot called `"cumulative_plot"`.
+Furthermore, there is a plot called `"cumulative_plot"`.
 Similar to the `component_plot`, this plot shows the different HCE components that
 make up the win odds calculation. Different to the component plot,
 this plot provides insight into the contributed effect for each of the components as
@@ -139,10 +139,13 @@ component_plot(maraca_dat) +
 ```
 
 Note that the `cumulative_plot()` function is using the
-patchwork package to combine 2 ggplot2 objects. They
+patchwork package to combine 2 ggplot2 objects - the
+bar plot and the forest plot that together make up the
+`cumulative_plot()`. They
 can be accessed as list items and styled accordingly.
 ```{r fig.width=7, fig.height=6}
 p <- cumulative_plot(maraca_dat)
+# Accessing the first ggplot2 object and adding styling (bar plot)
 p[[1]] <- p[[1]] +
   ggplot2::scale_fill_manual(values = c("seagreen", "red", "grey"), name = NULL)
 p
