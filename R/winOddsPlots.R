@@ -252,8 +252,8 @@ cumulative_plot.maraca <- function(x, theme = "maraca",
   plot_bar <- .create_bar_plot(wo_bar, theme, reverse)
   plot_forest <- .create_forest_plot(wins_forest, theme, include, reverse)
 
-  plot <-  patchwork:::"|.ggplot"(plot_bar, plot_forest) +
-    patchwork::plot_layout(widths = c(2.5, 1), nrow = 1)
+  plot <-  patchwork::wrap_plots(plot_bar, plot_forest,
+                                 nrow = 1, widths = c(2.5, 1))
 
   # Add class to plot - cumulativePlot
   class(plot) <- c("cumulativePlot", class(plot))
