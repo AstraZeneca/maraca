@@ -41,11 +41,7 @@ jobs:
         with:
           dependencies: '"hard"'
           install-quarto: 'false'
-          cache-version: 4
+          cache-version: 5
           extra-packages: any::rcmdcheck
           needs: check
-
-      - uses: r-lib/actions/check-r-package@v2
-        with:
-          upload-snapshots: true
-          build_args: 'c("--no-manual","--no-build-vignettes")'          
+          
