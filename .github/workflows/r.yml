@@ -31,10 +31,10 @@ jobs:
         with:
           r-version: ${{ matrix.r-version }}
       - name: Install dependencies
-        run: |
+        uses: r-lib/actions/setup-r-dependencies@v2|
+        with:
+          extra-packages: any::remotes, any::rcmdcheck
           install.packages(c("remotes", "rcmdcheck"))
-          remotes::install_deps(dependencies = c("Depends", "Imports"))
-        shell: Rscript {0}
       - name: Check
         run: rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error")
         shell: Rscript {0}
