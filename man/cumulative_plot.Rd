@@ -14,6 +14,9 @@ cumulative_plot(x, ...)
 \item{\dots}{further arguments to be passed to the
 object-specific functions}
 }
+\value{
+Cumulative plot as a patchwork list.
+}
 \description{
 Implemented for objects of type 'maraca' and 'hce'.
 }

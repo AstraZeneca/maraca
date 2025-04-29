@@ -10,7 +10,7 @@ vignette: >
 ---
 
 This vignette is largely based on the
-<a href="https://www.pharmasug.org/proceedings/2023/SA/PharmaSUG-2023-SA-068.pdf" 
+<a href="https://pharmasug.org/proceedings/2023/SA/PharmaSUG-2023-SA-068.pdf" 
 target="_blank">PharmaSUG 2023 conference paper</a>.
 
 

@@ -14,6 +14,9 @@ component_plot(x, ...)
 \item{\dots}{further arguments to be passed to the
 object-specific functions}
 }
+\value{
+Component plot as a ggplot2 object.
+}
 \description{
 Implemented for objects of type 'maraca' and 'hce'.
 }

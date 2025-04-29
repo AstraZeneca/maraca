@@ -7,6 +7,7 @@
 #' @param x an object of S3 class 'maraca' or 'hce'.
 #' @param \dots further arguments to be passed to the
 #'        object-specific functions
+#' @return Component plot as a ggplot2 object.
 #' @export
 component_plot <- function(x, ...) {
   UseMethod("component_plot", x)
@@ -176,6 +177,7 @@ component_plot.hce <- function(x, step_outcomes = NULL,
 #' @param x an object of S3 class 'maraca' or 'hce'.
 #' @param \dots further arguments to be passed to the
 #'        object-specific functions
+#' @return Cumulative plot as a patchwork list.
 #' @export
 cumulative_plot <- function(x, ...) {
   UseMethod("cumulative_plot", x)

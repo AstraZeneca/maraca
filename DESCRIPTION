@@ -1,13 +1,13 @@
 Package: maraca
-Version: 0.7
+Version: 0.7.1
 Type: Package
-Title: The Maraca Plot: Visualization of Hierarchical Composite Endpoints in Clinical Trials
+Title: The Maraca Plot: Visualizing Hierarchical Composite Endpoints
 License: Apache License (>= 2)
 Authors@R: c(
     person(given = "Martin", family = "Karpefors",
            email = "martin.karpefors@astrazeneca.com", role = "aut",
 	         comment = c(ORCID = "0000-0003-3136-9882")),
-    person(given = "Samvel", family = "Gasparyan", middle = "B.",
+    person(given = "Samvel B.", family = "Gasparyan",
            email = "samvel.gasparyan@astrazeneca.com", role = "aut",
 	         comment = c(ORCID = "0000-0002-4797-2208")),
     person(given = "Stefano", family = "Borini",
@@ -15,7 +15,7 @@ Authors@R: c(
     person(given = "Monika", family = "Huhn",
            email = "monika.huhn@astrazeneca.com", role = c("aut", "cre"),
 	         comment = c(ORCID = "0009-0000-7865-6008")))
-Description: Library that supports visual interpretation of hierarchical composite
+Description: Supports visual interpretation of hierarchical composite
     endpoints (HCEs). HCEs are complex constructs used as primary endpoints in
     clinical trials, combining outcomes of different types into ordinal endpoints,
     in which each patient contributes the most clinically important event (one and
