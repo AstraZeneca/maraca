@@ -88,5 +88,5 @@ hce_dat <- hce::simHCE(n = 2500, TTE_A = Rates_A, TTE_P = Rates_P,
              CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3,
              seed = 31337)
 
-mosaic_plot.hce(hce_dat)
+mosaic_plot(hce_dat)
 }

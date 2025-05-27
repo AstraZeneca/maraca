@@ -143,9 +143,9 @@ mosaic_plot.maraca <- function(x,
   # Add highlighted ties if flag is TRUE
   if(highlight_ties) {
     plot <- plot +
-      ggplot2::geom_rect(aes(xmin = c(0,head(cum_props_ctrl,-1)),
+      ggplot2::geom_rect(aes(xmin = c(0,utils::head(cum_props_ctrl,-1)),
                              xmax = cum_props_ctrl,
-                             ymin = c(0,head(cum_props_act,-1)),
+                             ymin = c(0,utils::head(cum_props_act,-1)),
                              ymax = cum_props_act), fill = "white", alpha = 0.5)
   }
 
@@ -215,7 +215,7 @@ mosaic_plot.maraca <- function(x,
 #'              CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3,
 #'              seed = 31337)
 #'
-#' mosaic_plot.hce(hce_dat)
+#' mosaic_plot(hce_dat)
 #' @export
 #'
 mosaic_plot.hce <- function(x, step_outcomes = NULL,
