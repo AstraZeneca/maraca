@@ -155,7 +155,8 @@
                    axis.ticks.length = ggplot2::unit(20, "points"),
                    legend.text = ggplot2::element_text(size = 10),
                    legend.title = ggplot2::element_text(size = 10),
-                   legend.position = "right")
+                   legend.position = "bottom",
+                   plot.caption = element_text(hjust = 0.5, size = 10))
 
   return(p)
 }

@@ -14,7 +14,7 @@ for more details.}
   theme = "maraca",
   highlight_ties = FALSE,
   winning_prob = FALSE,
-  diagonal_line = FALSE,
+  diagonal_line = TRUE,
   ...
 )
 }
@@ -39,7 +39,7 @@ Default value: FALSE}
 
 \item{diagonal_line}{Flag to indicate if diagonal line showing an even
 Win/Loss split should be displayed.
-Default value: FALSE}
+Default value: TRUE}
 
 \item{\dots}{not used}
 }

@@ -43,7 +43,7 @@ mosaic_plot.default <- function(x,
 #'                     Default value: FALSE
 #' @param diagonal_line Flag to indicate if diagonal line showing an even
 #'                      Win/Loss split should be displayed.
-#'                      Default value: FALSE
+#'                      Default value: TRUE
 #' @param \dots not used
 #' @return Mosaic plot as a ggplot2 object.
 #' @examples
@@ -70,7 +70,7 @@ mosaic_plot.maraca <- function(x,
                                theme = "maraca",
                                highlight_ties = FALSE,
                                winning_prob = FALSE,
-                               diagonal_line = FALSE,
+                               diagonal_line = TRUE,
                                ...) {
 
   aes <- ggplot2::aes
@@ -162,7 +162,7 @@ mosaic_plot.maraca <- function(x,
                                 breaks = act_ticks, labels = endpoints,
                                 minor_breaks = NULL, limits = c(0, 1),
                                 expand = ggplot2::expansion(0)) +
-    ggplot2::coord_fixed()
+    ggplot2::coord_fixed(clip = "off")
 
   # Add highlighted ties if flag is TRUE
   if (highlight_ties) {
@@ -170,16 +170,18 @@ mosaic_plot.maraca <- function(x,
       ggplot2::geom_rect(aes(xmin = c(0, utils::head(cum_props_ctrl, -1)),
                              xmax = cum_props_ctrl,
                              ymin = c(0, utils::head(cum_props_act, -1)),
-                             ymax = cum_props_act), fill = "white", alpha = 0.5)
+                             ymax = cum_props_act), fill = "white",
+                         alpha = 0.5) +
+      ggplot2::labs(caption = "Ties highlighted in lighter color")
   }
 
   if (winning_prob) {
-    win_prob <- paste0("Winning probability:\n",
+    win_prob <- paste0("Win probability: ",
                        100 * round(x$win_odds_outcome$WO["WP"], 3), "%")
     plot <- plot +
-      ggplot2::geom_label(aes(x = 0, y = 1, label = win_prob), vjust = 1,
-                          hjust = 0, size = 4,
-                          label.padding = ggplot2::unit(1, "lines"))
+      ggplot2::geom_label(aes(x = 0.05, y = 0.95, label = win_prob), vjust = 1,
+                          hjust = 0, size = 3,
+                          label.padding = ggplot2::unit(0.7, "lines"))
   }
 
   if (diagonal_line) {
@@ -244,7 +246,7 @@ mosaic_plot.maraca <- function(x,
 #'                     Default value: FALSE
 #' @param diagonal_line Flag to indicate if diagonal line showing an even
 #'                      Win/Loss split should be displayed.
-#'                      Default value: FALSE
+#'                      Default value: TRUE
 #' @param lowerBetter Flag for the final outcome variable, indicating if
 #'                    lower values are considered better/advantageous.
 #'                    This flag is need to make sure the win odds are
@@ -270,7 +272,7 @@ mosaic_plot.hce <- function(x, step_outcomes = NULL,
                             theme = "maraca",
                             highlight_ties = FALSE,
                             winning_prob = FALSE,
-                            diagonal_line = FALSE,
+                            diagonal_line = TRUE,
                             lowerBetter = FALSE,
                             ...) {
 

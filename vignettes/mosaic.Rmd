@@ -120,10 +120,10 @@ maraca_with_win_odds <- maraca(
 mosaic_plot(maraca_with_win_odds, winning_prob = TRUE)
 ```
 
-We can also add a diagonal line (highlighting even Win/Loss split) to compare
-against  using the flag `diagonal_line = TRUE`
+You can also hide the diagonal line (highlighting even Win/Loss split) to
+compare against  using the flag `diagonal_line = FALSE`
 ```{r fig.width=7, fig.height=6}
-mosaic_plot(maraca_dat, diagonal_line = TRUE)
+mosaic_plot(maraca_dat, diagonal_line = FALSE)
 ```
 
 It is also possible to use the `mosaic_plot()` function directly on

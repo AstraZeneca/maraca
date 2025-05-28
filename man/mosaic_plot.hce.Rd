@@ -18,7 +18,7 @@ for more details.}
   theme = "maraca",
   highlight_ties = FALSE,
   winning_prob = FALSE,
-  diagonal_line = FALSE,
+  diagonal_line = TRUE,
   lowerBetter = FALSE,
   ...
 )
@@ -69,7 +69,7 @@ Default value: FALSE}
 
 \item{diagonal_line}{Flag to indicate if diagonal line showing an even
 Win/Loss split should be displayed.
-Default value: FALSE}
+Default value: TRUE}
 
 \item{lowerBetter}{Flag for the final outcome variable, indicating if
 lower values are considered better/advantageous.
