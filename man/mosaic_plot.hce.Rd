@@ -17,6 +17,8 @@ for more details.}
   fixed_followup_days = NULL,
   theme = "maraca",
   highlight_ties = FALSE,
+  winning_prob = FALSE,
+  diagonal_line = FALSE,
   lowerBetter = FALSE,
   ...
 )
@@ -53,12 +55,20 @@ contains PADY or TTEfixed column, then
 fixed_followup_days argument is used.}
 
 \item{theme}{Choose theme to style the plot. The default theme is "maraca".
-Options are "maraca", "color1", "color2" and none".
+Options are "maraca", "color1", "color2" and "none".
 For more details, check the vignette called
 "Maraca Plots - Introduction to the Mosaic plot".}
 
 \item{highlight_ties}{Flag to indicate if component ties should be
 highlighted using lighter colors.
+Default value: FALSE}
+
+\item{winning_prob}{Flag to indicate if winning probability should be shown
+within the plot.
+Default value: FALSE}
+
+\item{diagonal_line}{Flag to indicate if diagonal line showing an even
+Win/Loss split should be displayed.
 Default value: FALSE}
 
 \item{lowerBetter}{Flag for the final outcome variable, indicating if

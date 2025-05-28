@@ -15,7 +15,7 @@ mosaic_plot <- function(x, ...) {
 
 #' @export
 mosaic_plot.default <- function(x,
-                                   ...) {
+                                ...) {
   paste0("mosaic_plot() function can only handle inputs of class ",
          "'hce' or 'maraca'. Your input has class ", class(x), ".")
 }
@@ -29,12 +29,21 @@ mosaic_plot.default <- function(x,
 #'
 #' @param x an object of S3 class 'maraca'.
 #' @param theme Choose theme to style the plot. The default theme is "maraca".
-#'        Options are "maraca", "color1", "color2" and none".
+#'        Options are "maraca", "color1", "color2" and "none".
 #'        For more details, check the vignette called
 #'        "Maraca Plots - Introduction to the Mosaic plot".
 #' @param highlight_ties Flag to indicate if component ties should be
 #'                       highlighted using lighter colors.
 #'                       Default value: FALSE
+#' @param winning_prob Flag to indicate if winning probability should be shown
+#'                     within the plot. Note that in order to display the
+#'                     winning probability, you need to have set the
+#'                     "compute_win_odds" to TRUE when creating the maraca
+#'                     object.
+#'                     Default value: FALSE
+#' @param diagonal_line Flag to indicate if diagonal line showing an even
+#'                      Win/Loss split should be displayed.
+#'                      Default value: FALSE
 #' @param \dots not used
 #' @return Mosaic plot as a ggplot2 object.
 #' @examples
@@ -60,47 +69,62 @@ mosaic_plot.default <- function(x,
 mosaic_plot.maraca <- function(x,
                                theme = "maraca",
                                highlight_ties = FALSE,
+                               winning_prob = FALSE,
+                               diagonal_line = FALSE,
                                ...) {
 
-  # Check if ties should be highlighted  
-  checkmate::assert_flag(highlight_ties)
+  aes <- ggplot2::aes
 
+  # Check if highlight_ties is flag
+  checkmate::assert_flag(highlight_ties)
+  # Check if winning_prob is flag
+  checkmate::assert_flag(winning_prob)
+  # Check if diagonal_line is flag
+  checkmate::assert_flag(diagonal_line)
+
+  if (winning_prob && is.null(x$win_odds_outcome)) {
+    stop(paste("In order to display the winning probabilities in the plot",
+               "(winning_prob = TRUE), the maraca object needs to have been",
+               "created using the flag compute_win_odds = TRUE"))
+  }
   # Names of endpoints for plotting
   endpoints <- c(x$step_outcomes, x$last_outcome)
 
   # Divide by arm
   arms <- x$arm_levels
   ecdf_df <-   x$ecdf_by_outcome$data
-  ecdf_act <- ecdf_df[ecdf_df$arm == arms["active"],]
-  ecdf_ctrl <- ecdf_df[ecdf_df$arm == arms["control"],]
+  ecdf_act <- ecdf_df[ecdf_df$arm == arms["active"], ]
+  ecdf_ctrl <- ecdf_df[ecdf_df$arm == arms["control"], ]
   # Step function ecdf part used for mosaic plot
   steps_act <- stats::stepfun(ecdf_act$adjusted.time,
-                              c(0,ecdf_act$step_values))
+                              c(0, ecdf_act$step_values))
   steps_ctrl <- stats::stepfun(ecdf_ctrl$adjusted.time,
-                               c(0,ecdf_ctrl$step_values))
+                               c(0, ecdf_ctrl$step_values))
   # Create grid to plot over
   x_grid <- c(0, sort(unique(ecdf_df$adjusted.time)))
   # Steps at same time point - active vs control
-  act_steps <- c(0,steps_act(x_grid)/100)
-  ctrl_steps <- c(0,steps_ctrl(x_grid)/100)
+  act_steps <- c(0, steps_act(x_grid) / 100)
+  ctrl_steps <- c(0, steps_ctrl(x_grid) / 100)
 
   # Last outcome
   last_df <- x$data_last_outcome$data
-  if(x$last_type == "continuous") {
+  if (x$last_type == "continuous") {
     # Make sure if lower is better that opposite scaling is done - 1 for lowest.
-    if(x$lowerBetter) {
-      last_df$x <- 100-last_df$x
+    if (x$lowerBetter) {
+      last_df$x <- 100 - last_df$x
     }
-    last_act <- last_df[last_df$arm == arms["active"],]
-    last_ctrl <- last_df[last_df$arm == arms["control"],]
+    last_act <- last_df[last_df$arm == arms["active"], ]
+    last_ctrl <- last_df[last_df$arm == arms["control"], ]
     # Create grid to plot over
     x_grid <- c(sort(unique(last_df$x)))
-    # ECDF over last outcome (make sure to scale to right range)  
-    act_last <- stats::ecdf(last_act$x)(x_grid)*(1-max(act_steps)) + max(act_steps)
-    ctrl_last <- stats::ecdf(last_ctrl$x)(x_grid)*(1-max(ctrl_steps)) + max(ctrl_steps)
+    # ECDF over last outcome (make sure to scale to right range)
+    act_last <- stats::ecdf(last_act$x)(x_grid) * (1 - max(act_steps)) +
+      max(act_steps)
+    ctrl_last <- stats::ecdf(last_ctrl$x)(x_grid) * (1 - max(ctrl_steps)) +
+      max(ctrl_steps)
   } else {
-    act_last <- c(max(act_steps),1)
-    ctrl_last <- c(max(ctrl_steps),1)
+    act_last <- c(max(act_steps), 1)
+    ctrl_last <- c(max(ctrl_steps), 1)
   }
 
   # Combine to step and last outcomes to 1 line
@@ -108,45 +132,60 @@ mosaic_plot.maraca <- function(x,
   ctrl_line <- c(ctrl_steps, ctrl_last)
 
   # Help variables indicating the cumulative proportions of each arm/endpoint
-  nums_act <- unlist(x$meta[,9], use.names = FALSE)
-  nums_ctrl <- unlist(x$meta[,10], use.names = FALSE)
-  props_act <- nums_act/sum(nums_act)
-  props_ctrl <- nums_ctrl/sum(nums_ctrl)
+  nums_act <- unlist(x$meta[, 9], use.names = FALSE)
+  nums_ctrl <- unlist(x$meta[, 10], use.names = FALSE)
+  props_act <- nums_act / sum(nums_act)
+  props_ctrl <- nums_ctrl / sum(nums_ctrl)
   cum_props_act <- cumsum(props_act)
   cum_props_ctrl <- cumsum(props_ctrl)
 
   # Ticks position for endpoint labeling
-  act_ticks <- cum_props_act - props_act/2
-  ctrl_ticks <- cum_props_ctrl - props_ctrl/2
+  act_ticks <- cum_props_act - props_act / 2
+  ctrl_ticks <- cum_props_ctrl - props_ctrl / 2
 
   # Mosaic plot
-  plot <- ggplot2::ggplot() + 
+  plot <- ggplot2::ggplot() +
     ggplot2::geom_rect(aes(xmin = 0, xmax = 1, ymin = 0, ymax = 1,
-                           fill = "Win")) + 
-    ggplot2::geom_area(aes(x = ctrl_line, y = act_line, fill = "Loss")) + 
+                           fill = "Win")) +
+    ggplot2::geom_area(aes(x = ctrl_line, y = act_line, fill = "Loss")) +
     ggplot2::geom_hline(yintercept = cum_props_act, color = "white") +
     ggplot2::geom_vline(xintercept = cum_props_ctrl, color = "white") +
     ggplot2::geom_line(aes(x = ctrl_line, y = act_line), color = "white",
                        linewidth = 0.5) +
     ggplot2::geom_segment(x = 0, y = 0, xend = 1, yend = 1, color = "black",
-                          linewidth = 0.5) + 
-    ggplot2::scale_x_continuous(name = paste(arms["control"],"proportions"),
+                          linewidth = 0.5) +
+    ggplot2::scale_x_continuous(name = paste(arms["control"], "proportions"),
                                 breaks = ctrl_ticks, labels = endpoints,
-                                minor_breaks = NULL, limits = c(0,1),
-                                expand = ggplot2::expansion(0)) + 
-    ggplot2::scale_y_continuous(name = paste(arms["active"],"proportions"),
+                                minor_breaks = NULL, limits = c(0, 1),
+                                expand = ggplot2::expansion(0)) +
+    ggplot2::scale_y_continuous(name = paste(arms["active"], "proportions"),
                                 breaks = act_ticks, labels = endpoints,
-                                minor_breaks = NULL, limits = c(0,1),
-                                expand = ggplot2::expansion(0)) + 
+                                minor_breaks = NULL, limits = c(0, 1),
+                                expand = ggplot2::expansion(0)) +
     ggplot2::coord_fixed()
 
   # Add highlighted ties if flag is TRUE
-  if(highlight_ties) {
+  if (highlight_ties) {
     plot <- plot +
-      ggplot2::geom_rect(aes(xmin = c(0,utils::head(cum_props_ctrl,-1)),
+      ggplot2::geom_rect(aes(xmin = c(0, utils::head(cum_props_ctrl, -1)),
                              xmax = cum_props_ctrl,
-                             ymin = c(0,utils::head(cum_props_act,-1)),
+                             ymin = c(0, utils::head(cum_props_act, -1)),
                              ymax = cum_props_act), fill = "white", alpha = 0.5)
+  }
+
+  if (winning_prob) {
+    win_prob <- paste0("Winning probability:\n",
+                       100 * round(x$win_odds_outcome$WO["WP"], 3), "%")
+    plot <- plot +
+      ggplot2::geom_label(aes(x = 0, y = 1, label = win_prob), vjust = 1,
+                          hjust = 0, size = 4,
+                          label.padding = ggplot2::unit(1, "lines"))
+  }
+
+  if (diagonal_line) {
+    plot <- plot +
+      ggplot2::geom_segment(aes(x = 0, y = 0, xend = 1, yend = 1),
+                            colour = "white", linetype = 2)
   }
 
   # Add styling
@@ -194,12 +233,18 @@ mosaic_plot.maraca <- function(x,
 #'                            contains PADY or TTEfixed column, then
 #'                            fixed_followup_days argument is used.
 #' @param theme Choose theme to style the plot. The default theme is "maraca".
-#'        Options are "maraca", "color1", "color2" and none".
+#'        Options are "maraca", "color1", "color2" and "none".
 #'        For more details, check the vignette called
 #'        "Maraca Plots - Introduction to the Mosaic plot".
 #' @param highlight_ties Flag to indicate if component ties should be
 #'                       highlighted using lighter colors.
 #'                       Default value: FALSE
+#' @param winning_prob Flag to indicate if winning probability should be shown
+#'                     within the plot.
+#'                     Default value: FALSE
+#' @param diagonal_line Flag to indicate if diagonal line showing an even
+#'                      Win/Loss split should be displayed.
+#'                      Default value: FALSE
 #' @param lowerBetter Flag for the final outcome variable, indicating if
 #'                    lower values are considered better/advantageous.
 #'                    This flag is need to make sure the win odds are
@@ -224,6 +269,8 @@ mosaic_plot.hce <- function(x, step_outcomes = NULL,
                             fixed_followup_days = NULL,
                             theme = "maraca",
                             highlight_ties = FALSE,
+                            winning_prob = FALSE,
+                            diagonal_line = FALSE,
                             lowerBetter = FALSE,
                             ...) {
 
@@ -234,7 +281,11 @@ mosaic_plot.hce <- function(x, step_outcomes = NULL,
                                       compute_win_odds = TRUE,
                                       lowerBetter = lowerBetter)
 
-  plot <- mosaic_plot(maraca_dat)
+  plot <- mosaic_plot(maraca_dat,
+                      theme = theme,
+                      highlight_ties = highlight_ties,
+                      winning_prob = winning_prob,
+                      diagonal_line = diagonal_line)
 
   return(plot)
 }

@@ -9,18 +9,36 @@ Implementation to plot using a maraca object.
 Check the vignette "Maraca Plots - Introduction to the Mosaic plot"
 for more details.}
 \usage{
-\method{mosaic_plot}{maraca}(x, theme = "maraca", highlight_ties = FALSE, ...)
+\method{mosaic_plot}{maraca}(
+  x,
+  theme = "maraca",
+  highlight_ties = FALSE,
+  winning_prob = FALSE,
+  diagonal_line = FALSE,
+  ...
+)
 }
 \arguments{
 \item{x}{an object of S3 class 'maraca'.}
 
 \item{theme}{Choose theme to style the plot. The default theme is "maraca".
-Options are "maraca", "color1", "color2" and none".
+Options are "maraca", "color1", "color2" and "none".
 For more details, check the vignette called
 "Maraca Plots - Introduction to the Mosaic plot".}
 
 \item{highlight_ties}{Flag to indicate if component ties should be
 highlighted using lighter colors.
+Default value: FALSE}
+
+\item{winning_prob}{Flag to indicate if winning probability should be shown
+within the plot. Note that in order to display the
+winning probability, you need to have set the
+"compute_win_odds" to TRUE when creating the maraca
+object.
+Default value: FALSE}
+
+\item{diagonal_line}{Flag to indicate if diagonal line showing an even
+Win/Loss split should be displayed.
 Default value: FALSE}
 
 \item{\dots}{not used}

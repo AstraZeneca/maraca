@@ -1,7 +1,7 @@
 ---
 title: "Maraca Plots - Introduction to the Mosaic plot"
 author: "Monika Huhn"
-date: "10/10/2023"
+date: "28/05/2025"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Maraca Plots - Introduction to the Mosaic plot}
@@ -67,6 +67,10 @@ considered as "better"). As each patient's result is considered, the
 line jumps upwards or to the right, reflecting the ordered accumulation of
 results from both the active and control groups.
 
+Note if any of the endpoints are binary there is no way of ordering the
+individual patients either temporally or by value, so a diagonal line is
+displayed for this endpoint component.
+
 ## Creating the mosaic plot
 
 Let us first read in some data.
@@ -94,9 +98,32 @@ Now we can just plot the object using the `mosaic_plot()` function.
 mosaic_plot(maraca_dat)
 ```
 
-The component tie rectangles can also be specifically highlighted.
+The component tie rectangles can also be specifically highlighted using the
+flag `highlight_ties = TRUE`.
 ```{r fig.width=7, fig.height=6}
 mosaic_plot(maraca_dat, highlight_ties = TRUE)
+```
+
+If you calculated the win odds when creating your maraca object
+(`compute_win_odds = TRUE`), you can also display the winning probability
+for the active arm in the plot by using the flag `winning_prob = TRUE`.
+```{r fig.width=7, fig.height=6}
+maraca_with_win_odds <- maraca(
+  data = hce_scenario_a,
+  step_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
+  last_outcome = "Continuous outcome",
+  fixed_followup_days = 3 * 365,
+  column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
+  arm_levels = c(active = "Active", control = "Control"),
+  compute_win_odds = TRUE
+)
+mosaic_plot(maraca_with_win_odds, winning_prob = TRUE)
+```
+
+We can also add a diagonal line (highlighting even Win/Loss split) to compare
+against  using the flag `diagonal_line = TRUE`
+```{r fig.width=7, fig.height=6}
+mosaic_plot(maraca_dat, diagonal_line = TRUE)
 ```
 
 It is also possible to use the `mosaic_plot()` function directly on
