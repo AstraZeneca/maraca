@@ -86,6 +86,13 @@ Otherwise, this argument must be specified.
 Note: If argument is specified and HCE object
 contains PADY or TTEfixed column, then
 fixed_followup_days argument is used.}
+
+\item{lowerBetter}{Flag for the final outcome variable, indicating if
+lower values are considered better/advantageous.
+This flag is need to make sure the win odds are
+calculated correctly.
+Default value is FALSE, meaning higher values
+are considered advantageous.}
 }
 \value{
 Mosaic plot as a ggplot2 object.
