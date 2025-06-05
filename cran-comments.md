@@ -15,4 +15,4 @@ As noted in [R-hub issue #503](https://github.com/r-hub/rhub/issues/503), this c
 
 ## revdepcheck results
 
-`maraca` package has no reverse dependies at this stage.
+`maraca` package has no reverse dependencies at this stage.
