@@ -106,7 +106,7 @@ mosaic_plot(maraca_dat, highlight_ties = TRUE)
 
 If you calculated the win odds when creating your maraca object
 (`compute_win_odds = TRUE`), you can also display the winning probability
-for the active arm in the plot by using the flag `winning_prob = TRUE`.
+for the active arm in the plot by using the flag `win_prob = TRUE`.
 ```{r fig.width=7, fig.height=6}
 maraca_with_win_odds <- maraca(
   data = hce_scenario_a,
@@ -117,7 +117,7 @@ maraca_with_win_odds <- maraca(
   arm_levels = c(active = "Active", control = "Control"),
   compute_win_odds = TRUE
 )
-mosaic_plot(maraca_with_win_odds, winning_prob = TRUE)
+mosaic_plot(maraca_with_win_odds, win_prob = TRUE)
 ```
 
 You can also hide the diagonal line (highlighting even Win/Loss split) to

@@ -1,3 +1,24 @@
+# maraca 1.0.0
+
+## New features
+- Introducing the `mosaic_plot` - a new plot to compares outcome between an 
+  active treatment group and a control group, highlighting areas of "Wins",
+  "Losses" and "Ties" based on endpoint hierarchy. Details are given in
+  the new vignette "Maraca Plots - Introduction to the Mosaic plot".
+- Updated help files
+- Added 2 additional aliases for `cumulative_plot()` function - `dustin()` and
+  `dustin_plot()`.
+
+## Bug fixes
+- Fix reported bug "plot.hce gives an error if only one time-to-event
+  outcome is provided.". Now plotting functionaloty works even when only 1
+  step outcome is part of the hierarchical endpoint.
+
+
+# maraca 0.7.1
+
+Updated author information.
+
 # maraca 0.7
 
 ## New features

@@ -1,33 +1,15 @@
-#' Function to create a mosaic plot that compares outcomes between an
+#' Mosaic plot
+#'
+#' Generic function to create a mosaic plot that compares outcomes between an
 #' active treatment group and a control group, highlighting areas of "Wins",
 #' "Losses" and "Ties" based on endpoint hierarchy.
 #'
 #' Implemented for objects of type 'maraca' and 'hce'.
 #'
-#' @param x an object of S3 class 'maraca' or 'hce'.
-#' @param \dots further arguments to be passed to the
-#'        object-specific functions
-#' @return Component plot as a ggplot2 object.
-#' @export
-mosaic_plot <- function(x, ...) {
-  UseMethod("mosaic_plot", x)
-}
-
-#' @export
-mosaic_plot.default <- function(x,
-                                ...) {
-  paste0("mosaic_plot() function can only handle inputs of class ",
-         "'hce' or 'maraca'. Your input has class ", class(x), ".")
-}
-
-#' Generic function to create a mosaic plot that compares outcomes between an
-#' active treatment group and a control group, highlighting areas of "Wins",
-#' "Losses" and "Ties" based on endpoint hierarchy.
-#' Implementation to plot using a maraca object.
 #' Check the vignette "Maraca Plots - Introduction to the Mosaic plot"
 #' for more details.
 #'
-#' @param x an object of S3 class 'maraca'.
+#' @param x an object of S3 class 'maraca' or 'hce'.
 #' @param theme Choose theme to style the plot. The default theme is "maraca".
 #'        Options are "maraca", "color1", "color2" and "none".
 #'        For more details, check the vignette called
@@ -35,15 +17,39 @@ mosaic_plot.default <- function(x,
 #' @param highlight_ties Flag to indicate if component ties should be
 #'                       highlighted using lighter colors.
 #'                       Default value: FALSE
-#' @param winning_prob Flag to indicate if winning probability should be shown
-#'                     within the plot. Note that in order to display the
-#'                     winning probability, you need to have set the
-#'                     "compute_win_odds" to TRUE when creating the maraca
-#'                     object.
-#'                     Default value: FALSE
+#' @param win_prob Flag to indicate if winning probability should be shown
+#'                 within the plot. Note that in order to display the
+#'                 winning probability, you need to have set the
+#'                 "compute_win_odds" to TRUE when creating the maraca
+#'                 object.
+#'                 Default value: FALSE
 #' @param diagonal_line Flag to indicate if diagonal line showing an even
 #'                      Win/Loss split should be displayed.
 #'                      Default value: TRUE
+#' @param step_outcomes A vector of strings containing the outcome labels
+#'                      for all outcomes displayed as part of the step function
+#'                      on the left side of the plot.
+#'                      The order is kept for the plot.
+#'                      By default (when set to NULL) this is automatically
+#'                      updated by taking the non-continuous outcomes from
+#'                      the GROUP variable in alphabetical order.
+#' @param last_outcome A single string containing the last outcome label
+#'                     displayed on the right side of the plot.
+#'                     Default value "C".
+#' @param arm_levels A named vector of exactly two strings, mapping the
+#'                   values used for the active and control arms to the values
+#'                   used in the data. The names must be "active" and "control"
+#'                   in this order. Note that this parameter only need to
+#'                   be specified if you have labels different from
+#'                    "active" and "control".
+#' @param fixed_followup_days Not needed if HCE object contains information
+#'                            on fixed follow-up days in the study
+#'                            (column PADY or TTEfixed,
+#'                            depending on hce version).
+#'                            Otherwise, this argument must be specified.
+#'                            Note: If argument is specified and HCE object
+#'                            contains PADY or TTEfixed column, then
+#'                            fixed_followup_days argument is used.
 #' @param \dots not used
 #' @return Mosaic plot as a ggplot2 object.
 #' @examples
@@ -65,11 +71,33 @@ mosaic_plot.default <- function(x,
 #'
 #' mosaic_plot(maraca_dat)
 #'
+#' Rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
+#' Rates_P <- c(2.47, 2.24, 2.9, 4, 6)
+#' hce_dat <- hce::simHCE(n = 2500, TTE_A = Rates_A, TTE_P = Rates_P,
+#'              CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3,
+#'              seed = 31337)
+#'
+#' mosaic_plot(hce_dat)
+#'
+#' @export
+mosaic_plot <- function(x, ...) {
+  UseMethod("mosaic_plot", x)
+}
+
+#' @rdname mosaic_plot
+#' @export
+mosaic_plot.default <- function(x,
+                                ...) {
+  paste0("mosaic_plot() function can only handle inputs of class ",
+         "'hce' or 'maraca'. Your input has class ", class(x), ".")
+}
+
+#' @rdname mosaic_plot
 #' @export
 mosaic_plot.maraca <- function(x,
                                theme = "maraca",
                                highlight_ties = FALSE,
-                               winning_prob = FALSE,
+                               win_prob = FALSE,
                                diagonal_line = TRUE,
                                ...) {
 
@@ -77,14 +105,14 @@ mosaic_plot.maraca <- function(x,
 
   # Check if highlight_ties is flag
   checkmate::assert_flag(highlight_ties)
-  # Check if winning_prob is flag
-  checkmate::assert_flag(winning_prob)
+  # Check if win_prob is flag
+  checkmate::assert_flag(win_prob)
   # Check if diagonal_line is flag
   checkmate::assert_flag(diagonal_line)
 
-  if (winning_prob && is.null(x$win_odds_outcome)) {
+  if (win_prob && is.null(x$win_odds_outcome)) {
     stop(paste("In order to display the winning probabilities in the plot",
-               "(winning_prob = TRUE), the maraca object needs to have been",
+               "(win_prob = TRUE), the maraca object needs to have been",
                "created using the flag compute_win_odds = TRUE"))
   }
   # Names of endpoints for plotting
@@ -154,6 +182,7 @@ mosaic_plot.maraca <- function(x,
                        linewidth = 0.5) +
     ggplot2::geom_segment(x = 0, y = 0, xend = 1, yend = 1, color = "black",
                           linewidth = 0.5) +
+    ggplot2::labs(fill = "Results") +
     ggplot2::scale_x_continuous(name = paste(arms["control"], "proportions"),
                                 breaks = ctrl_ticks, labels = endpoints,
                                 minor_breaks = NULL, limits = c(0, 1),
@@ -175,7 +204,7 @@ mosaic_plot.maraca <- function(x,
       ggplot2::labs(caption = "Ties highlighted in lighter color")
   }
 
-  if (winning_prob) {
+  if (win_prob) {
     win_prob <- paste0("Win probability: ",
                        100 * round(x$win_odds_outcome$WO["WP"], 3), "%")
     plot <- plot +
@@ -202,76 +231,16 @@ mosaic_plot.maraca <- function(x,
 }
 
 
-#' Generic function to create a mosaic plot that compares outcomes between an
-#' active treatment group and a control group, highlighting areas of "Wins",
-#' "Losses" and "Ties" based on endpoint hierarchy.
-#' Implementation to plot directly using a hce object.
-#' Check the vignette "Maraca Plots - Introduction to the Mosaic plot"
-#' for more details.
-#'
-#' @param x an object of S3 class 'hce'.
-#' @param step_outcomes A vector of strings containing the outcome labels
-#'                      for all outcomes displayed as part of the step function
-#'                      on the left side of the plot.
-#'                      The order is kept for the plot.
-#'                      By default (when set to NULL) this is automatically
-#'                      updated by taking the non-continuous outcomes from
-#'                      the GROUP variable in alphabetical order.
-#' @param last_outcome A single string containing the last outcome label
-#'                     displayed on the right side of the plot.
-#'                     Default value "C".
-#' @param arm_levels A named vector of exactly two strings, mapping the
-#'                   values used for the active and control arms to the values
-#'                   used in the data. The names must be "active" and "control"
-#'                   in this order. Note that this parameter only need to
-#'                   be specified if you have labels different from
-#'                    "active" and "control".
-#' @param fixed_followup_days Not needed if HCE object contains information
-#'                            on fixed follow-up days in the study
-#'                            (column PADY or TTEfixed,
-#'                            depending on hce version).
-#'                            Otherwise, this argument must be specified.
-#'                            Note: If argument is specified and HCE object
-#'                            contains PADY or TTEfixed column, then
-#'                            fixed_followup_days argument is used.
-#' @param theme Choose theme to style the plot. The default theme is "maraca".
-#'        Options are "maraca", "color1", "color2" and "none".
-#'        For more details, check the vignette called
-#'        "Maraca Plots - Introduction to the Mosaic plot".
-#' @param highlight_ties Flag to indicate if component ties should be
-#'                       highlighted using lighter colors.
-#'                       Default value: FALSE
-#' @param winning_prob Flag to indicate if winning probability should be shown
-#'                     within the plot.
-#'                     Default value: FALSE
-#' @param diagonal_line Flag to indicate if diagonal line showing an even
-#'                      Win/Loss split should be displayed.
-#'                      Default value: TRUE
-#' @param lowerBetter Flag for the final outcome variable, indicating if
-#'                    lower values are considered better/advantageous.
-#'                    This flag is need to make sure the win odds are
-#'                    calculated correctly.
-#'                    Default value is FALSE, meaning higher values
-#'                    are considered advantageous.
-#' @param \dots not used
-#' @return Mosaic plot as a ggplot2 object.
-#' @examples
-#' Rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
-#' Rates_P <- c(2.47, 2.24, 2.9, 4, 6)
-#' hce_dat <- hce::simHCE(n = 2500, TTE_A = Rates_A, TTE_P = Rates_P,
-#'              CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3,
-#'              seed = 31337)
-#'
-#' mosaic_plot(hce_dat)
+
+#' @rdname mosaic_plot
 #' @export
-#'
 mosaic_plot.hce <- function(x, step_outcomes = NULL,
                             last_outcome = "C",
                             arm_levels = c(active = "A", control = "P"),
                             fixed_followup_days = NULL,
                             theme = "maraca",
                             highlight_ties = FALSE,
-                            winning_prob = FALSE,
+                            win_prob = FALSE,
                             diagonal_line = TRUE,
                             lowerBetter = FALSE,
                             ...) {
@@ -286,7 +255,7 @@ mosaic_plot.hce <- function(x, step_outcomes = NULL,
   plot <- mosaic_plot(maraca_dat,
                       theme = theme,
                       highlight_ties = highlight_ties,
-                      winning_prob = winning_prob,
+                      win_prob = win_prob,
                       diagonal_line = diagonal_line)
 
   return(plot)
