@@ -1568,3 +1568,99 @@ test_that("plotHCE", {
   expect_file_exists(output)
 
 })
+
+test_that("mosaicPlot", {
+  file <- fixture_path("hce_scenario_c.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+  step_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  last_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
+  )
+  mar <- maraca(
+    data, step_outcomes, last_outcome, arm_levels, column_names, 3 * 365,
+    compute_win_odds = TRUE
+  )
+  mar_without_win_odds <- maraca(
+    data, step_outcomes, last_outcome, arm_levels, column_names, 3 * 365,
+    compute_win_odds = FALSE
+  )
+
+  output <- artifacts_path("mosaic_1.pdf")
+  expect_file_not_exists(output)
+  set_pdf_output(output)
+  mosaic_plot(mar)
+  expect_file_exists(output)
+
+  # Flags check/win probabilities need to be calculated
+  expect_error(mosaic_plot(mar, highlight_ties = "Yes"))
+  expect_error(mosaic_plot(mar, winning_prob = "Yes"))
+  expect_error(mosaic_plot(mar_without_win_odds, winning_prob = TRUE))
+  expect_error(mosaic_plot(mar, diagonal_line = "Yes"))
+
+  # Check that existing themes can be provided but not others
+  expect_error(mosaic_plot(mar, theme = "my_theme"))
+  expect_no_error(mosaic_plot(mar, theme = "maraca"))
+  expect_no_error(mosaic_plot(mar, theme = "color1"))
+  expect_no_error(mosaic_plot(mar, theme = "color2"))
+  expect_no_error(mosaic_plot(mar, theme = "none"))
+
+  # Check that ggplot2 object is created
+  plot_obj <- mosaic_plot(mar)
+  expect_true(inherits(plot_obj, "ggplot"))
+
+  # Check that winning probability label is created
+  plot_obj_winning <- mosaic_plot(mar, winning_prob  = TRUE)
+  expect_true(any(sapply(plot_obj_winning$layers,
+                         function(l) {
+                           inherits(l$geom, "GeomLabel")
+                         })))
+
+  arms <- mar$arm_levels
+  ecdf_df <-   mar$ecdf_by_outcome$data
+  ecdf_act <- ecdf_df[ecdf_df$arm == arms["active"], ]
+  ecdf_ctrl <- ecdf_df[ecdf_df$arm == arms["control"], ]
+  # Step function ecdf part used for mosaic plot
+  steps_act <- stats::stepfun(ecdf_act$adjusted.time,
+                              c(0, ecdf_act$step_values))
+  steps_ctrl <- stats::stepfun(ecdf_ctrl$adjusted.time,
+                               c(0, ecdf_ctrl$step_values))
+
+  # Check that step functions work as expected
+  expect_equal(steps_act(ecdf_act$adjusted.time), ecdf_act$step_values)
+  expect_equal(steps_ctrl(ecdf_ctrl$adjusted.time), ecdf_ctrl$step_values)
+
+  #Check lower is better implementation
+  dataLowerBetter <- data
+  dataLowerBetter[dataLowerBetter$GROUP == last_outcome, ]$AVAL0 <-
+    (0 - dataLowerBetter[dataLowerBetter$GROUP == last_outcome, ]$AVAL0)
+  mar_lower_better <- maraca(
+    dataLowerBetter, step_outcomes, last_outcome, arm_levels,
+    column_names, 3 * 365, lowerBetter = TRUE
+  )
+  # Last outcome
+  last_df <- mar$data_last_outcome$data
+  last_df_lower <- mar_lower_better$data_last_outcome$data
+  if (mar$lowerBetter) {
+    last_df$x <- 100 - last_df$x
+  }
+  if (mar_lower_better$lowerBetter) {
+    last_df_lower$x <- 100 - last_df_lower$x
+  }
+  last_act <- last_df[last_df$arm == arms["active"], ]
+  last_ctrl <- last_df[last_df$arm == arms["control"], ]
+  last_act_lower <- last_df_lower[last_df_lower$arm == arms["active"], ]
+  last_ctrl_lower <- last_df_lower[last_df_lower$arm == arms["control"], ]
+  # Create grid to plot over
+  x_grid <- c(sort(unique(last_df$x)))
+  x_grid_lower <- c(sort(unique(last_df_lower$x)))
+
+  expect_equal(stats::ecdf(last_act$x)(x_grid),
+               stats::ecdf(last_act_lower$x)(x_grid_lower))
+  expect_equal(stats::ecdf(last_ctrl$x)(x_grid),
+               stats::ecdf(last_ctrl_lower$x)(x_grid_lower))
+
+})

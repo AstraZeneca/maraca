@@ -387,24 +387,26 @@ plot_maraca <- function(
   plotdata_ecdf <- plotdata_ecdf[order(plotdata_ecdf$x), ]
 
   # Add end point of previous curve to avoid jumps
-  add_points <-
-    do.call("rbind",
-            lapply(2:length(step_outcomes),
-                   function(i) {
-                     plotdata_ecdf %>%
-                       dplyr::group_by(arm) %>%
-                       dplyr::filter(outcome == step_outcomes[i - 1]) %>%
-                       dplyr::slice_tail(n = 1) %>%
-                       dplyr::ungroup() %>%
-                       dplyr::mutate(outcome = step_outcomes[i]) %>%
-                       dplyr::ungroup()
-                   }))
+  if (length(step_outcomes) > 1) {
+    add_points <-
+      do.call("rbind",
+              lapply(2:length(step_outcomes),
+                     function(i) {
+                       plotdata_ecdf %>%
+                         dplyr::group_by(arm) %>%
+                         dplyr::filter(outcome == step_outcomes[i - 1]) %>%
+                         dplyr::slice_tail(n = 1) %>%
+                         dplyr::ungroup() %>%
+                         dplyr::mutate(outcome = step_outcomes[i]) %>%
+                         dplyr::ungroup()
+                     }))
 
-  plotdata_ecdf <- rbind(
-    add_points,
-    plotdata_ecdf
-  )
-  plotdata_ecdf <- plotdata_ecdf[order(plotdata_ecdf$x), ]
+    plotdata_ecdf <- rbind(
+      add_points,
+      plotdata_ecdf
+    )
+    plotdata_ecdf <- plotdata_ecdf[order(plotdata_ecdf$x), ]
+  }
 
   # Add points at (100, y) on both curves so that they end at x=100%
   add_points <- plotdata_ecdf %>%

@@ -1,5 +1,5 @@
 Package: maraca
-Version: 0.7.1
+Version: 1.0.0
 Type: Package
 Title: The Maraca Plot: Visualizing Hierarchical Composite Endpoints
 License: Apache License (>= 2)
@@ -35,7 +35,7 @@ Imports:
     checkmate (>= 2.1),
     patchwork(>= 1.0.0),
     lifecycle
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 Suggests:
     knitr (>= 1.39),
     here (>= 1.0.1),

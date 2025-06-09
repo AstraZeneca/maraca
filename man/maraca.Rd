@@ -95,6 +95,8 @@ An object of class 'maraca'. The object information must be
         considered private.
 }
 \description{
+Supports visual interpretation of hierarchical composite endpoints (HCEs). HCEs are complex constructs used as primary endpoints in clinical trials, combining outcomes of different types into ordinal endpoints, in which each patient contributes the most clinically important event (one and only one) to the analysis. See Karpefors M et al. (2022) \doi{10.1177/17407745221134949}.
+
 Creates the maraca analysis object as an S3 object of
 class 'maraca'.
 }
@@ -109,4 +111,27 @@ hce_test <- maraca(
   arm_levels = c(active = "Active", control = "Control"),
   compute_win_odds = TRUE
 )
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/AstraZeneca/maraca}
+  \item Report bugs at \url{https://github.com/AstraZeneca/maraca/issues}
+}
+
+}
+\author{
+\strong{Maintainer}: Monika Huhn \email{monika.huhn@astrazeneca.com} (\href{https://orcid.org/0009-0000-7865-6008}{ORCID})
+
+Authors:
+\itemize{
+  \item Martin Karpefors \email{martin.karpefors@astrazeneca.com} (\href{https://orcid.org/0000-0003-3136-9882}{ORCID})
+  \item Samvel B. Gasparyan \email{samvel.gasparyan@astrazeneca.com} (\href{https://orcid.org/0000-0002-4797-2208}{ORCID})
+}
+
+Other contributors:
+\itemize{
+  \item Stefano Borini \email{stefano.borini@astrazeneca.com} [contributor]
+}
+
 }

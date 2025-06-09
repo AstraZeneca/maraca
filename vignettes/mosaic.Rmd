@@ -1,0 +1,177 @@
+---
+title: "Maraca Plots - Introduction to the Mosaic plot"
+author: "Monika Huhn"
+date: "28/05/2025"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Maraca Plots - Introduction to the Mosaic plot}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
+library(dplyr)
+library(ggplot2)
+library(maraca)
+```
+
+## Introduction
+
+The mosaic plot is a new type of graph introduced in the package that provides
+an easy overview over the different components (losses, wins and ties) between
+the active treatment arm vs the control for the different endpoints.
+
+```{r fig.width=7, fig.height=6, echo = FALSE}
+data(hce_scenario_b)
+maraca_dat <- maraca(
+  data = hce_scenario_b,
+  step_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
+  last_outcome = "Continuous outcome",
+  fixed_followup_days = 3 * 365,
+  column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
+  arm_levels = c(active = "Active", control = "Control")
+)
+mosaic_plot(maraca_dat, theme = "color2")
+```
+
+An example plot is shown above.
+The plot presents a mosaic of rectangles, each outlined with white borders,
+reflecting the comparative outcomes between an active treatment group and a
+control group, as indicated by axis labels (active on the y-axis, control
+on the x-axis).
+
+Each rectangle corresponds to a pair of outcomes, displaying the proportion
+of each treatment group achieving a particular endpoint. For instance, a
+rectangle labeled "Outcome I" on the y-axis and "Outcome II" on the x-axis
+represents a "Loss" for the active group, as these patients have reached a
+higher-level endpoint compared to those in the control group.
+Conversely, when "Outcome II" on the active group (y-axis) is
+compared to "Outcome I" in the control group (x-axis), it signifies a "Win"
+for the active group, where active group patients attain a lower-level endpoint
+than the control group.
+
+Diagonal rectangles, such as those representing "Outcome I" vs "Outcome I",
+illustrate tied components between the groups over the trial period. While
+these rectangles reflect identical outcomes across groups, a diagonal line
+across the plot shows cumulative event timing. Events in the active group
+cause an upward shift in this line, while events in the control group shift
+it to the right. The line scales with trial time, maintaining continuity until
+the last recorded outcome.
+
+
+For the last outcome, the diagonal line is scaled between the lowest and highest
+results across both groups. The line depicts cumulative results for patients,
+ordered from lowest to highest (or highest to lowest if lower values are
+considered as "better"). As each patient's result is considered, the
+line jumps upwards or to the right, reflecting the ordered accumulation of
+results from both the active and control groups.
+
+Note if any of the endpoints are binary there is no way of ordering the
+individual patients either temporally or by value, so a diagonal line is
+displayed for this endpoint component.
+
+## Creating the mosaic plot
+
+Let us first read in some data.
+```{r maraca1, eval = TRUE}
+library(maraca)
+
+data(hce_scenario_a)
+```
+
+In order to use the `mosaic_plot`, we have to first create a
+`maraca` object.
+```{r}
+maraca_dat <- maraca(
+  data = hce_scenario_a,
+  step_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
+  last_outcome = "Continuous outcome",
+  fixed_followup_days = 3 * 365,
+  column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
+  arm_levels = c(active = "Active", control = "Control")
+)
+```
+
+Now we can just plot the object using the `mosaic_plot()` function.
+```{r fig.width=7, fig.height=6}
+mosaic_plot(maraca_dat)
+```
+
+The component tie rectangles can also be specifically highlighted using the
+flag `highlight_ties = TRUE`.
+```{r fig.width=7, fig.height=6}
+mosaic_plot(maraca_dat, highlight_ties = TRUE)
+```
+
+If you calculated the win odds when creating your maraca object
+(`compute_win_odds = TRUE`), you can also display the winning probability
+for the active arm in the plot by using the flag `win_prob = TRUE`.
+```{r fig.width=7, fig.height=6}
+maraca_with_win_odds <- maraca(
+  data = hce_scenario_a,
+  step_outcomes = c("Outcome I", "Outcome II", "Outcome III", "Outcome IV"),
+  last_outcome = "Continuous outcome",
+  fixed_followup_days = 3 * 365,
+  column_names = c(outcome = "GROUP", arm = "TRTP", value = "AVAL0"),
+  arm_levels = c(active = "Active", control = "Control"),
+  compute_win_odds = TRUE
+)
+mosaic_plot(maraca_with_win_odds, win_prob = TRUE)
+```
+
+You can also hide the diagonal line (highlighting even Win/Loss split) to
+compare against  using the flag `diagonal_line = FALSE`
+```{r fig.width=7, fig.height=6}
+mosaic_plot(maraca_dat, diagonal_line = FALSE)
+```
+
+It is also possible to use the `mosaic_plot()` function directly on
+an `hce` object (created using the
+[hce package](https://cran.r-project.org/package=hce)).
+
+```{r fig.width=7, fig.height=6}
+library(hce)
+
+Rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
+Rates_P <- c(2.47, 2.24, 2.9, 4, 6)
+
+hce_dat <- simHCE(n = 2500, TTE_A = Rates_A, TTE_P = Rates_P,
+                  CM_A = -3, CM_P = -6, CSD_A = 16, CSD_P = 15, fixedfy = 3,
+                  seed = 31337)
+
+mosaic_plot(hce_dat)
+```
+
+## Styling
+
+The resulting plot for the `mosaic_plot()` functions
+is a normal ggplot2 object that can be styled accordingly.
+```{r fig.width=7, fig.height=6}
+mosaic_plot(maraca_dat) +
+  ggplot2::scale_fill_manual(values = c("red", "seagreen"), name = NULL)
+```
+
+For the users convenience, there are also different themes
+available to style the plot.
+
+The default style is called `theme = "maraca"`.
+```{r fig.width=7, fig.height=6}
+mosaic_plot(maraca_dat, theme = "maraca")
+```
+
+There are 2 different themes with different color
+schemes, `theme = "color1"` and `theme = "color2"`.
+```{r fig.width=7, fig.height=6}
+mosaic_plot(maraca_dat, theme = "color1")
+```
+
+```{r fig.width=7, fig.height=6}
+mosaic_plot(maraca_dat, theme = "color2")
+```
+
+There is also a theme without any styling `theme = "none"` that
+can be used as a base when the user wants to style the plot themselves.
+```{r fig.width=8, fig.height=6}
+mosaic_plot(maraca_dat, theme = "none")
+```
