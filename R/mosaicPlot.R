@@ -162,8 +162,8 @@ mosaic_plot.maraca <- function(x,
   }
 
   # Combine to step and last outcomes to 1 line
-  act_line <- c(act_steps, act_last)
-  ctrl_line <- c(ctrl_steps, ctrl_last)
+  act_line <- sort(c(act_steps, act_last))
+  ctrl_line <- sort(c(ctrl_steps, ctrl_last))
 
   # Help variables indicating the cumulative proportions of each arm/endpoint
   nums_act <- unlist(x$meta[, 9], use.names = FALSE)
