@@ -1,5 +1,5 @@
 Package: maraca
-Version: 1.0.0
+Version: 1.0.1
 Type: Package
 Title: The Maraca Plot: Visualizing Hierarchical Composite Endpoints
 License: Apache License (>= 2)
@@ -14,7 +14,11 @@ Authors@R: c(
            email = "stefano.borini@astrazeneca.com", role = c("ctb")),
     person(given = "Monika", family = "Huhn",
            email = "monika.huhn@astrazeneca.com", role = c("aut", "cre"),
-	         comment = c(ORCID = "0009-0000-7865-6008")))
+	         comment = c(ORCID = "0009-0000-7865-6008")),
+    person(given = "Kevin", family = "Anderson",
+           email = "kevin.anderson1@astrazeneca.com", role = c("aut", "cre"),
+	         comment = c(ORCID = "https://orcid.org/0000-0002-9446-7386"))
+             )
 Description: Supports visual interpretation of hierarchical composite
     endpoints (HCEs). HCEs are complex constructs used as primary endpoints in
     clinical trials, combining outcomes of different types into ordinal endpoints,
@@ -34,7 +38,8 @@ Imports:
     tidyr (>= 1.2),
     checkmate (>= 2.1),
     patchwork(>= 1.0.0),
-    lifecycle
+    lifecycle, 
+    gganimate
 RoxygenNote: 7.3.2
 Suggests:
     knitr (>= 1.39),

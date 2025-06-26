@@ -1,3 +1,10 @@
+# maraca 1.0.1
+
+## New features
+- We have now added animation capabilities for all maraca plots using `animate_maraca`.
+- See the `animation.Rmd` vignette for a full set of examples use cases. 
+
+
 # maraca 1.0.0
 
 ## New features
