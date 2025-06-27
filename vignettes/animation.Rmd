@@ -18,7 +18,7 @@ library(dplyr)
 library(ggplot2)
 library(gganimate)
 library(magick)
-
+library(maraca)
 ```
 
 The maraca package now supports built-in plot animations. This feature is useful for sprucing up presentations or highlighting the temporal nature of step-wise outcomes. 

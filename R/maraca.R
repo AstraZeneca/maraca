@@ -278,7 +278,7 @@ print.maraca <- function(x, ...) {
 
 prep_binary_data <- function(df, outcome, max_grid_intercept){
   `%>%` <- dplyr::`%>%`
-  
+
   plot_df <- df[df$outcome == outcome,]
   plot_df <- plot_df[order(plot_df$x),]
 
@@ -453,11 +453,11 @@ plot_maraca <- function(
     dplyr::slice_tail(n = 1) %>%
     dplyr::ungroup()
 
-  add_points$x <- 100
-  plotdata_ecdf <- rbind(
-    plotdata_ecdf,
-    add_points
-  )
+  # add_points$x <- 100
+  # plotdata_ecdf <- rbind(
+  #   plotdata_ecdf,
+  #   add_points
+  # )
 
   plotdata_ecdf <- plotdata_ecdf[order(plotdata_ecdf$x), ]
 
