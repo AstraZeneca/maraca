@@ -27,11 +27,6 @@ Description: Supports visual interpretation of hierarchical composite
     <doi:10.1177/17407745221134949>.
 URL: https://github.com/AstraZeneca/maraca
 BugReports: https://github.com/AstraZeneca/maraca/issues
-SystemRequirements: 
-    ImageMagick++ library and headers
-    apt-get install libmagick++-dev on Ubuntu/Debian
-    sudo yum install ImageMagick-c++-devel on CentOS/RHEL
-    brew install imagemagick on macOS
 Encoding: UTF-8
 LazyData: true
 Depends:
@@ -46,8 +41,7 @@ Imports:
     lifecycle, 
     gganimate,
     gifski,
-    magick,
-    transformr
+    magick
 RoxygenNote: 7.3.2
 Suggests:
     knitr (>= 1.39),
