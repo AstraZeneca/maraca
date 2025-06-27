@@ -46,6 +46,11 @@
                        return(dat)
                      }))
 
+    if (sum((binary_step_data$linetype == 2)) == 0) {
+      # If there are no binary steps, return NULL
+      return(NULL)
+    }
+    
     binary_step_data <- binary_step_data %>%
       dplyr::filter(linetype == 2) %>%
       dplyr::mutate(proportion = yend - y) %>%
