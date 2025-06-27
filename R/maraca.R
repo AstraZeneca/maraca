@@ -277,6 +277,8 @@ print.maraca <- function(x, ...) {
 
 
 prep_binary_data <- function(df, outcome, max_grid_intercept){
+  `%>%` <- dplyr::`%>%`
+  
   plot_df <- df[df$outcome == outcome,]
   plot_df <- plot_df[order(plot_df$x),]
 
