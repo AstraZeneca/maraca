@@ -42,6 +42,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libmagick++-dev
+          sudo apt-get install libudunits2-dev
 
       - name: Install dependencies
         run: |
