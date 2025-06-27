@@ -179,7 +179,6 @@ animate_maraca <- function(mar,
 #'                    the start time for each plot step/segment. 
 #' @return Returns ggplot2 plot of the maraca object.
 set_layer_times <- function(p, layer_idx, layer_len, type, time_offset=NULL){
-  library(dplyr)
   # make sure %>% comes from dplyr
   `%>%` <- dplyr::`%>%`
 
@@ -199,19 +198,21 @@ set_layer_times <- function(p, layer_idx, layer_len, type, time_offset=NULL){
   
   # --- Binary Step --- 
   if ( type == 'binary' ){
-    p$layers[[layer_idx]]$data <- p$layers[[layer_idx]]$data %>%
-      dplyr::group_by(arm) %>%   # Grouping by 'arm'
-      dplyr::do({
-        # Replicate data within each group
-        num_rows_group <- nrow(.)
-        expanded_data <- .[rep(1:num_rows_group, each = layer_len), ]
-        
-        # Modify the time within each group
-        expanded_data$time <- as.numeric((time_offset + 1):(time_offset + nrow(expanded_data)))
-        
-        expanded_data
-      }) %>% 
+    # Get the original data
+    original_data <- p$layers[[layer_idx]]$data
+    
+    # Create expanded data by replicating each row layer_len times
+    expanded_data <- original_data %>%
+      dplyr::group_by(arm) %>%
+      dplyr::group_modify(~ {
+        num_rows_group <- nrow(.x)
+        replicated_data <- .x[rep(1:num_rows_group, each = layer_len), ]
+        replicated_data$time <- as.numeric((time_offset + 1):(time_offset + nrow(replicated_data)))
+        replicated_data
+      }) %>%
       dplyr::ungroup()
+    
+    p$layers[[layer_idx]]$data <- expanded_data
   }
   return(p)
 }

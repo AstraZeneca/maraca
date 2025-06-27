@@ -62,6 +62,7 @@ utils::globalVariables("method")
 utils::globalVariables("UCL")
 utils::globalVariables("LCL")
 utils::globalVariables("tot")
+utils::globalVariables(".")
 
 #' @importFrom gganimate transition_reveal enter_appear transition_layers animate gifski_renderer
 #' @importFrom magick magick_renderer image_read image_animate
