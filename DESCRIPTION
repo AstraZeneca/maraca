@@ -40,7 +40,6 @@ Imports:
     patchwork(>= 1.0.0),
     lifecycle, 
     gganimate,
-    gifski,
     magick
 RoxygenNote: 7.3.2
 Suggests:
