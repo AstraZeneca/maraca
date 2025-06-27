@@ -52,6 +52,10 @@ animate_maraca <- function(mar,
     frames_per_step = 20, 
     gif_duration = 5
 ){
+
+    # Make sure %>% comes from dplyr
+    `%>%` <- dplyr::`%>%`
+    
     # --- Create Base Maraca Plot ---
     p <- plot(mar, 
               continuous_grid_spacing_x=continuous_grid_spacing_x, 
