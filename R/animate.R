@@ -1,7 +1,7 @@
 
 #' Generic function to animate the maraca object using animate_maraca().
 #'
-#' @param x An object of S3 class 'maraca'.
+#' @param mar An object of S3 class 'maraca'.
 #' @param continuous_grid_spacing_x The spacing of the x grid to use for the
 #'        continuous section of the plot.
 #' @param trans the transformation to apply to the x-axis scale for the last
