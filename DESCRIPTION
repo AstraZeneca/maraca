@@ -16,7 +16,7 @@ Authors@R: c(
            email = "monika.huhn@astrazeneca.com", role = c("aut", "cre"),
 	         comment = c(ORCID = "0009-0000-7865-6008")),
     person(given = "Kevin", family = "Anderson",
-           email = "kevin.anderson1@astrazeneca.com", role = c("aut", "cre"),
+           email = "kevin.anderson1@astrazeneca.com", role = "aut",
 	         comment = c(ORCID = "https://orcid.org/0000-0002-9446-7386"))
              )
 Description: Supports visual interpretation of hierarchical composite
