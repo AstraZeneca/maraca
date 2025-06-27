@@ -41,7 +41,8 @@ Imports:
     lifecycle, 
     gganimate,
     gifski,
-    magick
+    magick,
+    transformr
 RoxygenNote: 7.3.2
 Suggests:
     knitr (>= 1.39),
