@@ -179,6 +179,7 @@ animate_maraca <- function(mar,
 #'                    the start time for each plot step/segment. 
 #' @return Returns ggplot2 plot of the maraca object.
 set_layer_times <- function(p, layer_idx, layer_len, type, time_offset=NULL){
+  library(dplyr)
   # make sure %>% comes from dplyr
   `%>%` <- dplyr::`%>%`
 
