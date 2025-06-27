@@ -17,6 +17,7 @@ tidyselect = "*"
 patchwork = "*"
 gganimate = "*"
 magick = "*"
+transformr = "*"
 
 [tool.roo.dev-dependencies]
 here = "*"
