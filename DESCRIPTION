@@ -40,7 +40,8 @@ Imports:
     patchwork(>= 1.0.0),
     lifecycle, 
     gganimate,
-    magick
+    magick,
+    gifski
 RoxygenNote: 7.3.2
 Suggests:
     knitr (>= 1.39),
