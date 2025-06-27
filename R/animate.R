@@ -55,7 +55,7 @@ animate_maraca <- function(mar,
 
     # Make sure %>% comes from dplyr
     `%>%` <- dplyr::`%>%`
-    
+
     # --- Create Base Maraca Plot ---
     p <- plot(mar, 
               continuous_grid_spacing_x=continuous_grid_spacing_x, 
@@ -133,7 +133,7 @@ animate_maraca <- function(mar,
     
     # --- Animate Base GIF -- 
     anim          <- p + transition_reveal(along=time, keep_last=TRUE) + enter_appear()
-    animation_dat <- animate(anim, renderer = magick_renderer(loop = FALSE), nframes=length(frame_delays)+1)
+    animation_dat <- animate(anim, renderer = magick::magick_renderer(loop = FALSE), nframes=length(frame_delays)+1)
     
     # Remove last frame
     animation_dat <- animation_dat[1:(length(animation_dat))-1]
