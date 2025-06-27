@@ -127,6 +127,7 @@ Authors:
 \itemize{
   \item Martin Karpefors \email{martin.karpefors@astrazeneca.com} (\href{https://orcid.org/0000-0003-3136-9882}{ORCID})
   \item Samvel B. Gasparyan \email{samvel.gasparyan@astrazeneca.com} (\href{https://orcid.org/0000-0002-4797-2208}{ORCID})
+  \item Kevin Anderson \email{kevin.anderson1@astrazeneca.com} (\href{https://orcid.org/0000-0002-9446-7386}{ORCID})
 }
 
 Other contributors:
