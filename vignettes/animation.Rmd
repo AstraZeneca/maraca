@@ -16,12 +16,8 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
 library(dplyr)
 library(ggplot2)
-#library(maraca)
-library(devtools)
 library(gganimate)
 library(magick)
-install.packages('/Users/kwkw844/Projects/maraca', repos = NULL, type="source")
-library(maraca)
 
 ```
 

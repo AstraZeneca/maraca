@@ -1,3 +1,7 @@
+library(ggplot2)
+library(gganimate)
+library(magick)
+
 #' Generic function to animate the maraca object using animate_maraca().
 #'
 #' @param x An object of S3 class 'maraca'.
