@@ -1,3 +1,8 @@
+# maraca 1.0.1
+
+Slight change in automatic checks after an update of the `hce` package
+(dependency).
+
 # maraca 1.0.0
 
 ## New features

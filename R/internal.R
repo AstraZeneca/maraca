@@ -486,7 +486,12 @@
       stop(paste("last_outcome", last_outcome,
                  "is not in the outcome variable"))
     }
-    step_outcomes <- sort(unique(x$GROUP)[unique(x$GROUP) != last_outcome])
+    step_outcomes <-
+      as.character(sort(unique(x$GROUP)[unique(x$GROUP) != last_outcome]))
+  }
+
+  if (is.factor(x$GROUP)) {
+    x$GROUP <- as.character(x$GROUP)
   }
 
   # Small bugfix to allow for name change of variable TTEFixed in newer

@@ -1,6 +1,6 @@
 # maraca
 
-![Maturity level-Under development](https://img.shields.io/badge/Maturity%20Level-Under--development-yellow)
+![Maturity level-Under development](https://img.shields.io/badge/version-1.0.1-green)
 ![CRAN/METACRAN](https://img.shields.io/cran/v/maraca)
 
 Provides maraca plots
