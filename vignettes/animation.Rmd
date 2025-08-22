@@ -31,16 +31,13 @@ In this vignette, we will show you how to easily animate a figure by calling the
 ### Basic Static Maraca Plot 
 
 ```{r, eval = TRUE, fig.width = 7, fig.height = 6}
-
 # --- Load/Format Example Data --- 
 data(hce_scenario_a, package = "maraca")
-data <- hce_scenario_a
-column_names <- c(outcome = "GROUP", arm = "TRTP",value = "AVAL0")
-
+data          <- hce_scenario_a
+column_names  <- c(outcome = "GROUP", arm = "TRTP",value = "AVAL0")
 step_outcomes <- c("Outcome I", "Outcome II", "Outcome III", "Outcome IV")
-last_outcome <- "Continuous outcome"
-
-arm_levels = c(active = "Active", control = "Control")
+last_outcome  <- "Continuous outcome"
+arm_levels    <- c(active = "Active", control = "Control")
 
 # --- Build Maraca Object --- 
 mar <- maraca(
@@ -58,30 +55,37 @@ p
 
 We create a GIF by simply calling the `animate_maraca` function, which takes all the same plotting parameters as the standard maraca `plot` function. 
 
-```{r, eval = TRUE, fig.width = 7, fig.height = 6}
-anim <- animate_maraca(mar, continuous_grid_spacing_x = 20);
+```{r, eval = TRUE, message=FALSE, warning=FALSE, fig.width = 7, fig.height = 6}
+anim <- animate_maraca(mar, continuous_grid_spacing_x = 20)
 anim
 ```
 
+Maraca color themes can be used for animations as well. 
+
+```{r, eval = TRUE, message=FALSE, warning=FALSE, fig.width = 7, fig.height = 6}
+anim <- animate_maraca(mar, 
+                        theme = 'color1',
+                        continuous_grid_spacing_x = 20)
+anim
+```
 
 ### Controlling Animation Speed and Duration
 
 There are two additional input parameters to control the speed and duration of the animation:
 
-- `frames_per_step`: `int` or `list(int)`
-  - Define how many frames to generate for each x-axis __"step"__ of the maraca plot. A step is a single level of the outcome. For instance, the above plot has 5 total steps (i.e. Outcome I, Outcome II, Outcome III, Outcome IV, and Continuous).
+- __frames_per_step__: `int` or `list(int)`
+  - This defines how many frames to generate for each x-axis __"step"__ of the maraca plot. A step is a single level of the outcome. For instance, the above plot has 5 total steps (Outcome I, Outcome II, Outcome III, Outcome IV, and Continuous).
 
-- `gif_duration`: `int` or `float`
-  - Define how long the gif should be in seconds.
+- __gif_duration__: `int` or `float`
+  - This defines how long the gif should be in seconds.
 
-
-```{r, eval = TRUE, fig.width = 7, fig.height = 6}
+These examples show how to modify the overall gif duration.
+```{r, eval = TRUE, message=FALSE, warning=FALSE, fig.width = 7, fig.height = 6}
 # 10 second GIF
 slow_anim <- animate_maraca(mar, 
                        continuous_grid_spacing_x = 20, 
                        gif_duration=10)
 slow_anim
-
 # 3 second GIF
 fast_anim <- animate_maraca(mar, 
                        continuous_grid_spacing_x = 20, 
@@ -89,11 +93,11 @@ fast_anim <- animate_maraca(mar,
 fast_anim
 ```
 
-You can also control the temporal granularity of the animation by setting the `frames_per_step` feature. 
+You can control the temporal granularity (i.e. the number of steps/frames) of the animation by setting the `frames_per_step` feature. 
 
 Here we illustrate what a high and low frame temporal resolution looks like. 
 
-```{r, eval = TRUE, fig.width = 7, fig.height = 6}
+```{r, eval = TRUE, message=FALSE, warning=FALSE, fig.width = 7, fig.height = 6}
 # Low Temporal Granularity
 anim <- animate_maraca(mar, 
                        continuous_grid_spacing_x = 20, 
@@ -102,7 +106,7 @@ anim <- animate_maraca(mar,
 anim
 
 ```
-```{r, eval = TRUE, fig.width = 7, fig.height = 6}
+```{r, eval = TRUE, message=FALSE, warning=FALSE, fig.width = 7, fig.height = 6}
 # High Temporal Granularity
 anim <- animate_maraca(mar, 
                        continuous_grid_spacing_x = 20, 
@@ -112,29 +116,69 @@ anim
 
 ```
 
-You can also control the relative duration of each step being plotted. `frames_per_step` will accept a single integer if you want each segment/step to be the same length. Alternatively, it will accept a list of integers for more granular control. The length of `frames_per_step` must equal the number of `step_outcomes` + 1 (i.e. the last continuous outcome). 
+You can also control the relative duration of each step being plotted. 
 
-In this example, we the animation for `Outcome II` to have 4x the number of frames as the other steps. 
+The `frames_per_step` parameter will accept a single integer if you want each segment/step to be the same length. 
 
-```{r, eval = TRUE, fig.width = 7, fig.height = 6}
+Alternatively, it will accept a list of integers for more granular control. The length of `frames_per_step` must equal the number of `step_outcomes` + 1 (i.e. the last continuous outcome). 
+
+In this example, we set the animation for `Outcome II` to have 4x the number of frames as the other steps.
+
+```{r, eval = TRUE, message=FALSE, warning=FALSE, fig.width = 7, fig.height = 6}
 anim <- animate_maraca(mar, 
                        continuous_grid_spacing_x = 20, 
                        frames_per_step = c(10, 40, 10, 10, 10),
                        gif_duration=5)
 anim
-
 ```
-In this example, we have the animation pause for a long time on the continuous outcome. 
 
-```{r, eval = TRUE, fig.width = 7, fig.height = 6}
+In this example, we have the animation pause for a long time on the continuous outcome (i.e. violins). 
+
+```{r, eval = TRUE, message=FALSE, warning=FALSE, fig.width = 7, fig.height = 6}
 anim <- animate_maraca(mar, 
                        continuous_grid_spacing_x = 20, 
                        frames_per_step = c(10, 10, 10, 10, 50),
                        gif_duration=5)
 anim
-
 ```
 \newpage
+
+
+## Sequential Animation of Each Group/Arm
+
+Thus far, we have animated the Active and Control arms simultaneously, but you have the ability to animate the two arms sequentially by setting the `arm_animation_order` parameter.  
+
+```{r, eval = TRUE, message=FALSE, warning=FALSE, fig.width = 7, fig.height = 6}
+
+# This example will first animate the Control arm, then the Active Arm
+anim <- animate_maraca(mar, 
+                       continuous_grid_spacing_x = 20, 
+                       frames_per_step = 20,
+                       arm_animation_order = c('Control', 'Active'),
+                       gif_duration=8)
+anim
+```
+
+```{r, eval = TRUE, message=FALSE, warning=FALSE, fig.width = 7, fig.height = 6}
+# Or animate the "Active" arm first
+anim <- animate_maraca(mar, 
+                       continuous_grid_spacing_x = 20, 
+                       frames_per_step = 20,
+                       arm_animation_order = c('Active', 'Control'),
+                       gif_duration=8)
+anim
+```
+
+You have similar control over the animation speed of each step.
+
+```{r, eval = TRUE, message=FALSE, warning=FALSE, fig.width = 7, fig.height = 6}
+anim <- animate_maraca(mar, 
+                       continuous_grid_spacing_x = 20, 
+                       frames_per_step = c(10,10,40,10,10),
+                       arm_animation_order = c('Control', 'Active'),
+                       gif_duration=8)
+anim
+```
 
 ## Animating Alternative Maraca Plots
 
@@ -142,7 +186,7 @@ The animation utility can handle any permutation of maraca plot you would like.
 
 For instance, we can animate a figure with boxplots instead of a violin plot. 
 
-```{r, eval = TRUE, fig.width = 7, fig.height = 6}
+```{r, eval = TRUE, message=FALSE, warning=FALSE, fig.width = 7, fig.height = 6}
 anim <- animate_maraca(mar, 
                        continuous_grid_spacing_x = 20,
                        density_plot_type = "box",
@@ -151,9 +195,20 @@ anim <- animate_maraca(mar,
 anim
 ```
 
+Sequential animation of each arm...
+```{r, eval = TRUE, message=FALSE, warning=FALSE, fig.width = 7, fig.height = 6}
+anim <- animate_maraca(mar, 
+                       continuous_grid_spacing_x = 20,
+                       density_plot_type = "box",
+                       arm_animation_order = c('Control', 'Active'),
+                       frames_per_step=20, 
+                       gif_duration=8)
+anim
+```
+
 ...and scatter plots. 
 
-```{r, eval = TRUE, fig.width = 7, fig.height = 6}
+```{r, eval = TRUE, message=FALSE, warning=FALSE, fig.width = 7, fig.height = 6}
 anim <- animate_maraca(mar, 
                        continuous_grid_spacing_x = 20, 
                        density_plot_type = "scatter", 
@@ -163,11 +218,24 @@ anim <- animate_maraca(mar,
 anim
 ```
 
+...Sequential animation for the jitter/scatter continuous endpoint doesn't work well right now. There is some randomness to how the individual points are placed by ggplot2, which is not fixable with a simple `set.seed`. 
+
+This is on the TO-DO list. 
+
+```{r, eval = TRUE, message=FALSE, warning=FALSE, fig.width = 7, fig.height = 6}
+anim <- animate_maraca(mar, 
+                       continuous_grid_spacing_x = 20,
+                       density_plot_type = "scatter", 
+                       arm_animation_order = c('Control', 'Active'),
+                       frames_per_step=20, 
+                       gif_duration=8)
+anim
+```
+
 We can also animate maraca plots with a binary final outcome. 
 
-```{r, eval = TRUE, fig.width = 7, fig.height = 6}
+```{r, eval = TRUE, message=FALSE, warning=FALSE, fig.width = 7, fig.height = 6}
 data("hce_scenario_a")
-
 
 # --- Load/Format Example Binary Data --- 
 bin_data <- hce_scenario_a
@@ -196,16 +264,26 @@ mar <- maraca(
 plot(mar)
 ```
 
-```{r, eval = TRUE, fig.width = 7, fig.height = 6}
-animate_maraca(mar, 
+```{r, eval = TRUE, message=FALSE, warning=FALSE, fig.width = 7, fig.height = 6}
+anim <- animate_maraca(mar, 
                frames_per_step=c(10,10,10,10,40), 
                gif_duration=5)
-
+anim
 ```
+
+
+```{r, eval = TRUE, message=FALSE, warning=FALSE, fig.width = 7, fig.height = 6}
+anim <- animate_maraca(mar, 
+               frames_per_step=c(10,10,10,10,40),
+               arm_animation_order = c('Control', 'Active'), 
+               gif_duration=8)
+anim
+```
+
 
 We can also animate outcomes/steps with a binary outcome
 
-```{r, eval = TRUE, fig.width = 7, fig.height = 6}
+```{r, eval = TRUE, message=FALSE, warning=FALSE, fig.width = 7, fig.height = 6}
 data("hce_scenario_a")
 
 # --- Load/Format Example Binary Data --- 
@@ -234,12 +312,22 @@ plot(mar)
 
 ```
 
-```{r, eval = TRUE, fig.width = 7, fig.height = 6}
+```{r, eval = TRUE, message=FALSE, warning=FALSE, fig.width = 7, fig.height = 6}
 anim <- animate_maraca(mar, 
-               frames_per_step=c(10,10,20,20,20), 
-               gif_duration=5)
+               frames_per_step=c(20,20,20,5,20), 
+               gif_duration=8)
 anim
 ```
+
+```{r, eval = TRUE, message=FALSE, warning=FALSE, fig.width = 7, fig.height = 6}
+anim <- animate_maraca(mar, 
+               frames_per_step=c(20,20,20,5,20), 
+               arm_animation_order = c('Control', 'Active'),
+               gif_duration=12)
+anim
+```
+
+
 \newpage
 
 ## Saving the Animation
