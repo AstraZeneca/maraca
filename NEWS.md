@@ -1,6 +1,10 @@
 # maraca 1.0.1
 
-Slight change in automatic checks after an update of the `hce` package
+
+## New features
+- We have now added animation capabilities for all maraca plots using `animate_maraca`.
+- See the `animation.Rmd` vignette for a full set of examples use cases. 
+- Slight change in automatic checks after an update of the `hce` package
 (dependency).
 
 # maraca 1.0.0

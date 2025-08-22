@@ -14,7 +14,11 @@ Authors@R: c(
            email = "stefano.borini@astrazeneca.com", role = c("ctb")),
     person(given = "Monika", family = "Huhn",
            email = "monika.huhn@astrazeneca.com", role = c("aut", "cre"),
-	         comment = c(ORCID = "0009-0000-7865-6008")))
+	         comment = c(ORCID = "0009-0000-7865-6008")),
+    person(given = "Kevin", family = "Anderson",
+           email = "kevin.anderson1@astrazeneca.com", role = "aut",
+	         comment = c(ORCID = "https://orcid.org/0000-0002-9446-7386"))
+             )
 Description: Supports visual interpretation of hierarchical composite
     endpoints (HCEs). HCEs are complex constructs used as primary endpoints in
     clinical trials, combining outcomes of different types into ordinal endpoints,
@@ -34,7 +38,11 @@ Imports:
     tidyr (>= 1.2),
     checkmate (>= 2.1),
     patchwork(>= 1.0.0),
-    lifecycle
+    lifecycle, 
+    gganimate (>= 1.0.7),
+    gifski (>= 1.32.0),
+    magick (>= 2.7.3),
+    transformr (>= 0.1.0)
 RoxygenNote: 7.3.2
 Suggests:
     knitr (>= 1.39),
@@ -42,6 +50,6 @@ Suggests:
     lintr (>= 3.0.0),
     withr (>= 2.5.0),
     testthat (>= 3.1),
-    rmarkdown
+    rmarkdown,
 NeedsCompilation: no
 VignetteBuilder: knitr

@@ -1,3 +1,7 @@
+#' @importFrom gganimate transition_reveal transition_layers enter_appear animate gifski_renderer
+#' @importFrom magick magick_renderer image_read image_animate
+#' @importFrom dplyr %>%
+
 # Ignored NSE variables in devtools::check
 utils::globalVariables("time")
 utils::globalVariables("n")
@@ -58,3 +62,9 @@ utils::globalVariables("method")
 utils::globalVariables("UCL")
 utils::globalVariables("LCL")
 utils::globalVariables("tot")
+utils::globalVariables(".")
+
+#' @importFrom gganimate transition_reveal enter_appear transition_layers animate gifski_renderer
+#' @importFrom magick magick_renderer image_read image_animate
+#' @importFrom utils globalVariables
+NULL

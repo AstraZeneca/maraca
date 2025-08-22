@@ -275,6 +275,45 @@ print.maraca <- function(x, ...) {
 }
 
 
+
+prep_binary_data <- function(df, outcome, max_grid_intercept){
+  `%>%` <- dplyr::`%>%`
+
+  plot_df <- df[df$outcome == outcome,]
+  plot_df <- plot_df[order(plot_df$x),]
+
+  # Bottom Horizontal Segment
+  plot_horizontal_df <- plot_df %>%
+    dplyr::group_by(outcome, arm) %>%
+    dplyr::summarize("xend" = max(x),
+                    "x" = min(x),
+                    "y" = min(y)) %>%
+    dplyr::ungroup()
+  
+  plot_top_horizontal_df <- plot_df %>%
+    dplyr::group_by(outcome, arm) %>%
+    dplyr::summarize("xend" = max_grid_intercept,
+                    "x" = max(x),
+                    "y" = max(y)) %>%
+    dplyr::ungroup()
+
+  # Vertical Segment
+  plot_vertical_df <- plot_df %>%
+    dplyr::group_by(outcome, arm) %>%
+    dplyr::summarize("x" = max(x),
+                    "yend" = max(y),
+                    "y" = min(y)) %>%
+    dplyr::ungroup()
+  
+  res <- list(
+    'bottom_horizontal_df'= plot_horizontal_df,
+    'top_horizontal_df'= plot_top_horizontal_df,
+    'vertical_df'= plot_vertical_df
+  )
+  return(res)
+}
+
+
 #' Creates and returns the plot of the maraca data.
 #'
 #' @param obj an object of S3 class 'maraca'
@@ -414,11 +453,11 @@ plot_maraca <- function(
     dplyr::slice_tail(n = 1) %>%
     dplyr::ungroup()
 
-  add_points$x <- 100
-  plotdata_ecdf <- rbind(
-    plotdata_ecdf,
-    add_points
-  )
+  # add_points$x <- 100
+  # plotdata_ecdf <- rbind(
+  #   plotdata_ecdf,
+  #   add_points
+  # )
 
   plotdata_ecdf <- plotdata_ecdf[order(plotdata_ecdf$x), ]
 
@@ -504,7 +543,11 @@ plot_maraca <- function(
     }
   }
 
+  # --- X-intercepts for categorical vertical lines --- 
+  x_categorical_gridlines <- cumsum(c(0, meta$proportion))[1:(length(step_outcomes)+1)]
+
   # Plot the information in the Maraca plot
+  plotdata$source <- 'gridlines'
   plot <- ggplot2::ggplot(plotdata) +
     ggplot2::geom_vline(
       xintercept = cumsum(c(0, meta$proportion)),
@@ -512,6 +555,7 @@ plot_maraca <- function(
     )
 
   if (!is.null(vline_data)) {
+    vline_data$source <- 'continuous_vlines'
     plot <- plot +
       ggplot2::geom_vline(
         mapping = ggplot2::aes(
@@ -526,49 +570,91 @@ plot_maraca <- function(
   }
 
   for (outcome in step_outcomes[which_tte]) {
+    outcome_data <- plotdata_ecdf[plotdata_ecdf$outcome == outcome, ]
+    outcome_data$source <- outcome
     plot <- plot +
-      ggplot2::geom_step(data =
-                           plotdata_ecdf[plotdata_ecdf$outcome == outcome, ],
+      ggplot2::geom_step(data = outcome_data,
                          aes(x = x, y = y, color = arm))
   }
 
+  # if (length(which_binary) > 0) {
+
+  #   tmp <- plotdata_ecdf[plotdata_ecdf$outcome %in%
+  #                          step_outcomes[which_binary], ]
+  #   tmp <- tmp[order(tmp$x), ]
+
+  #   if (step_types[length(step_types)] == "binary") {
+  #     tmp <- dplyr::slice_head(tmp, n = -2)
+  #   }
+
+  #   tmp1 <- tmp %>%
+  #     dplyr::group_by(outcome, arm) %>%
+  #     dplyr::summarize("xend" = max(x),
+  #                      "x" = min(x),
+  #                      "y" = min(y)) %>%
+  #     dplyr::ungroup()
+
+  #   tmp2 <- tmp %>%
+  #     dplyr::group_by(outcome, arm) %>%
+  #     dplyr::summarize("x" = max(x),
+  #                      "yend" = max(y),
+  #                      "y" = min(y)) %>%
+  #     dplyr::ungroup()
+
+  #   plot <- plot +
+  #     ggplot2::geom_segment(
+  #       data = tmp1,
+  #       aes(x = x, y = y, xend = xend, yend = y,
+  #           color = arm)
+  #     ) +
+  #     ggplot2::geom_segment(
+  #       data = tmp2,
+  #       aes(x = x, y = y, xend = x, yend = yend,
+  #           group = arm),
+  #       color = "darkgrey", linetype = 2
+  #     )
+  # }
+
   if (length(which_binary) > 0) {
 
-    tmp <- plotdata_ecdf[plotdata_ecdf$outcome %in%
-                           step_outcomes[which_binary], ]
-    tmp <- tmp[order(tmp$x), ]
-
-    if (step_types[length(step_types)] == "binary") {
-      tmp <- dplyr::slice_head(tmp, n = -2)
+      for (idx in which_binary){
+        # --- Plot Binary Category --- 
+        max_grid_intercept <- x_categorical_gridlines[idx+1]
+        outcome <- step_outcomes[idx]
+        binary_plot_data   <- prep_binary_data(df=plotdata_ecdf[plotdata_ecdf$x != 100,], 
+                                                outcome=outcome, 
+                                                max_grid_intercept=max_grid_intercept)
+        # if (idx == 4){
+        #   browser()
+        # }
+        binary_plot_data$bottom_horizontal$source <- paste0(outcome, '_bottom_horizontal')
+        binary_plot_data$top_horizontal$source <- paste0(outcome, '_top_horizontal')
+        binary_plot_data$vertical_df$source <- paste0(outcome, '_vertical')
+        binary_plot_data$bottom_horizontal$time <- as.numeric(1)
+        binary_plot_data$top_horizontal$time <- as.numeric(1)
+        binary_plot_data$vertical_df$time <- as.numeric(1)
+        # Plot Binary
+        plot <- plot +
+          # Horizontal Segment
+          ggplot2::geom_segment(
+            data = binary_plot_data$bottom_horizontal,
+            aes(x = x, y = y, xend = xend, yend = y,
+                color = arm)
+          ) +
+          ggplot2::geom_segment(
+            data = binary_plot_data$top_horizontal,
+            aes(x = x, y = y, xend = xend, yend = y,
+                color = arm)
+          ) +
+          # Vertical Segment
+          ggplot2::geom_segment(
+            data = binary_plot_data$vertical_df,
+            aes(x = x, y = y, xend = x, yend = yend,
+                group = arm),
+            color = "darkgrey", linetype = 2
+          )
+      }
     }
-
-    tmp1 <- tmp %>%
-      dplyr::group_by(outcome, arm) %>%
-      dplyr::summarize("xend" = max(x),
-                       "x" = min(x),
-                       "y" = min(y)) %>%
-      dplyr::ungroup()
-
-    tmp2 <- tmp %>%
-      dplyr::group_by(outcome, arm) %>%
-      dplyr::summarize("x" = max(x),
-                       "yend" = max(y),
-                       "y" = min(y)) %>%
-      dplyr::ungroup()
-
-    plot <- plot +
-      ggplot2::geom_segment(
-        data = tmp1,
-        aes(x = x, y = y, xend = xend, yend = y,
-            color = arm)
-      ) +
-      ggplot2::geom_segment(
-        data = tmp2,
-        aes(x = x, y = y, xend = x, yend = yend,
-            group = arm),
-        color = "darkgrey", linetype = 2
-      )
-  }
 
   if (step_types[length(step_types)] == "binary") {
 
@@ -580,6 +666,7 @@ plot_maraca <- function(
                        "x" = min(x),
                        "y" = max(y)) %>%
       dplyr::ungroup()
+    tmp$source <- 'last_horizontal'
 
     plot <- plot +
       ggplot2::geom_segment(
@@ -588,6 +675,26 @@ plot_maraca <- function(
             color = arm)
       )
   }
+
+  # Add last horizontal lines that span continuous outcome  
+  add_points <- plotdata_ecdf %>%
+    dplyr::group_by(arm) %>%
+    dplyr::slice_tail(n = 1) %>%
+    dplyr::ungroup()
+  add_end_points <- add_points 
+  add_end_points$xend <- 100
+
+
+  add_end_points$source <- 'continuous_horizontal'
+    plot <- plot +
+    ggplot2::geom_segment(
+      data = add_end_points,
+      aes(x = x, y = y, xend = xend, yend = y,
+          color = arm)
+    )
+
+  plotdata_last$source <- 'lastdata'
+  last_data$meta$source <- 'lastdata_meta'
 
   if (density_plot_type == "default") {
     if (last_type == "continuous") {

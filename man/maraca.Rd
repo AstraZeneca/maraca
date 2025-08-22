@@ -110,3 +110,27 @@ hce_test <- maraca(
   compute_win_odds = TRUE
 )
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/AstraZeneca/maraca}
+  \item Report bugs at \url{https://github.com/AstraZeneca/maraca/issues}
+}
+
+}
+\author{
+\strong{Maintainer}: Monika Huhn \email{monika.huhn@astrazeneca.com} (\href{https://orcid.org/0009-0000-7865-6008}{ORCID})
+
+Authors:
+\itemize{
+  \item Martin Karpefors \email{martin.karpefors@astrazeneca.com} (\href{https://orcid.org/0000-0003-3136-9882}{ORCID})
+  \item Samvel B. Gasparyan \email{samvel.gasparyan@astrazeneca.com} (\href{https://orcid.org/0000-0002-4797-2208}{ORCID})
+  \item Kevin Anderson \email{kevin.anderson1@astrazeneca.com} (\href{https://orcid.org/0000-0002-9446-7386}{ORCID})
+}
+
+Other contributors:
+\itemize{
+  \item Stefano Borini \email{stefano.borini@astrazeneca.com} [contributor]
+}
+
+}
