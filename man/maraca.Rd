@@ -95,8 +95,6 @@ An object of class 'maraca'. The object information must be
         considered private.
 }
 \description{
-Supports visual interpretation of hierarchical composite endpoints (HCEs). HCEs are complex constructs used as primary endpoints in clinical trials, combining outcomes of different types into ordinal endpoints, in which each patient contributes the most clinically important event (one and only one) to the analysis. See Karpefors M et al. (2022) \doi{10.1177/17407745221134949}.
-
 Creates the maraca analysis object as an S3 object of
 class 'maraca'.
 }
