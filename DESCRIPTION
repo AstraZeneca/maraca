@@ -39,6 +39,10 @@ Imports:
     checkmate (>= 2.1),
     patchwork(>= 1.0.0),
     lifecycle, 
+    gganimate (>= 1.0.7),
+    gifski (>= 1.32.0),
+    magick (>= 2.7.3),
+    transformr (>= 0.1.0)
 RoxygenNote: 7.3.2
 Suggests:
     knitr (>= 1.39),
@@ -47,9 +51,5 @@ Suggests:
     withr (>= 2.5.0),
     testthat (>= 3.1),
     rmarkdown,
-    gganimate (>= 1.0.7),
-    gifski (>= 1.32.0),
-    magick (>= 2.7.3),
-    transformr (>= 0.1.0),
 NeedsCompilation: no
 VignetteBuilder: knitr
