@@ -1597,8 +1597,8 @@ test_that("mosaicPlot", {
 
   # Flags check/win probabilities need to be calculated
   expect_error(mosaic_plot(mar, highlight_ties = "Yes"))
-  expect_error(mosaic_plot(mar, winning_prob = "Yes"))
-  expect_error(mosaic_plot(mar_without_win_odds, winning_prob = TRUE))
+  expect_error(mosaic_plot(mar, win_prob = "Yes"))
+  expect_error(mosaic_plot(mar_without_win_odds, win_prob = TRUE))
   expect_error(mosaic_plot(mar, diagonal_line = "Yes"))
 
   # Check that existing themes can be provided but not others
@@ -1613,7 +1613,7 @@ test_that("mosaicPlot", {
   expect_true(inherits(plot_obj, "ggplot"))
 
   # Check that winning probability label is created
-  plot_obj_winning <- mosaic_plot(mar, winning_prob  = TRUE)
+  plot_obj_winning <- mosaic_plot(mar, win_prob  = TRUE)
   expect_true(any(sapply(plot_obj_winning$layers,
                          function(l) {
                            inherits(l$geom, "GeomLabel")
