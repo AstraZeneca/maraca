@@ -181,7 +181,8 @@ mosaic_plot.maraca <- function(x,
   plot <- ggplot2::ggplot() +
     ggplot2::geom_rect(aes(xmin = 0, xmax = 1, ymin = 0, ymax = 1,
                            fill = "Win")) +
-    ggplot2::geom_area(aes(x = ctrl_line, y = act_line, fill = "Loss")) +
+    ggplot2::geom_area(aes(x = ctrl_line, y = act_line, fill = "Loss"),
+                       stat = "identity",  position = "identity") +
     ggplot2::geom_hline(yintercept = cum_props_act, color = "white") +
     ggplot2::geom_vline(xintercept = cum_props_ctrl, color = "white") +
     ggplot2::geom_line(aes(x = ctrl_line, y = act_line), color = "white",

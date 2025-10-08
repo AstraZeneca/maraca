@@ -361,7 +361,7 @@ test_that("wrongParameters", {
         value = "AVAL0"
       ), fixed_followup_days
     ),
-    regexp = "Can't rename columns that don't exist"
+    regexp = "Assertion on 'column_names' failed:"
   )
 
   expect_error(

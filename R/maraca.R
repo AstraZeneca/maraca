@@ -111,6 +111,9 @@ maraca <- function(
     names(column_names),
     permutation.of = c("outcome", "arm", "value")
   )
+  checkmate::assert_subset(column_names,
+                           choices = names(data),
+                           empty.ok = FALSE)
 
   checkmate::assert_numeric(fixed_followup_days)
 
