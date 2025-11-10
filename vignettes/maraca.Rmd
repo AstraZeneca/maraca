@@ -179,6 +179,19 @@ plot(hce_dat, compute_win_odds = TRUE, lowerBetter = TRUE,
      trans = "reverse")
 ```
 
+In some cases, there might be outliers that skew the displayed range for the
+continuous endpoint. This might make it difficult to visualize the differences
+between the treatment arms. There is an option to display the continuous
+endpoint without the outliers by setting the parameter `remove_outliers = TRUE`
+in the `plot.maraca()` or `plot.hce()` function.
+We define outliers here according to the common boxplot calculation definition:
+any data outside the range 25th percentile - 1.5 * IQR (inter-quartile range)
+and 75th percentile + 1.5 * IQR.
+
+```{r maraca12, eval = TRUE, fig.width = 7, fig.height = 6}
+plot(mar, continuous_grid_spacing_x = 20, remove_outliers = TRUE)
+```
+
 # References
 
 Martin Karpefors, Daniel Lindholm and Samvel B. Gasparyan, "The maraca plot -- a novel visualization of hierarchical composite endpoints", Clinical Trials (2022).

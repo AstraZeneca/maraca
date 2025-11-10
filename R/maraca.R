@@ -294,6 +294,10 @@ print.maraca <- function(x, ...) {
 #'        NULL (default). By default (vline_type = NULL), vline_type will be
 #'        set to "median" for a continuous last endpoint and to "mean" for
 #'        a binary last endpoint.
+#' @param remove_outliers Flag indicating for last endpoint if outliers are
+#'        supposed to be displayed. If TRUE, the outliers are removed and
+#'        only the range not including them is displayed. Only implemented
+#'        for continuous endpoints. Default value FALSE.
 #' @param theme Choose theme to style the plot. The default theme is "maraca".
 #'        Options are "maraca", "maraca_old", "color1", "color2" and none".
 #'        For more details, check the vignette called
@@ -319,6 +323,7 @@ plot_maraca <- function(
     trans = c("identity", "log", "log10", "sqrt", "reverse")[1],
     density_plot_type = c("default", "violin", "box", "scatter")[1],
     vline_type = NULL,
+    remove_outliers = FALSE,
     theme = "maraca") {
 
   checkmate::assert_class(obj, "maraca")
@@ -328,6 +333,7 @@ plot_maraca <- function(
     stop("continuous_grid_spacing_x has to be numeric or NULL")
   }
 
+  checkmate::assert_flag(remove_outliers)
   checkmate::assert_string(trans)
   checkmate::assert_subset(trans,
                            choices = c("identity", "log", "log10",
@@ -433,10 +439,81 @@ plot_maraca <- function(
 
   if (last_type == "continuous") {
 
+    if (trans %in% c("log", "log10", "sqrt")) {
+
+      if (min(plotdata_last$value) < 0) {
+        if (density_plot_type %in% c("default", "violin", "box")) {
+          stop(paste("Continuous endpoint has negative values - the",
+                     trans, "transformation cannot be accurately calculated."))
+        } else {
+          warning(paste("Continuous endpoint has negative values - the",
+                        trans, "transformation will result in missing values."))
+        }
+      }
+
+      plotdata_last$value <- eval(parse(text = paste0(trans,
+                                                      "(plotdata_last$value)")))
+
+      range <- c(min(plotdata_last$value, na.rm = TRUE),
+                 max(plotdata_last$value, na.rm = TRUE))
+      plotdata_last$x <- .to_rangeab(plotdata_last$value, start_last_endpoint,
+                                     range[1], range[2])
+    }
+
+    boxplot_data <- .calculate_boxplot_stats(plotdata_last)
+
+    if (density_plot_type %in% c("default", "violin")) {
+      violin_list <- .calculate_violin_stats(plotdata_last)
+      violin_data <- violin_list$data
+    }
+
+    if (remove_outliers && !is.null(boxplot_data$outlier)) {
+      outlier_idx <- do.call("paste", plotdata_last[, c("x", "y", "arm")]) %in%
+        do.call("paste", boxplot_data$outlier)
+
+      plotdata_last <- plotdata_last[!outlier_idx, ]
+
+      if (density_plot_type %in% c("default", "violin")) {
+        violin_inliers <- unlist(apply(boxplot_data$stats, 1, function(row) {
+          which(violin_data$arm == row["arm"] &
+                  violin_data$x >= row["xmin"] &
+                  violin_data$x <= row["xmax"])
+        }), use.names = FALSE)
+        violin_data <- violin_data[sort(violin_inliers), ]
+      }
+
+      current_min <- min(boxplot_data$stats$xmin, na.rm = TRUE)
+      current_max <- max(boxplot_data$stats$xmax, na.rm = TRUE)
+
+      if (density_plot_type %in% c("default", "violin")) {
+        violin_data$x <- .to_rangeab(violin_data$x, start_last_endpoint,
+                                     current_min, current_max)
+      }
+
+      if (density_plot_type %in% c("default", "box")) {
+        boxplot_data$stats <- .rescale_boxplot_stats(boxplot_data$stats,
+                                                     start_last_endpoint,
+                                                     current_min, current_max)
+        boxplot_data$outlier <- NULL
+      }
+
+      plotdata_last$x <- .to_rangeab(plotdata_last$x, start_last_endpoint,
+                                     current_min, current_max)
+
+      last_data$meta$median <- .to_rangeab(last_data$meta$median,
+                                           start_last_endpoint,
+                                           current_min, current_max)
+      last_data$meta$average <- .to_rangeab(last_data$meta$average,
+                                            start_last_endpoint,
+                                            current_min, current_max)
+    }
+
     range <- c(min(plotdata_last$value, na.rm = TRUE),
                max(plotdata_last$value, na.rm = TRUE))
 
     if (trans %in% c("log", "log10", "sqrt")) {
+
+      range <- .untransform_range(trans, range)
       minor_grid <- switch(trans,
                            "log" = .logTicks(range),
                            "log10" = .log10Ticks(range),
@@ -470,19 +547,8 @@ plot_maraca <- function(
       dplyr::select("x" = average, arm)
   }
 
+
   if (trans %in% c("log", "log10", "sqrt")) {
-
-    if (range[1] < 0) {
-      warning(paste("Continuous endpoint has negative values - the",
-                    trans, "transformation will result in missing values."))
-    }
-    plotdata_last$value <- eval(parse(text = paste0(trans,
-                                                    "(plotdata_last$value)")))
-    range <- c(min(plotdata_last$value, na.rm = TRUE),
-               max(plotdata_last$value, na.rm = TRUE))
-    plotdata_last$x <- .to_rangeab(plotdata_last$value, start_last_endpoint,
-                                   range[1], range[2])
-
     if (!is.null(vline_data)) {
       vline_data$x <- eval(parse(text = paste0(trans, "(vline_data$x)")))
     }
@@ -501,6 +567,17 @@ plot_maraca <- function(
     minor_grid_x <- rev(minor_grid_x)
     minor_grid <- rev(minor_grid)
     plotdata_last$x <- start_last_endpoint - plotdata_last$x + 100
+
+    if (last_type == "continuous" &&
+          density_plot_type %in% c("default", "violin")) {
+      violin_data$x <- start_last_endpoint - violin_data$x + 100
+    }
+
+    if (last_type == "continuous" &&
+          density_plot_type %in% c("default", "box")) {
+      boxplot_data$stats <- .reverse_boxplot_stats(boxplot_data$stats,
+                                                   start_last_endpoint)
+    }
 
     if (!is.null(vline_data)) {
       vline_data$x <- start_last_endpoint - vline_data$x + 100
@@ -592,18 +669,28 @@ plot_maraca <- function(
       )
   }
 
+  width <- diff(range(plotdata_last$y))
+
   if (density_plot_type == "default") {
     if (last_type == "continuous") {
       plot <- plot +
-        ggplot2::geom_violin(
-          data = plotdata_last,
-          aes(x = x, y = y, colour = arm, fill = arm), alpha = 0.5
-        ) + ggplot2::geom_boxplot(
-        data = plotdata_last,
-        aes(x = x, y = y, colour = arm, fill = arm), alpha = 0.5,
-        width =
-          abs(diff(as.numeric(unique(plotdata_last$y)))) / 3
-      )
+        ggplot2::geom_polygon(mapping = aes(x, violinwidth, group = arm,
+                                            fill = arm, colour = arm),
+                              data = violin_data, alpha = 0.5) +
+        ggplot2::geom_boxplot(data = boxplot_data$stats,
+                              mapping = aes(xmin = xmin, xlower = xlower,
+                                            xmiddle = xmiddle, xupper = xupper,
+                                            xmax = xmax, y = y, colour = arm,
+                                            fill = arm),
+                              width = (width / 3), alpha = 0.5,
+                              stat = "identity", orientation = "y")
+
+      if (!is.null(boxplot_data$outlier)) {
+        plot <- plot +
+          ggplot2::geom_point(mapping = aes(x = x, y = y,
+                                            colour = arm, fill = arm),
+                              data = boxplot_data$outlier)
+      }
     } else if (last_type == "binary") {
       plot <- plot +
         ggplot2::geom_polygon(data = plotdata_last,
@@ -617,16 +704,36 @@ plot_maraca <- function(
     }
   } else if (density_plot_type == "violin") {
     plot <- plot +
-      ggplot2::geom_violin(
-        data = plotdata_last,
-        aes(x = x, y = y, colour = arm, fill = arm), alpha = 0.5
-      )
+      ggplot2::geom_polygon(mapping = aes(x, violinwidth, group = arm,
+                                          fill = arm, colour = arm),
+                            data = violin_data, alpha = 0.5)
   } else if (density_plot_type == "box") {
     plot <- plot +
       ggplot2::geom_boxplot(
-        data = plotdata_last,
-        aes(x = x, y = y, colour = arm, fill = arm), alpha = 0.5
+        data = boxplot_data$stats,
+        mapping = aes(xmin = xmin, xlower = xlower, xmiddle = xmiddle,
+                      xupper = xupper, xmax = xmax, y = y,
+                      colour = arm, fill = arm), width = 0.75 * width,
+        alpha = 0.5, stat = "identity", orientation = "y"
+      ) +
+      ggplot2::geom_segment(
+        data = boxplot_data$stats,
+        mapping = aes(x = xmin,
+                      y = y - width * 0.1, yend = y + width * 0.1,
+                      colour = arm)
+      ) +
+      ggplot2::geom_segment(
+        data = boxplot_data$stats,
+        mapping = aes(x = xmax,
+                      y = y - width * 0.1, yend = y + width * 0.1,
+                      colour = arm)
       )
+    if (!is.null(boxplot_data$outlier)) {
+      plot <- plot +
+        ggplot2::geom_point(mapping = aes(x = x, y = y,
+                                          colour = arm, fill = arm),
+                            data = boxplot_data$outlier)
+    }
   } else if (density_plot_type == "scatter") {
     plot <- plot +
       ggplot2::geom_jitter(
@@ -671,6 +778,8 @@ plot_maraca <- function(
       color = "grey60"
     )
 
+  attr(plot, "density_type") <- density_plot_type
+
   if (!is.null(win_odds)) {
 
     plot <- .add_win_odds_to_plot(plot, win_odds, 0, Inf,
@@ -686,7 +795,11 @@ plot_maraca <- function(
     )
 
     # Add win odds meta data as a label so retrievable
-    plot$labels$win.odds <- params
+    attr(plot, "win.odds") <- params
+  }
+  if (last_type == "continuous" &&
+        (density_plot_type %in% c("default", "violin"))) {
+    attr(plot, "violin_scaling_factor") <- violin_list$scaling_factor
   }
 
   plot <- switch(theme,
@@ -752,12 +865,10 @@ validate_maraca_plot <- function(x,  ...) {
   boxstat_data <- .create_validation_box(layers, x, arms)
   violin_data <- .create_validation_violin(layers, x, arms)
 
-  possible_plot_types <- c("GeomViolin", "GeomBoxplot", "GeomPoint")
-  plot_type <- paste(possible_plot_types[possible_plot_types %in% layers],
-                     collapse = "+")
+  plot_type <- attr(x, "density_type")
 
-  if ("win.odds" %in% names(x$labels)) {
-    params <- x$labels$win.odds
+  if ("win.odds" %in% names(attributes(x))) {
+    params <- attr(x, "win.odds")
     wo_stats <- c(winodds = params$win_odds,
                   lowerCI = params$lower_ci,
                   upperCI = params$upper_ci,
@@ -797,6 +908,10 @@ validate_maraca_plot <- function(x,  ...) {
 #'        NULL (default). By default (vline_type = NULL), vline_type will be
 #'        set to "median" for a continuous last endpoint and to "mean" for
 #'        a binary last endpoint.
+#' @param remove_outliers Flag indicating for last endpoint if outliers are
+#'        supposed to be displayed. If TRUE, the outliers are removed and
+#'        only the range not including them is displayed. Only implemented
+#'        for continuous endpoints. Default value FALSE.
 #' @param theme Choose theme to style the plot. The default theme is "maraca".
 #'        Options are "maraca", "maraca_old", "color1", "color2" and none".
 #'        For more details, check the vignette called
@@ -824,11 +939,12 @@ plot.maraca <- function(
     trans = c("identity", "log", "log10", "sqrt", "reverse")[1],
     density_plot_type = c("default", "violin", "box", "scatter")[1],
     vline_type = NULL,
+    remove_outliers = FALSE,
     theme = "maraca",
     ...) {
   plot_maraca(x, continuous_grid_spacing_x,
               trans, density_plot_type,
-              vline_type, theme)
+              vline_type, remove_outliers, theme)
 }
 #' Generic function to plot the hce object using plot().
 #'
@@ -862,6 +978,10 @@ plot.maraca <- function(
 #'        NULL (default). By default (vline_type = NULL), vline_type will be
 #'        set to "median" for a continuous last endpoint and to "mean" for
 #'        a binary last endpoint.
+#' @param remove_outliers Flag indicating for last endpoint if outliers are
+#'        supposed to be displayed. If TRUE, the outliers are removed and
+#'        only the range not including them is displayed. Only implemented
+#'        for continuous endpoints. Default value FALSE.
 #' @param fixed_followup_days Not needed if HCE object contains information
 #'                            on fixed follow-up days in the study
 #'                            (column PADY or TTEfixed,
@@ -924,6 +1044,7 @@ plot.hce <- function(x,
                      density_plot_type = c("default", "violin",
                                            "box", "scatter")[1],
                      vline_type = NULL,
+                     remove_outliers = FALSE,
                      fixed_followup_days = NULL,
                      compute_win_odds = FALSE,
                      step_types = "tte",
@@ -955,5 +1076,6 @@ plot.hce <- function(x,
                                       lowerBetter = lowerBetter)
 
   plot_maraca(maraca_obj, continuous_grid_spacing_x,
-              trans, density_plot_type, vline_type, theme)
+              trans, density_plot_type, vline_type, remove_outliers,
+              theme)
 }

@@ -1181,10 +1181,10 @@ test_that("validationFunction", {
   expect_named(val_res_box, expected_names, ignore.order = TRUE)
   expect_named(val_res_scatter, expected_names, ignore.order = TRUE)
 
-  expect_equal(val_res_def$plot_type, "GeomViolin+GeomBoxplot")
-  expect_equal(val_res_violin$plot_type, "GeomViolin")
-  expect_equal(val_res_box$plot_type, "GeomBoxplot")
-  expect_equal(val_res_scatter$plot_type, "GeomPoint")
+  expect_equal(val_res_def$plot_type, "default")
+  expect_equal(val_res_violin$plot_type, "violin")
+  expect_equal(val_res_box$plot_type, "box")
+  expect_equal(val_res_scatter$plot_type, "scatter")
 
   expected_names <- c(step_outcomes, last_outcome)
   expect_named(val_res_def$proportions, expected_names, ignore.order = TRUE)
@@ -1274,7 +1274,7 @@ test_that("validationFunction", {
     dplyr::summarize("mean" = mean(x))
   violin_stats_from_plot <- val_res_violin$violin_data %>%
     dplyr::group_by(group) %>%
-    dplyr::summarize("mean" = weighted.mean(x, density))
+    dplyr::summarize("mean" = weighted.mean(x, abs(violinwidth - y)))
   expect_equal(y_values_violin, y_values$y)
   expect_equal(violin_stats_from_plot$mean, violin_stats$mean, tolerance = 0.1)
 
@@ -1337,15 +1337,15 @@ test_that("scaleTransform", {
     3 * 365
   )
 
-  expect_warning(plot(mar, trans = "log10"),
-                 paste("Continuous endpoint has negative values - the log10",
-                       "transformation will result in missing values."))
-  expect_warning(plot(mar, trans = "log"),
-                 paste("Continuous endpoint has negative values - the log",
-                       "transformation will result in missing values."))
-  expect_warning(plot(mar, trans = "sqrt"),
-                 paste("Continuous endpoint has negative values - the sqrt",
-                       "transformation will result in missing values."))
+  expect_error(plot(mar, trans = "log10"),
+               paste("Continuous endpoint has negative values - the log10",
+                     "transformation cannot be accurately calculated."))
+  expect_error(plot(mar, trans = "log"),
+               paste("Continuous endpoint has negative values - the log",
+                     "transformation cannot be accurately calculated."))
+  expect_error(plot(mar, trans = "sqrt"),
+               paste("Continuous endpoint has negative values - the sqrt",
+                     "transformation cannot be accurately calculated."))
 
   dat[dat$GROUP == "Continuous outcome", "AVAL0"] <-
     dat[dat$GROUP == "Continuous outcome", "AVAL0"] + 50

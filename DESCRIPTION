@@ -1,5 +1,5 @@
 Package: maraca
-Version: 1.0.1
+Version: 1.1.0
 Type: Package
 Title: The Maraca Plot: Visualizing Hierarchical Composite Endpoints
 License: Apache License (>= 2)
@@ -27,7 +27,7 @@ Encoding: UTF-8
 LazyData: true
 Depends:
     R (>= 3.5),
-    hce (>= 0.5),
+    hce (>= 0.8.5),
     ggplot2 (>= 3.3)
 Imports:
     dplyr (>= 1.0),

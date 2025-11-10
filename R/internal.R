@@ -11,6 +11,14 @@
   })
 }
 
+# Range in original units
+.untransform_range <- function(trans, range) {
+  switch(trans,
+         "log" = exp(range),
+         "log10" = 10^(range),
+         "sqrt" = range^2)
+}
+
 # Computes the metainfo from the internal HCE data.
 .compute_metainfo <- function(hce_dat) {
   n <- dplyr::n
@@ -567,4 +575,140 @@
   }
 
   return(vline_type)
+}
+
+
+.calculate_violin_stats <- function(data) {
+
+  arm_info <- unique(data[, c("arm", "y")])
+
+  width <- diff(range(data$y)) * 0.9
+
+  df_arm1 <- data[data$y == arm_info[1, ]$y, ]
+  df_arm2 <- data[data$y == arm_info[2, ]$y, ]
+
+  density1 <- density(df_arm1$x, n = 512, bw = "nrd0",
+                      adjust = 1, kernel = "gaussian",
+                      from = min(df_arm1$x), to = max(df_arm1$x))
+
+  density2 <- density(df_arm2$x, n = 512, bw = "nrd0",
+                      adjust = 1, kernel = "gaussian",
+                      from = min(df_arm2$x), to = max(df_arm2$x))
+
+  quantiles_arm1 <- unname(quantile(df_arm1$x, probs = c(0.25, 0.5, 0.75)))
+  quantiles_arm2 <- unname(quantile(df_arm2$x, probs = c(0.25, 0.5, 0.75)))
+
+  density_quants1 <- approx(density1$x, density1$y, xout = quantiles_arm1,
+                            ties = "ordered")$y
+  density_quants2 <- approx(density2$x, density2$y, xout = quantiles_arm2,
+                            ties = "ordered")$y
+
+  density_df <- data.frame(
+    "x" = c(density1$x, quantiles_arm1, density2$x, quantiles_arm2),
+    "y" = c(density1$y, density_quants1, density2$y, density_quants2),
+    "arm_y" = rep(c(arm_info[1, ]$y, arm_info[2, ]$y), each = 515),
+    "arm" = rep(as.character(c(arm_info[1, ]$arm, arm_info[2, ]$arm)),
+                each = 515)
+  )
+
+  density_df <- density_df[order(density_df$arm, density_df$x), ]
+  density_df_lower <- density_df[order(density_df$arm, density_df$x,
+                                       decreasing = c(FALSE, TRUE),
+                                       method = "radix"), ]
+
+  density_df$violinwidth <- density_df$arm_y +
+    (density_df$y / max(density_df$y) * (width / 2))
+  density_df_lower$violinwidth <- density_df_lower$arm_y -
+    (density_df_lower$y / max(density_df_lower$y) * (width / 2))
+
+  density_df <- rbind(density_df,
+                      density_df_lower)
+
+  return(list("data" = density_df,
+              "scaling_factor" = max(density_df$y)))
+}
+
+.calculate_boxplot_stats <- function(data) {
+
+  df_list <- lapply(unique(data$y), function(y) {
+    tmp <- data[data$y == y, ]
+    qs <- c(0, 0.25, 0.5, 0.75, 1)
+    stats <- as.numeric(stats::quantile(tmp$x, qs))
+    names(stats) <- c("xmin", "xlower", "xmiddle", "xupper", "xmax")
+    iqr <- diff(stats[c(2, 4)])
+    lower_end <- stats[2] - 1.5 * iqr
+    upper_end <- stats[4] + 1.5 * iqr
+    outliers <- tmp$x < lower_end | tmp$x > upper_end
+    if (any(outliers)) {
+      stats[c(1, 5)] <- range(c(stats[2:4], tmp$x[!outliers]), na.rm = TRUE)
+    }
+
+    stat_df <- data.frame(t(stats),
+                          "lower_end" = lower_end,
+                          "upper_end" = upper_end,
+                          "y" = y,
+                          "arm" = unique(tmp$arm))
+    if (any(outliers)) {
+      outlier_df <- data.frame("x" = tmp$x[outliers],
+                               "y" = y,
+                               "arm" = unique(tmp$arm))
+    } else {
+      outlier_df <- NULL
+    }
+    return(list("stats" = stat_df, "outlier" = outlier_df))
+  })
+
+  boxplot_stats <- do.call("rbind", lapply(df_list, function(x) {
+    x$stats
+  }))
+  outlier_stats <- do.call("rbind", lapply(df_list, function(x) {
+    x$outlier
+  }))
+
+  return(list("stats" = boxplot_stats, "outlier" = outlier_stats))
+
+}
+
+.rescale_boxplot_stats <- function(boxplot_data, start_x,
+                                   current_min, current_max) {
+
+  boxplot_data$xmin <- .to_rangeab(boxplot_data$xmin, start_x,
+                                   current_min, current_max)
+  boxplot_data$xlower <- .to_rangeab(boxplot_data$xlower, start_x,
+                                     current_min, current_max)
+  boxplot_data$xmiddle <- .to_rangeab(boxplot_data$xmiddle, start_x,
+                                      current_min, current_max)
+  boxplot_data$xupper <- .to_rangeab(boxplot_data$xupper, start_x,
+                                     current_min, current_max)
+  boxplot_data$xmax <- .to_rangeab(boxplot_data$xmax, start_x,
+                                   current_min, current_max)
+
+  return(boxplot_data)
+}
+
+.reverse_boxplot_stats <- function(boxplot_data, start_x) {
+
+  boxplot_data$xmin <- start_x - boxplot_data$xmin + 100
+  boxplot_data$xlower <- start_x - boxplot_data$xlower + 100
+  boxplot_data$xmiddle <- start_x - boxplot_data$xmiddle + 100
+  boxplot_data$xupper <- start_x - boxplot_data$xupper + 100
+  boxplot_data$xmax <- start_x - boxplot_data$xmax + 100
+
+  return(boxplot_data)
+}
+
+.trans_boxplot_stats <- function(boxplot_data, trans) {
+
+  boxplot_data$xmin <- eval(parse(text = paste0(trans,
+                                                "(boxplot_data$xmin)")))
+  boxplot_data$xlower <- eval(parse(text = paste0(trans,
+                                                  "(boxplot_data$xlower)")))
+  boxplot_data$xmiddle <- eval(parse(text = paste0(trans,
+                                                   "(boxplot_data$xmiddle)")))
+  boxplot_data$xupper <- eval(parse(text = paste0(trans,
+                                                  "(boxplot_data$xupper)")))
+  boxplot_data$xmax <- eval(parse(text = paste0(trans,
+                                                "(boxplot_data$xmax)")))
+
+  return(boxplot_data)
 }
