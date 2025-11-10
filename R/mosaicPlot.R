@@ -4,12 +4,12 @@
 #' active treatment group and a control group, highlighting areas of "Wins",
 #' "Losses" and "Ties" based on endpoint hierarchy.
 #'
-#' Implemented for objects of type 'maraca' and 'hce'.
+#' Implemented for objects of type 'maraca' and 'adhce'.
 #'
 #' Check the vignette "Maraca Plots - Introduction to the Mosaic plot"
 #' for more details.
 #'
-#' @param x an object of S3 class 'maraca' or 'hce'.
+#' @param x an object of S3 class 'maraca' or 'adhce'.
 #' @param theme Choose theme to style the plot. The default theme is "maraca".
 #'        Options are "maraca", "color1", "color2" and "none".
 #'        For more details, check the vignette called
@@ -95,7 +95,7 @@ mosaic_plot <- function(x, ...) {
 mosaic_plot.default <- function(x,
                                 ...) {
   paste0("mosaic_plot() function can only handle inputs of class ",
-         "'hce' or 'maraca'. Your input has class ", class(x), ".")
+         "'adhce' or 'maraca'. Your input has class ", class(x), ".")
 }
 
 #' @rdname mosaic_plot
@@ -241,16 +241,16 @@ mosaic_plot.maraca <- function(x,
 
 #' @rdname mosaic_plot
 #' @export
-mosaic_plot.hce <- function(x, step_outcomes = NULL,
-                            last_outcome = "C",
-                            arm_levels = c(active = "A", control = "P"),
-                            fixed_followup_days = NULL,
-                            theme = "maraca",
-                            highlight_ties = FALSE,
-                            win_prob = FALSE,
-                            diagonal_line = TRUE,
-                            lowerBetter = FALSE,
-                            ...) {
+mosaic_plot.adhce <- function(x, step_outcomes = NULL,
+                              last_outcome = "C",
+                              arm_levels = c(active = "A", control = "P"),
+                              fixed_followup_days = NULL,
+                              theme = "maraca",
+                              highlight_ties = FALSE,
+                              win_prob = FALSE,
+                              diagonal_line = TRUE,
+                              lowerBetter = FALSE,
+                              ...) {
 
   # Create maraca object
   maraca_dat <- .maraca_from_hce_data(x, step_outcomes,

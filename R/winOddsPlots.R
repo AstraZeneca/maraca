@@ -10,7 +10,7 @@
 #'
 #' Check the vignette "Maraca Plots - Plotting win odds" for more details.
 #'
-#' @param x an object of S3 class 'maraca' or 'hce'.
+#' @param x an object of S3 class 'maraca' or 'adhce'.
 #' @param theme Choose theme to style the plot. The default theme is "maraca".
 #'        Options are "maraca", "color1", "color2" and none".
 #'        For more details, check the vignette called
@@ -88,7 +88,7 @@ component_plot <- function(x, ...) {
 component_plot.default <- function(x,
                                    ...) {
   paste0("component_plot() function can only handle inputs of class ",
-         "'hce' or 'maraca'. Your input has class ", class(x), ".")
+         "'adhce' or 'maraca'. Your input has class ", class(x), ".")
 }
 
 
@@ -126,13 +126,13 @@ component_plot.maraca <- function(x,
 
 #' @rdname component_plot
 #' @export
-component_plot.hce <- function(x, step_outcomes = NULL,
-                               last_outcome = "C",
-                               arm_levels = c(active = "A", control = "P"),
-                               fixed_followup_days = NULL,
-                               theme = "maraca",
-                               lowerBetter = FALSE,
-                               ...) {
+component_plot.adhce <- function(x, step_outcomes = NULL,
+                                 last_outcome = "C",
+                                 arm_levels = c(active = "A", control = "P"),
+                                 fixed_followup_days = NULL,
+                                 theme = "maraca",
+                                 lowerBetter = FALSE,
+                                 ...) {
 
   # Create maraca object
   maraca_dat <- .maraca_from_hce_data(x, step_outcomes,
@@ -165,7 +165,7 @@ component_plot.hce <- function(x, step_outcomes = NULL,
 #' Generic function to create a plot showing the components used in
 #' calculating win odds (wins and ties) cumulated for all
 #' outcomes for a hierarchical endpoint.
-#' Implemented for objects of type 'maraca' and 'hce'.
+#' Implemented for objects of type 'maraca' and 'adhce'.
 #'
 #' Note that for this plot, if applying to a maraca object, in the
 #' original maraca() function run the argument "compute_win_odds" has
@@ -173,7 +173,7 @@ component_plot.hce <- function(x, step_outcomes = NULL,
 #'
 #' Check the vignette "Maraca Plots - Plotting win odds" for more details.
 #'
-#' @param x an object of S3 class 'maraca' or 'hce'.
+#' @param x an object of S3 class 'maraca' or 'adhce'.
 #' @param theme Choose theme to style the plot. The default theme is "maraca".
 #'        Options are "maraca", "color1", "color2" and none".
 #'        For more details, check the vignette called
@@ -261,7 +261,7 @@ dustin_plot <- cumulative_plot
 #' @export
 cumulative_plot.default <- function(x, ...) {
   paste0("cumulative_plot() function can only handle inputs of class ",
-         "'hce' or 'maraca'. Your input has class ", class(x), ".")
+         "'adhce' or 'maraca'. Your input has class ", class(x), ".")
 }
 
 #' @rdname cumulative_plot
@@ -301,15 +301,15 @@ cumulative_plot.maraca <- function(x, theme = "maraca",
 
 #' @rdname cumulative_plot
 #' @export
-cumulative_plot.hce <- function(x, step_outcomes = NULL,
-                                last_outcome = "C",
-                                arm_levels = c(active = "A", control = "P"),
-                                fixed_followup_days = NULL,
-                                theme = "maraca",
-                                include = c("win odds", "win ratio"),
-                                reverse = FALSE,
-                                lowerBetter = FALSE,
-                                ...) {
+cumulative_plot.adhce <- function(x, step_outcomes = NULL,
+                                  last_outcome = "C",
+                                  arm_levels = c(active = "A", control = "P"),
+                                  fixed_followup_days = NULL,
+                                  theme = "maraca",
+                                  include = c("win odds", "win ratio"),
+                                  reverse = FALSE,
+                                  lowerBetter = FALSE,
+                                  ...) {
 
   # Create maraca object
   maraca_dat <- .maraca_from_hce_data(x, step_outcomes,

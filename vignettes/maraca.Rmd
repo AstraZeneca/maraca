@@ -168,7 +168,7 @@ could be of interest when lower values of the continuous outcome
 are better than higher ones. In such a case, one also has to make
 sure that the win odds are calculated correctly by 
 including the parameter `lowerBetter = TRUE` in the `maraca()` or
-`plot.hce()` function.
+`plot.adhce()` function.
 ```{r fig.width = 7, fig.height = 6}
 Rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
 Rates_P <- c(2.47, 2.24, 2.9, 4, 6)
@@ -183,7 +183,7 @@ In some cases, there might be outliers that skew the displayed range for the
 continuous endpoint. This might make it difficult to visualize the differences
 between the treatment arms. There is an option to display the continuous
 endpoint without the outliers by setting the parameter `remove_outliers = TRUE`
-in the `plot.maraca()` or `plot.hce()` function.
+in the `plot.maraca()` or `plot.adhce()` function.
 We define outliers here according to the common boxplot calculation definition:
 any data outside the range 25th percentile - 1.5 * IQR (inter-quartile range)
 and 75th percentile + 1.5 * IQR.

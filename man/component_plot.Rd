@@ -4,7 +4,7 @@
 \alias{component_plot}
 \alias{component_plot.default}
 \alias{component_plot.maraca}
-\alias{component_plot.hce}
+\alias{component_plot.adhce}
 \title{Plotting components of win odds}
 \usage{
 component_plot(x, ...)
@@ -13,7 +13,7 @@ component_plot(x, ...)
 
 \method{component_plot}{maraca}(x, theme = "maraca", ...)
 
-\method{component_plot}{hce}(
+\method{component_plot}{adhce}(
   x,
   step_outcomes = NULL,
   last_outcome = "C",
@@ -25,7 +25,7 @@ component_plot(x, ...)
 )
 }
 \arguments{
-\item{x}{an object of S3 class 'maraca' or 'hce'.}
+\item{x}{an object of S3 class 'maraca' or 'adhce'.}
 
 \item{\dots}{not used}
 

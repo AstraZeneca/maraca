@@ -4,7 +4,7 @@
 \alias{mosaic_plot}
 \alias{mosaic_plot.default}
 \alias{mosaic_plot.maraca}
-\alias{mosaic_plot.hce}
+\alias{mosaic_plot.adhce}
 \title{Mosaic plot}
 \usage{
 mosaic_plot(x, ...)
@@ -20,7 +20,7 @@ mosaic_plot(x, ...)
   ...
 )
 
-\method{mosaic_plot}{hce}(
+\method{mosaic_plot}{adhce}(
   x,
   step_outcomes = NULL,
   last_outcome = "C",
@@ -35,7 +35,7 @@ mosaic_plot(x, ...)
 )
 }
 \arguments{
-\item{x}{an object of S3 class 'maraca' or 'hce'.}
+\item{x}{an object of S3 class 'maraca' or 'adhce'.}
 
 \item{\dots}{not used}
 
@@ -103,7 +103,7 @@ active treatment group and a control group, highlighting areas of "Wins",
 "Losses" and "Ties" based on endpoint hierarchy.
 }
 \details{
-Implemented for objects of type 'maraca' and 'hce'.
+Implemented for objects of type 'maraca' and 'adhce'.
 
 Check the vignette "Maraca Plots - Introduction to the Mosaic plot"
 for more details.

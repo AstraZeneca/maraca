@@ -393,7 +393,7 @@ test_that("wrongParameters", {
   # Test plot functions only work with maraca objects
   expect_error(plot_maraca(123), regexp = "Must inherit")
 
-  # Test plot.hce input
+  # Test plot.adhce input
   rates_a <- c(1.72, 1.74, 0.58, 1.5, 1)
   rates_p <- c(2.47, 2.24, 2.9, 4, 6)
   hce_dat <- hce::simHCE(n = 2500, TTE_A = rates_a,
@@ -882,7 +882,7 @@ test_that("winOddsPlot", {
 
   expect_text_equal(component_plot(data),
                     list(paste0("component_plot() function can only handle ",
-                                "inputs of class 'hce' or 'maraca'. ",
+                                "inputs of class 'adhce' or 'maraca'. ",
                                 "Your input has class data.frame.")))
 
   expect_error(cumulative_plot(mar), regexp =
@@ -892,7 +892,7 @@ test_that("winOddsPlot", {
 
   expect_text_equal(cumulative_plot(data),
                     list(paste0("cumulative_plot() function can only handle ",
-                                "inputs of class 'hce' or 'maraca'. ",
+                                "inputs of class 'adhce' or 'maraca'. ",
                                 "Your input has class data.frame.")))
 
   rates_a <- c(1.72, 1.74, 0.58, 1.5, 1)

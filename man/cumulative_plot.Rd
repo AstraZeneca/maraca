@@ -6,7 +6,7 @@
 \alias{dustin_plot}
 \alias{cumulative_plot.default}
 \alias{cumulative_plot.maraca}
-\alias{cumulative_plot.hce}
+\alias{cumulative_plot.adhce}
 \title{Plotting the cumulated components of win odds}
 \usage{
 cumulative_plot(x, ...)
@@ -25,7 +25,7 @@ dustin_plot(x, ...)
   ...
 )
 
-\method{cumulative_plot}{hce}(
+\method{cumulative_plot}{adhce}(
   x,
   step_outcomes = NULL,
   last_outcome = "C",
@@ -39,7 +39,7 @@ dustin_plot(x, ...)
 )
 }
 \arguments{
-\item{x}{an object of S3 class 'maraca' or 'hce'.}
+\item{x}{an object of S3 class 'maraca' or 'adhce'.}
 
 \item{\dots}{not used}
 
@@ -99,7 +99,7 @@ Cumulative plot as a patchwork list. Individual plots can
 Generic function to create a plot showing the components used in
 calculating win odds (wins and ties) cumulated for all
 outcomes for a hierarchical endpoint.
-Implemented for objects of type 'maraca' and 'hce'.
+Implemented for objects of type 'maraca' and 'adhce'.
 }
 \details{
 Note that for this plot, if applying to a maraca object, in the

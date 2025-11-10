@@ -946,9 +946,9 @@ plot.maraca <- function(
               trans, density_plot_type,
               vline_type, remove_outliers, theme)
 }
-#' Generic function to plot the hce object using plot().
+#' Generic function to plot the adhce object using plot().
 #'
-#' @param x an object of S3 class 'hce'.
+#' @param x an object of S3 class 'adhce'.
 #' @param step_outcomes A vector of strings containing the outcome labels
 #'                      for all outcomes displayed as part of the step function
 #'                      on the left side of the plot.
@@ -1034,26 +1034,26 @@ plot.maraca <- function(
 #' plot(hce_dat, fixed_followup_days = 3 * 365)
 #'
 #' @export
-plot.hce <- function(x,
-                     step_outcomes = NULL,
-                     last_outcome = "C",
-                     arm_levels = c(active = "A", control = "P"),
-                     continuous_grid_spacing_x = 10,
-                     trans = c("identity", "log", "log10",
-                               "sqrt", "reverse")[1],
-                     density_plot_type = c("default", "violin",
-                                           "box", "scatter")[1],
-                     vline_type = NULL,
-                     remove_outliers = FALSE,
-                     fixed_followup_days = NULL,
-                     compute_win_odds = FALSE,
-                     step_types = "tte",
-                     last_type = "continuous",
-                     theme = "maraca",
-                     lowerBetter = FALSE,
-                     tte_outcomes = lifecycle::deprecated(),
-                     continuous_outcome = lifecycle::deprecated(),
-                     ...) {
+plot.adhce <- function(x,
+                       step_outcomes = NULL,
+                       last_outcome = "C",
+                       arm_levels = c(active = "A", control = "P"),
+                       continuous_grid_spacing_x = 10,
+                       trans = c("identity", "log", "log10",
+                                 "sqrt", "reverse")[1],
+                       density_plot_type = c("default", "violin",
+                                             "box", "scatter")[1],
+                       vline_type = NULL,
+                       remove_outliers = FALSE,
+                       fixed_followup_days = NULL,
+                       compute_win_odds = FALSE,
+                       step_types = "tte",
+                       last_type = "continuous",
+                       theme = "maraca",
+                       lowerBetter = FALSE,
+                       tte_outcomes = lifecycle::deprecated(),
+                       continuous_outcome = lifecycle::deprecated(),
+                       ...) {
 
   if (lifecycle::is_present(tte_outcomes)) {
     lifecycle::deprecate_warn("0.7.0", "maraca(tte_outcomes)",
