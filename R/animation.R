@@ -80,6 +80,7 @@
 #'                    calculated correctly.
 #'                    Default value is FALSE, meaning higher values
 #'                    are considered advantageous.
+#' @param \dots not used
 #' @return Depending on which dependencies are installed, a gif, video or
 #'         list of image files are returned.
 #' @examples
@@ -159,6 +160,7 @@ animate_plot.maraca <- function(
 
   .run_plot_checks(obj, continuous_grid_spacing_x, remove_outliers, trans)
 
+  `%>%` <- dplyr::`%>%`
   aes <- ggplot2::aes
 
   meta <- obj$meta
@@ -378,7 +380,7 @@ animate_plot.maraca <- function(
     plot <- plot +
       ggplot2::geom_point(
         data = plotdata[plotdata$type == last_type, ],
-        aes(x = x, y = y + runif(n, min = -width / 3, max = width / 3),
+        aes(x = x, y = y + stats::runif(n, min = -width / 3, max = width / 3),
             color = arm, group = seq_along(time))
       )
 
@@ -430,7 +432,7 @@ animate_plot.maraca <- function(
 
 #' @rdname animate_plot
 #' @export
-animate_plot.adhce <- function(x,
+animate_plot.adhce <- function(obj,
                                step_outcomes = NULL,
                                last_outcome = "C",
                                arm_levels = c(active = "A", control = "P"),

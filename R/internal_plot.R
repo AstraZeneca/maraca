@@ -29,21 +29,23 @@
   df_arm1 <- data[data$y == arm_info[1, ]$y, ]
   df_arm2 <- data[data$y == arm_info[2, ]$y, ]
 
-  density1 <- density(df_arm1$value, n = 512, bw = "nrd0",
-                      adjust = 1, kernel = "gaussian",
-                      from = min(df_arm1$value), to = max(df_arm1$value))
+  density1 <- stats::density(df_arm1$value, n = 512, bw = "nrd0",
+                             adjust = 1, kernel = "gaussian",
+                             from = min(df_arm1$value), to = max(df_arm1$value))
 
-  density2 <- density(df_arm2$value, n = 512, bw = "nrd0",
-                      adjust = 1, kernel = "gaussian",
-                      from = min(df_arm2$value), to = max(df_arm2$value))
+  density2 <- stats::density(df_arm2$value, n = 512, bw = "nrd0",
+                             adjust = 1, kernel = "gaussian",
+                             from = min(df_arm2$value), to = max(df_arm2$value))
 
-  quantiles_arm1 <- unname(quantile(df_arm1$value, probs = c(0.25, 0.5, 0.75)))
-  quantiles_arm2 <- unname(quantile(df_arm2$value, probs = c(0.25, 0.5, 0.75)))
+  quantiles_arm1 <- unname(stats::quantile(df_arm1$value,
+                                           probs = c(0.25, 0.5, 0.75)))
+  quantiles_arm2 <- unname(stats::quantile(df_arm2$value,
+                                           probs = c(0.25, 0.5, 0.75)))
 
-  density_quants1 <- approx(density1$x, density1$y, xout = quantiles_arm1,
-                            ties = "ordered")$y
-  density_quants2 <- approx(density2$x, density2$y, xout = quantiles_arm2,
-                            ties = "ordered")$y
+  density_quants1 <- stats::approx(density1$x, density1$y,
+                                   xout = quantiles_arm1, ties = "ordered")$y
+  density_quants2 <- stats::approx(density2$x, density2$y,
+                                   xout = quantiles_arm2, ties = "ordered")$y
 
   density_df <- data.frame(
     "value" = c(density1$x, quantiles_arm1, density2$x, quantiles_arm2),
@@ -491,7 +493,7 @@
   `%>%` <- dplyr::`%>%`
 
   tmp <- plotdata %>%
-    dplyr::filter(outcome == tail(step_outcomes, 1)) %>%
+    dplyr::filter(outcome == utils::tail(step_outcomes, 1)) %>%
     dplyr::group_by(arm) %>%
     dplyr::slice_tail(n = -1) %>%
     dplyr::summarize("xend" = max(x),
@@ -501,7 +503,7 @@
 
   if (animation) {
     tmp <- plotdata %>%
-      dplyr::filter(outcome == tail(step_outcomes, 1)) %>%
+      dplyr::filter(outcome == utils::tail(step_outcomes, 1)) %>%
       dplyr::select(arm, time) %>%
       unique() %>%
       dplyr::right_join(tmp, by = "arm")

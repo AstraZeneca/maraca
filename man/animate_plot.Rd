@@ -31,7 +31,7 @@ animate_plot(obj, ...)
 )
 
 \method{animate_plot}{adhce}(
-  x,
+  obj,
   step_outcomes = NULL,
   last_outcome = "C",
   arm_levels = c(active = "A", control = "P"),
@@ -58,6 +58,8 @@ animate_plot(obj, ...)
 }
 \arguments{
 \item{obj}{an object of S3 class 'maraca'}
+
+\item{\dots}{not used}
 
 \item{continuous_grid_spacing_x}{The spacing of the x grid to use for the
 continuous section of the plot.}

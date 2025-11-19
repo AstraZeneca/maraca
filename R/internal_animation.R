@@ -108,6 +108,9 @@
 }
 
 .animation_polygon_data <- function(plotdata_last, last_type) {
+
+  `%>%` <- dplyr::`%>%`
+
   plotdata_last_stats <- plotdata_last %>%
     dplyr::group_by(arm) %>%
     dplyr::summarize("mean" = mean(y))
