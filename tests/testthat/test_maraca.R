@@ -1551,12 +1551,6 @@ test_that("plotHCE", {
   plot(hce_dat)
   expect_file_exists(output)
 
-  output <- artifacts_path("plotHCE-fixed_follow_up.pdf")
-  expect_file_not_exists(output)
-  set_pdf_output(output)
-  plot(hce_dat, fixed_followup_days = 6 * 365)
-  expect_file_exists(output)
-
   if (!("PADY" %in% names(hce_dat))) {
     hce_dat$PADY <- hce_dat$TTEfixed
   }
@@ -1662,5 +1656,165 @@ test_that("mosaicPlot", {
                stats::ecdf(last_act_lower$x)(x_grid_lower))
   expect_equal(stats::ecdf(last_ctrl$x)(x_grid),
                stats::ecdf(last_ctrl_lower$x)(x_grid_lower))
+
+})
+
+test_that("animation", {
+
+  file <- fixture_path("hce_scenario_c.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+  step_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  last_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
+  )
+  mar <- maraca(
+    data, step_outcomes, last_outcome, arm_levels, column_names, 3 * 365,
+    compute_win_odds = TRUE
+  )
+
+  meta <- mar$meta
+  step_outcomes <- mar$step_outcomes
+  step_types <- mar$step_types
+  last_data <- mar$data_last_outcome
+  last_meta <- last_data$meta
+  last_type <- mar$last_type
+
+  start_last_endpoint <-
+    meta[meta$outcome == mar$last_outcome, ]$startx
+
+  plotdata_ecdf <- .prepare_ecdf_plot_data(mar, step_outcomes)
+  plotdata_last <- last_data$data[, c("outcome", "arm", "value", "x", "y")]
+  plotdata_last$type <- last_type
+
+  density_plot_type <- "default"
+  res <- .prepare_continuous_plot_data(plotdata_last, last_meta, "identity",
+                                       density_plot_type,
+                                       TRUE, start_last_endpoint)
+  density_plot_type2 <- "scatter"
+  res2 <- .prepare_continuous_plot_data(plotdata_last, last_meta, "identity",
+                                        density_plot_type2,
+                                        FALSE, start_last_endpoint)
+
+  plotdata_last <- res$plotdata_last
+  last_meta <- res$last_meta
+  plotdata_last2 <- res2$plotdata_last
+  last_meta2 <- res2$last_meta
+
+  speed_factor <- ceiling(nrow(plotdata_last) / nrow(plotdata_ecdf))
+  speed_factor2 <- ceiling(nrow(plotdata_last2) / nrow(plotdata_ecdf))
+
+  plotdata_ecdf <- .step_outcomes_time_animation(plotdata_ecdf, mar,
+                                                 step_outcomes,
+                                                 step_types, speed_factor,
+                                                 "both")
+  plotdata_ecdf_a_c <- .step_outcomes_time_animation(plotdata_ecdf, mar,
+                                                     step_outcomes,
+                                                     step_types, speed_factor,
+                                                     "active")
+
+  expect_true(all(!is.na(plotdata_ecdf$time)))
+  expect_equal(max(plotdata_ecdf[plotdata_ecdf$x ==
+                                   max(plotdata_ecdf$x), ]$time),
+               max(plotdata_ecdf$time))
+  expect_true(all(!is.na(plotdata_ecdf_a_c$time)))
+  expect_equal(max(plotdata_ecdf_a_c[plotdata_ecdf_a_c$x ==
+                                       max(plotdata_ecdf_a_c$x), ]$time),
+               max(plotdata_ecdf_a_c$time))
+
+  ctrl.trt <- unname(mar$arm_levels["control"])
+  act.trt <- unname(mar$arm_levels["active"])
+  idx <- plotdata_ecdf$arm == ctrl.trt
+  idx4 <- plotdata_ecdf_a_c$arm == ctrl.trt
+  idx2 <- plotdata_last$arm == ctrl.trt
+  idx3 <- plotdata_last2$arm == ctrl.trt
+  plotdata_last$time <- 1
+  plotdata_last[idx2, ]$time <- rank(plotdata_last[idx2, ]$x)
+  plotdata_last[!idx2, ]$time <- rank(plotdata_last[!idx2, ]$x)
+  plotdata_last2$time <- 1
+  plotdata_last2[idx3, ]$time <- rank(plotdata_last2[idx3, ]$x)
+  plotdata_last2[!idx3, ]$time <- rank(plotdata_last2[!idx3, ]$x)
+
+
+  active_time_ecdf <- plotdata_ecdf %>%
+    dplyr::filter(arm == act.trt) %>%
+    dplyr::pull(time) %>%
+    max()
+  control_time_ecdf <- plotdata_ecdf %>%
+    dplyr::filter(arm == ctrl.trt) %>%
+    dplyr::pull(time) %>%
+    max()
+  act_time_ecdf <- plotdata_ecdf_a_c %>%
+    dplyr::filter(arm == act.trt) %>%
+    dplyr::pull(time) %>%
+    max()
+  ctrl_time_ecdf <- plotdata_ecdf_a_c %>%
+    dplyr::filter(arm == ctrl.trt) %>%
+    dplyr::pull(time) %>%
+    max()
+
+  plotdata_ecdf <- .animation_order_step("both", plotdata_ecdf, idx, idx2,
+                                         control_time_ecdf, active_time_ecdf)
+  plotdata_last_b <- .animation_order_last("both", plotdata_last, idx, idx2,
+                                           control_time_ecdf, active_time_ecdf)
+  plotdata_last2_b <- .animation_order_last("both", plotdata_last2, idx, idx3,
+                                            control_time_ecdf, active_time_ecdf)
+  plotdata_ecdf_a <- .animation_order_step("active", plotdata_ecdf_a_c, idx4,
+                                           idx2, ctrl_time_ecdf, act_time_ecdf)
+  plotdata_last_a <- .animation_order_last("active", plotdata_last, idx4, idx2,
+                                           ctrl_time_ecdf, act_time_ecdf)
+  plotdata_ecdf2_a <- .animation_order_step("active", plotdata_ecdf_a_c, idx4,
+                                            idx3, ctrl_time_ecdf, act_time_ecdf)
+  plotdata_last2_a <- .animation_order_last("active", plotdata_last2, idx4,
+                                            idx3, ctrl_time_ecdf, act_time_ecdf)
+  plotdata_ecdf_c <- .animation_order_step("control", plotdata_ecdf_a_c, idx4,
+                                           idx2, ctrl_time_ecdf, act_time_ecdf)
+  plotdata_last_c <- .animation_order_last("control", plotdata_last, idx4, idx2,
+                                           ctrl_time_ecdf, act_time_ecdf)
+  plotdata_ecdf2_c <- .animation_order_step("control", plotdata_ecdf_a_c, idx4,
+                                            idx3, ctrl_time_ecdf, act_time_ecdf)
+  plotdata_last2_c <- .animation_order_last("control", plotdata_last2, idx4,
+                                            idx3, ctrl_time_ecdf, act_time_ecdf)
+  expect_lt(max(plotdata_ecdf$time), min(plotdata_last_b$time))
+  expect_lt(max(plotdata_ecdf$time), min(plotdata_last2_b$time))
+  expect_lt(max(plotdata_ecdf_a[plotdata_ecdf_a$arm == act.trt, ]$time),
+            min(plotdata_last_a[plotdata_last_a$arm == act.trt, ]$time))
+  expect_lt(max(plotdata_ecdf2_a[plotdata_ecdf2_a$arm == act.trt, ]$time),
+            min(plotdata_last2_a[plotdata_last2_a$arm == act.trt, ]$time))
+  expect_lt(max(plotdata_ecdf_a[plotdata_ecdf_a$arm == ctrl.trt, ]$time),
+            min(plotdata_last_a[plotdata_last_a$arm == ctrl.trt, ]$time))
+  expect_lt(max(plotdata_ecdf2_a[plotdata_ecdf2_a$arm == ctrl.trt, ]$time),
+            min(plotdata_last2_a[plotdata_last2_a$arm == ctrl.trt, ]$time))
+  expect_lt(max(plotdata_ecdf_c[plotdata_ecdf_c$arm == act.trt, ]$time),
+            min(plotdata_last_c[plotdata_last_c$arm == act.trt, ]$time))
+  expect_lt(max(plotdata_ecdf2_c[plotdata_ecdf2_c$arm == act.trt, ]$time),
+            min(plotdata_last2_c[plotdata_last2_c$arm == act.trt, ]$time))
+  expect_lt(max(plotdata_ecdf_c[plotdata_ecdf_c$arm == ctrl.trt, ]$time),
+            min(plotdata_last_c[plotdata_last_c$arm == ctrl.trt, ]$time))
+  expect_lt(max(plotdata_ecdf2_c[plotdata_ecdf2_c$arm == ctrl.trt, ]$time),
+            min(plotdata_last2_c[plotdata_last2_c$arm == ctrl.trt, ]$time))
+  expect_lt(max(plotdata_ecdf_a[plotdata_ecdf_a$arm == act.trt, ]$time),
+            min(plotdata_ecdf_a[plotdata_ecdf_a$arm == ctrl.trt, ]$time))
+  expect_lt(max(plotdata_last_a[plotdata_last_a$arm == act.trt, ]$time),
+            min(plotdata_last_a[plotdata_last_a$arm == ctrl.trt, ]$time))
+  expect_lt(max(plotdata_last2_a[plotdata_last2_a$arm == act.trt, ]$time),
+            min(plotdata_last2_a[plotdata_last2_a$arm == ctrl.trt, ]$time))
+  expect_lt(max(plotdata_ecdf_c[plotdata_ecdf_c$arm == ctrl.trt, ]$time),
+            min(plotdata_ecdf_c[plotdata_ecdf_c$arm == act.trt, ]$time))
+  expect_lt(max(plotdata_last_c[plotdata_last_c$arm == ctrl.trt, ]$time),
+            min(plotdata_last_c[plotdata_last_c$arm == act.trt, ]$time))
+  expect_lt(max(plotdata_last2_c[plotdata_last2_c$arm == ctrl.trt, ]$time),
+            min(plotdata_last2_c[plotdata_last2_c$arm == act.trt, ]$time))
+
+  expect_no_error(capture_message(animate_plot(mar, theme = "maraca")))
+  expect_no_error(capture_message(animate_plot(mar,
+                                               continuous_grid_spacing_x = 20,
+                                               density_plot_type = "scatter",
+                                               vline_type = "mean",
+                                               remove_outliers = TRUE,
+                                               theme = "color1")))
 
 })

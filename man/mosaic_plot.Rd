@@ -25,7 +25,6 @@ mosaic_plot(x, ...)
   step_outcomes = NULL,
   last_outcome = "C",
   arm_levels = c(active = "A", control = "P"),
-  fixed_followup_days = NULL,
   theme = "maraca",
   highlight_ties = FALSE,
   win_prob = FALSE,
@@ -77,15 +76,6 @@ used in the data. The names must be "active" and "control"
 in this order. Note that this parameter only need to
 be specified if you have labels different from
  "active" and "control".}
-
-\item{fixed_followup_days}{Not needed if HCE object contains information
-on fixed follow-up days in the study
-(column PADY or TTEfixed,
-depending on hce version).
-Otherwise, this argument must be specified.
-Note: If argument is specified and HCE object
-contains PADY or TTEfixed column, then
-fixed_followup_days argument is used.}
 
 \item{lowerBetter}{Flag for the final outcome variable, indicating if
 lower values are considered better/advantageous.

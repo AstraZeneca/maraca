@@ -326,22 +326,9 @@ plot_maraca <- function(
     remove_outliers = FALSE,
     theme = "maraca") {
 
-  checkmate::assert_class(obj, "maraca")
-
-  if (!(is.null(continuous_grid_spacing_x) ||
-          is.numeric(continuous_grid_spacing_x))) {
-    stop("continuous_grid_spacing_x has to be numeric or NULL")
-  }
-
-  checkmate::assert_flag(remove_outliers)
-  checkmate::assert_string(trans)
-  checkmate::assert_subset(trans,
-                           choices = c("identity", "log", "log10",
-                                       "sqrt", "reverse"),
-                           empty.ok = FALSE)
+  .run_plot_checks(obj, continuous_grid_spacing_x, remove_outliers, trans)
 
   aes <- ggplot2::aes
-  `%>%` <- dplyr::`%>%`
 
   meta <- obj$meta
   step_outcomes <- obj$step_outcomes
@@ -349,22 +336,11 @@ plot_maraca <- function(
   which_tte <- which(step_types == "tte")
   which_binary <- which(step_types == "binary")
   last_data <- obj$data_last_outcome
+  last_meta <- last_data$meta
   last_type <- obj$last_type
 
-  if (last_type == "binary" && trans %in% c("log", "log10", "sqrt")) {
-    stop(paste(trans, "transformation only implemented for continuous",
-               "last endpoint."))
-  }
+  vline_type <- .assign_vline_type(last_type, density_plot_type, vline_type)
 
-  vline_type <-
-    switch(last_type,
-           "continuous" = .checks_continuous_outcome(density_plot_type,
-                                                     vline_type),
-           "binary" = .checks_binary_outcome(density_plot_type,
-                                             vline_type),
-           stop("Unsupported last outcome type"))
-
-  ecdf_mod <- obj$ecdf_by_outcome
   win_odds <- obj$win_odds
   start_last_endpoint <-
     meta[meta$outcome == obj$last_outcome, ]$startx
@@ -372,187 +348,35 @@ plot_maraca <- function(
   if (is.null(continuous_grid_spacing_x)) {
     continuous_grid_spacing_x <- 10
   }
-
-  plotdata_ecdf <- ecdf_mod$data[, c("outcome", "arm", "value",
-                                     "adjusted.time", "step_values",
-                                     "type")]
-  names(plotdata_ecdf) <- c("outcome", "arm", "value", "x", "y", "type")
-  plotdata_last <- last_data$data[, c("outcome", "arm", "value", "x", "y")]
-  plotdata_last$type <- last_type
-
-  # Add points at (0, 0) on both curves so that they start from the origin
-  add_points <- plotdata_ecdf %>%
-    dplyr::group_by(arm) %>%
-    dplyr::slice_head(n = 1) %>%
-    dplyr::ungroup()
-
-  add_points$x <- 0
-  add_points$y <- 0
-  plotdata_ecdf <- rbind(
-    add_points,
-    plotdata_ecdf
-  )
-
-  plotdata_ecdf <- plotdata_ecdf[order(plotdata_ecdf$x), ]
-
-  # Add end point of previous curve to avoid jumps
-  if (length(step_outcomes) > 1) {
-    add_points <-
-      do.call("rbind",
-              lapply(2:length(step_outcomes),
-                     function(i) {
-                       plotdata_ecdf %>%
-                         dplyr::group_by(arm) %>%
-                         dplyr::filter(outcome == step_outcomes[i - 1]) %>%
-                         dplyr::slice_tail(n = 1) %>%
-                         dplyr::ungroup() %>%
-                         dplyr::mutate(outcome = step_outcomes[i]) %>%
-                         dplyr::ungroup()
-                     }))
-
-    plotdata_ecdf <- rbind(
-      add_points,
-      plotdata_ecdf
-    )
-    plotdata_ecdf <- plotdata_ecdf[order(plotdata_ecdf$x), ]
-  }
-
-  # Add points at (100, y) on both curves so that they end at x=100%
-  add_points <- plotdata_ecdf %>%
-    dplyr::group_by(arm) %>%
-    dplyr::slice_tail(n = 1) %>%
-    dplyr::ungroup()
-
-  add_points$x <- 100
-  plotdata_ecdf <- rbind(
-    plotdata_ecdf,
-    add_points
-  )
-
-  plotdata_ecdf <- plotdata_ecdf[order(plotdata_ecdf$x), ]
-
-  plotdata <- rbind(plotdata_ecdf, plotdata_last)
-
   scale <- sign(log10(continuous_grid_spacing_x)) * floor(
     abs(log10(continuous_grid_spacing_x))
   )
 
+  plotdata_ecdf <- .prepare_ecdf_plot_data(obj, step_outcomes)
+
+  plotdata_last <- last_data$data[, c("outcome", "arm", "value", "x", "y")]
+  plotdata_last$type <- last_type
+
   if (last_type == "continuous") {
 
-    if (trans %in% c("log", "log10", "sqrt")) {
+    res <- .prepare_continuous_plot_data(plotdata_last, last_meta, trans,
+                                         density_plot_type,
+                                         remove_outliers, start_last_endpoint)
 
-      if (min(plotdata_last$value) < 0) {
-        if (density_plot_type %in% c("default", "violin", "box")) {
-          stop(paste("Continuous endpoint has negative values - the",
-                     trans, "transformation cannot be accurately calculated."))
-        } else {
-          warning(paste("Continuous endpoint has negative values - the",
-                        trans, "transformation will result in missing values."))
-        }
-      }
-
-      plotdata_last$value <- eval(parse(text = paste0(trans,
-                                                      "(plotdata_last$value)")))
-
-      range <- c(min(plotdata_last$value, na.rm = TRUE),
-                 max(plotdata_last$value, na.rm = TRUE))
-      plotdata_last$x <- .to_rangeab(plotdata_last$value, start_last_endpoint,
-                                     range[1], range[2])
-    }
-
-    boxplot_data <- .calculate_boxplot_stats(plotdata_last)
-
-    if (density_plot_type %in% c("default", "violin")) {
-      violin_list <- .calculate_violin_stats(plotdata_last)
-      violin_data <- violin_list$data
-    }
-
-    if (remove_outliers && !is.null(boxplot_data$outlier)) {
-      outlier_idx <- do.call("paste", plotdata_last[, c("x", "y", "arm")]) %in%
-        do.call("paste", boxplot_data$outlier)
-
-      plotdata_last <- plotdata_last[!outlier_idx, ]
-
-      if (density_plot_type %in% c("default", "violin")) {
-        violin_inliers <- unlist(apply(boxplot_data$stats, 1, function(row) {
-          which(violin_data$arm == row["arm"] &
-                  violin_data$x >= row["xmin"] &
-                  violin_data$x <= row["xmax"])
-        }), use.names = FALSE)
-        violin_data <- violin_data[sort(violin_inliers), ]
-      }
-
-      current_min <- min(boxplot_data$stats$xmin, na.rm = TRUE)
-      current_max <- max(boxplot_data$stats$xmax, na.rm = TRUE)
-
-      if (density_plot_type %in% c("default", "violin")) {
-        violin_data$x <- .to_rangeab(violin_data$x, start_last_endpoint,
-                                     current_min, current_max)
-      }
-
-      if (density_plot_type %in% c("default", "box")) {
-        boxplot_data$stats <- .rescale_boxplot_stats(boxplot_data$stats,
-                                                     start_last_endpoint,
-                                                     current_min, current_max)
-        boxplot_data$outlier <- NULL
-      }
-
-      plotdata_last$x <- .to_rangeab(plotdata_last$x, start_last_endpoint,
-                                     current_min, current_max)
-
-      last_data$meta$median <- .to_rangeab(last_data$meta$median,
-                                           start_last_endpoint,
-                                           current_min, current_max)
-      last_data$meta$average <- .to_rangeab(last_data$meta$average,
-                                            start_last_endpoint,
-                                            current_min, current_max)
-    }
-
-    range <- c(min(plotdata_last$value, na.rm = TRUE),
-               max(plotdata_last$value, na.rm = TRUE))
-
-    if (trans %in% c("log", "log10", "sqrt")) {
-
-      range <- .untransform_range(trans, range)
-      minor_grid <- switch(trans,
-                           "log" = .logTicks(range),
-                           "log10" = .log10Ticks(range),
-                           "sqrt" = pretty(range))
-      minor_grid <- minor_grid[minor_grid >= range[1] &
-                                 minor_grid <= range[2]]
-      minor_grid_x <- eval(parse(text = paste0(trans, "(minor_grid)")))
-    } else {
-      minor_grid <- .minor_grid(plotdata_last$value, scale,
-                                continuous_grid_spacing_x)
-      minor_grid_x <- minor_grid
-    }
-
-  } else if (last_type == "binary") {
-
-    lowest_value <- last_data$meta$estimate - last_data$meta$ci_diff
-    highest_value <- last_data$meta$estimate + last_data$meta$ci_diff
-    range <- c(min(0, floor(lowest_value / 10) * 10),
-               max(100, ceiling(highest_value / 10) * 10))
-    minor_grid <- seq(range[1], range[2], continuous_grid_spacing_x)
-    minor_grid_x <- minor_grid
+    plotdata_last <- res$plotdata_last
+    boxplot_data <- res$boxplot_data
+    violin_scaling_factor <- res$violin_scaling_factor
+    last_meta <- res$last_meta
 
   }
 
-  vline_data <- NULL
-  if (vline_type == "median") {
-    vline_data <- last_data$meta %>%
-      dplyr::select("x" = median, arm)
-  } else if (vline_type == "mean") {
-    vline_data <- last_data$meta %>%
-      dplyr::select("x" = average, arm)
-  }
+  grid <- .create_grid(plotdata_last, last_type, trans, last_data,
+                       scale, continuous_grid_spacing_x)
+  range <- grid$range
+  minor_grid <- grid$minor_grid
+  minor_grid_x <- grid$minor_grid_x
 
-
-  if (trans %in% c("log", "log10", "sqrt")) {
-    if (!is.null(vline_data)) {
-      vline_data$x <- eval(parse(text = paste0(trans, "(vline_data$x)")))
-    }
-  }
+  vline_data <- .prepare_vline_data(last_meta, vline_type, trans)
 
   if (trans == "reverse") {
     if (!is.null(win_odds) && !obj$lowerBetter) {
@@ -569,11 +393,6 @@ plot_maraca <- function(
     plotdata_last$x <- start_last_endpoint - plotdata_last$x + 100
 
     if (last_type == "continuous" &&
-          density_plot_type %in% c("default", "violin")) {
-      violin_data$x <- start_last_endpoint - violin_data$x + 100
-    }
-
-    if (last_type == "continuous" &&
           density_plot_type %in% c("default", "box")) {
       boxplot_data$stats <- .reverse_boxplot_stats(boxplot_data$stats,
                                                    start_last_endpoint)
@@ -584,89 +403,25 @@ plot_maraca <- function(
     }
   }
 
-  # Plot the information in the Maraca plot
-  plot <- ggplot2::ggplot(plotdata) +
-    ggplot2::geom_vline(
-      xintercept = cumsum(c(0, meta$proportion)),
-      color = "grey80"
-    )
+  plotdata <- rbind(plotdata_ecdf, plotdata_last)
 
-  if (!is.null(vline_data)) {
-    plot <- plot +
-      ggplot2::geom_vline(
-        mapping = ggplot2::aes(
-          xintercept = x,
-          color = arm
-        ),
-        data = vline_data,
-        linetype = "dashed",
-        linewidth = 0.8,
-        show.legend = FALSE
-      )
-  }
+  # Plot the information in the Maraca plot
+  plot <- .set_up_initial_plot(plotdata, meta, vline_data)
 
   for (outcome in step_outcomes[which_tte]) {
     plot <- plot +
       ggplot2::geom_step(data =
-                           plotdata_ecdf[plotdata_ecdf$outcome == outcome, ],
+                           plotdata[plotdata$outcome == outcome, ],
                          aes(x = x, y = y, color = arm))
   }
 
   if (length(which_binary) > 0) {
-
-    tmp <- plotdata_ecdf[plotdata_ecdf$outcome %in%
-                           step_outcomes[which_binary], ]
-    tmp <- tmp[order(tmp$x), ]
-
-    if (step_types[length(step_types)] == "binary") {
-      tmp <- dplyr::slice_head(tmp, n = -2)
-    }
-
-    tmp1 <- tmp %>%
-      dplyr::group_by(outcome, arm) %>%
-      dplyr::summarize("xend" = max(x),
-                       "x" = min(x),
-                       "y" = min(y)) %>%
-      dplyr::ungroup()
-
-    tmp2 <- tmp %>%
-      dplyr::group_by(outcome, arm) %>%
-      dplyr::summarize("x" = max(x),
-                       "yend" = max(y),
-                       "y" = min(y)) %>%
-      dplyr::ungroup()
-
-    plot <- plot +
-      ggplot2::geom_segment(
-        data = tmp1,
-        aes(x = x, y = y, xend = xend, yend = y,
-            color = arm)
-      ) +
-      ggplot2::geom_segment(
-        data = tmp2,
-        aes(x = x, y = y, xend = x, yend = yend,
-            group = arm),
-        color = "darkgrey", linetype = 2
-      )
+    plot <- .add_binary_steps_to_plot(plot, plotdata, step_outcomes,
+                                      step_types, which_binary)
   }
 
   if (step_types[length(step_types)] == "binary") {
-
-    tmp <- plotdata_ecdf %>%
-      dplyr::filter(outcome == step_outcomes[length(step_types)]) %>%
-      dplyr::group_by(arm) %>%
-      dplyr::slice_tail(n = -1) %>%
-      dplyr::summarize("xend" = max(x),
-                       "x" = min(x),
-                       "y" = max(y)) %>%
-      dplyr::ungroup()
-
-    plot <- plot +
-      ggplot2::geom_segment(
-        data = tmp,
-        aes(x = x, y = y, xend = xend, yend = y,
-            color = arm)
-      )
+    plot <- .add_end_binary_step(plot, plotdata, step_outcomes)
   }
 
   width <- diff(range(plotdata_last$y))
@@ -674,109 +429,45 @@ plot_maraca <- function(
   if (density_plot_type == "default") {
     if (last_type == "continuous") {
       plot <- plot +
-        ggplot2::geom_polygon(mapping = aes(x, violinwidth, group = arm,
+        ggplot2::geom_polygon(mapping = aes(x, y, group = arm,
                                             fill = arm, colour = arm),
-                              data = violin_data, alpha = 0.5) +
-        ggplot2::geom_boxplot(data = boxplot_data$stats,
-                              mapping = aes(xmin = xmin, xlower = xlower,
-                                            xmiddle = xmiddle, xupper = xupper,
-                                            xmax = xmax, y = y, colour = arm,
-                                            fill = arm),
-                              width = (width / 3), alpha = 0.5,
-                              stat = "identity", orientation = "y")
-
-      if (!is.null(boxplot_data$outlier)) {
-        plot <- plot +
-          ggplot2::geom_point(mapping = aes(x = x, y = y,
-                                            colour = arm, fill = arm),
-                              data = boxplot_data$outlier)
-      }
+                              data = plotdata[plotdata$type == "violin", ],
+                              alpha = 0.5,
+                              show.legend = FALSE)
+      plot <- .add_boxplot(plot, boxplot_data, (width / 3),
+                           add_v_lines = FALSE)
     } else if (last_type == "binary") {
       plot <- plot +
-        ggplot2::geom_polygon(data = plotdata_last,
+        ggplot2::geom_polygon(data = plotdata[plotdata$type == last_type, ],
                               ggplot2::aes(x = x, y = y, color = arm,
                                            fill = arm),
                               alpha = 0.5,
                               show.legend = FALSE) +
-        ggplot2::geom_point(data = last_data$meta,
+        ggplot2::geom_point(data = last_meta,
                             ggplot2::aes(x = average, y = y,
                                          color = arm))
     }
   } else if (density_plot_type == "violin") {
     plot <- plot +
-      ggplot2::geom_polygon(mapping = aes(x, violinwidth, group = arm,
+      ggplot2::geom_polygon(mapping = aes(x, y, group = arm,
                                           fill = arm, colour = arm),
-                            data = violin_data, alpha = 0.5)
+                            data = plotdata[plotdata$type == "violin", ],
+                            alpha = 0.5)
   } else if (density_plot_type == "box") {
-    plot <- plot +
-      ggplot2::geom_boxplot(
-        data = boxplot_data$stats,
-        mapping = aes(xmin = xmin, xlower = xlower, xmiddle = xmiddle,
-                      xupper = xupper, xmax = xmax, y = y,
-                      colour = arm, fill = arm), width = 0.75 * width,
-        alpha = 0.5, stat = "identity", orientation = "y"
-      ) +
-      ggplot2::geom_segment(
-        data = boxplot_data$stats,
-        mapping = aes(x = xmin,
-                      y = y - width * 0.1, yend = y + width * 0.1,
-                      colour = arm)
-      ) +
-      ggplot2::geom_segment(
-        data = boxplot_data$stats,
-        mapping = aes(x = xmax,
-                      y = y - width * 0.1, yend = y + width * 0.1,
-                      colour = arm)
-      )
-    if (!is.null(boxplot_data$outlier)) {
-      plot <- plot +
-        ggplot2::geom_point(mapping = aes(x = x, y = y,
-                                          colour = arm, fill = arm),
-                            data = boxplot_data$outlier)
-    }
+    plot <- .add_boxplot(plot, boxplot_data, (0.75 * width),
+                         add_v_lines = TRUE)
   } else if (density_plot_type == "scatter") {
     plot <- plot +
       ggplot2::geom_jitter(
-        data = plotdata_last,
+        data = plotdata[plotdata$type == last_type, ],
         aes(x = x, y = y, color = arm),
         # Jittering only vertically, keep the correct x-value
         width = 0
       )
   }
 
-  labels <- lapply(
-    minor_grid,
-    function(x) {
-      s <- ifelse(scale > 0, 0, scale)
-      return(as.character(round(x, -s + 1)))
-    }
-  )
-
-  m_breaks <- .to_rangeab(
-    minor_grid_x,
-    start_last_endpoint,
-    range[1],
-    range[2]
-  )
-
-  if (trans == "reverse") {
-    m_breaks <- start_last_endpoint - m_breaks + 100
-  }
-
-  plot <- plot +
-    ggplot2::scale_x_continuous(
-      limits = c(0, 100),
-      breaks = c(meta$proportion / 2 + meta$startx + 0.1),
-      labels = c(obj$step_outcomes, obj$last_outcome),
-      minor_breaks = m_breaks
-    ) +
-    ggplot2::annotate(
-      geom = "text",
-      x = m_breaks,
-      y = 0,
-      label = labels,
-      color = "grey60"
-    )
+  plot <- .add_labels_to_plot(plot, minor_grid, minor_grid_x, scale, range,
+                              start_last_endpoint, trans, obj, meta)
 
   attr(plot, "density_type") <- density_plot_type
 
@@ -799,22 +490,10 @@ plot_maraca <- function(
   }
   if (last_type == "continuous" &&
         (density_plot_type %in% c("default", "violin"))) {
-    attr(plot, "violin_scaling_factor") <- violin_list$scaling_factor
+    attr(plot, "violin_scaling_factor") <- violin_scaling_factor
   }
 
-  plot <- switch(theme,
-                 "maraca" = .theme_maraca(plot),
-                 "maraca_old" = .theme_maraca_old(plot),
-                 "color1" = .theme_color1(plot),
-                 "color2" = .theme_color2(plot),
-                 "none" = plot,
-                 stop("Please provide theme that exists"))
-
-  plot <- plot +
-    ggplot2::theme(
-      axis.ticks.x.bottom = ggplot2::element_blank(),
-      panel.grid.major.x = ggplot2::element_blank()
-    )
+  plot <- .add_theme_to_plot(plot, theme)
 
   # Add label to plot - maracaPlot
   class(plot) <- c("maracaPlot", class(plot))
@@ -1045,7 +724,6 @@ plot.adhce <- function(x,
                                              "box", "scatter")[1],
                        vline_type = NULL,
                        remove_outliers = FALSE,
-                       fixed_followup_days = NULL,
                        compute_win_odds = FALSE,
                        step_types = "tte",
                        last_type = "continuous",
@@ -1069,8 +747,7 @@ plot.adhce <- function(x,
 
   maraca_obj <- .maraca_from_hce_data(x, step_outcomes,
                                       last_outcome, arm_levels,
-                                      fixed_followup_days,
-                                      compute_win_odds,
+                                      compute_win_odds = compute_win_odds,
                                       step_types = step_types,
                                       last_type = last_type,
                                       lowerBetter = lowerBetter)

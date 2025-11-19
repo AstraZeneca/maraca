@@ -1,6 +1,6 @@
 #' maraca package.
 #'
-#' @docType package
+#' _PACKAGE
 #' @name maraca
 #' @import hce
 #' @import ggplot2

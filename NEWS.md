@@ -23,6 +23,18 @@
 - If parameter `density_plot_type = "box"` is selected, the boxplot will now
   contain vertical segments to indicate where the whiskers end.
 
+## New experimental feature
+- There is a new experimental feature included - the `animate_maraca()`
+  function. This is an animated version of the standard maraca plot to
+  allow to show how the plot is being built up step-by-step. Note that the
+  `gganimate` package needs to be installed to create the animation.
+  Additionally, to save the animation as a gif, the package `gifski` needs
+  to be installed.
+  This is an experimental feature, so despite doing some testing during
+  development there might be some problems or unexpected behavior during
+  usage. Please take a minute to report any wrong behavior to allow us to
+  improve the functionality.
+
 # maraca 1.0.1
 
 Slight change in automatic checks after an update of the `hce` package

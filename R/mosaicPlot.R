@@ -42,14 +42,6 @@
 #'                   in this order. Note that this parameter only need to
 #'                   be specified if you have labels different from
 #'                    "active" and "control".
-#' @param fixed_followup_days Not needed if HCE object contains information
-#'                            on fixed follow-up days in the study
-#'                            (column PADY or TTEfixed,
-#'                            depending on hce version).
-#'                            Otherwise, this argument must be specified.
-#'                            Note: If argument is specified and HCE object
-#'                            contains PADY or TTEfixed column, then
-#'                            fixed_followup_days argument is used.
 #' @param lowerBetter Flag for the final outcome variable, indicating if
 #'                    lower values are considered better/advantageous.
 #'                    This flag is need to make sure the win odds are
@@ -244,7 +236,6 @@ mosaic_plot.maraca <- function(x,
 mosaic_plot.adhce <- function(x, step_outcomes = NULL,
                               last_outcome = "C",
                               arm_levels = c(active = "A", control = "P"),
-                              fixed_followup_days = NULL,
                               theme = "maraca",
                               highlight_ties = FALSE,
                               win_prob = FALSE,
@@ -255,7 +246,6 @@ mosaic_plot.adhce <- function(x, step_outcomes = NULL,
   # Create maraca object
   maraca_dat <- .maraca_from_hce_data(x, step_outcomes,
                                       last_outcome, arm_levels,
-                                      fixed_followup_days,
                                       compute_win_odds = TRUE,
                                       lowerBetter = lowerBetter)
 

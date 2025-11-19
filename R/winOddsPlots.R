@@ -31,14 +31,6 @@
 #'                   in this order. Note that this parameter only need to
 #'                   be specified if you have labels different from
 #'                    "active" and "control".
-#' @param fixed_followup_days Not needed if HCE object contains information
-#'                            on fixed follow-up days in the study
-#'                            (column PADY or TTEfixed,
-#'                            depending on hce version).
-#'                            Otherwise, this argument must be specified.
-#'                            Note: If argument is specified and HCE object
-#'                            contains PADY or TTEfixed column, then
-#'                            fixed_followup_days argument is used.
 #' @param theme Choose theme to style the plot. The default theme is "maraca".
 #'        Options are "maraca", "color1", "color2" and none".
 #'        For more details, check the vignette called
@@ -129,7 +121,6 @@ component_plot.maraca <- function(x,
 component_plot.adhce <- function(x, step_outcomes = NULL,
                                  last_outcome = "C",
                                  arm_levels = c(active = "A", control = "P"),
-                                 fixed_followup_days = NULL,
                                  theme = "maraca",
                                  lowerBetter = FALSE,
                                  ...) {
@@ -137,7 +128,6 @@ component_plot.adhce <- function(x, step_outcomes = NULL,
   # Create maraca object
   maraca_dat <- .maraca_from_hce_data(x, step_outcomes,
                                       last_outcome, arm_levels,
-                                      fixed_followup_days,
                                       compute_win_odds = TRUE,
                                       lowerBetter = lowerBetter)
 
@@ -200,14 +190,6 @@ component_plot.adhce <- function(x, step_outcomes = NULL,
 #'                   in this order. Note that this parameter only need to
 #'                   be specified if you have labels different from
 #'                    "active" and "control".
-#' @param fixed_followup_days Not needed if HCE object contains information
-#'                            on fixed follow-up days in the study
-#'                            (column PADY or TTEfixed,
-#'                            depending on hce version).
-#'                            Otherwise, this argument must be specified.
-#'                            Note: If argument is specified and HCE object
-#'                            contains PADY or TTEfixed column, then
-#'                            fixed_followup_days argument is used.
 #' @param lowerBetter Flag for the final outcome variable, indicating if
 #'                    lower values are considered better/advantageous.
 #'                    This flag is need to make sure the win odds are
@@ -304,7 +286,6 @@ cumulative_plot.maraca <- function(x, theme = "maraca",
 cumulative_plot.adhce <- function(x, step_outcomes = NULL,
                                   last_outcome = "C",
                                   arm_levels = c(active = "A", control = "P"),
-                                  fixed_followup_days = NULL,
                                   theme = "maraca",
                                   include = c("win odds", "win ratio"),
                                   reverse = FALSE,
@@ -314,7 +295,6 @@ cumulative_plot.adhce <- function(x, step_outcomes = NULL,
   # Create maraca object
   maraca_dat <- .maraca_from_hce_data(x, step_outcomes,
                                       last_outcome, arm_levels,
-                                      fixed_followup_days,
                                       compute_win_odds = TRUE,
                                       lowerBetter = lowerBetter)
 

@@ -12,6 +12,9 @@ Authors@R: c(
 	         comment = c(ORCID = "0000-0002-4797-2208")),
     person(given = "Stefano", family = "Borini",
            email = "stefano.borini@astrazeneca.com", role = c("ctb")),
+    person(given = "Kevin", family = "Anderson",
+           email = "kevin.anderson1@astrazeneca.com", role = "aut",
+	         comment = c(ORCID = "0000-0002-9446-7386")),
     person(given = "Monika", family = "Huhn",
            email = "monika.huhn@astrazeneca.com", role = c("aut", "cre"),
 	         comment = c(ORCID = "0009-0000-7865-6008")))
@@ -35,13 +38,15 @@ Imports:
     checkmate (>= 2.1),
     patchwork(>= 1.0.0),
     lifecycle
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Suggests:
     knitr (>= 1.39),
     here (>= 1.0.1),
     lintr (>= 3.0.0),
     withr (>= 2.5.0),
     testthat (>= 3.1),
-    rmarkdown
+    rmarkdown,
+    gganimate,
+    gifski
 NeedsCompilation: no
 VignetteBuilder: knitr
