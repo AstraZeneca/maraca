@@ -93,9 +93,9 @@
 #'   arm_levels = c(active = "Active", control = "Control"),
 #'   compute_win_odds = TRUE
 #' )
-#' animation <- plot_maraca(animate_plot,
-#'                          anim_order = "control",
-#'                          gif_duration = 20)
+#' animation <- animate_plot(hce_test,
+#'                           anim_order = "control",
+#'                           gif_duration = 20)
 #' @export
 animate_plot <- function(obj, ...) {
   UseMethod("animate_plot", obj)
