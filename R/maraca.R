@@ -661,18 +661,6 @@ plot.maraca <- function(
 #'        supposed to be displayed. If TRUE, the outliers are removed and
 #'        only the range not including them is displayed. Only implemented
 #'        for continuous endpoints. Default value FALSE.
-#' @param fixed_followup_days Not needed if HCE object contains information
-#'                            on fixed follow-up days in the study
-#'                            (column PADY or TTEfixed,
-#'                            depending on hce version).
-#'                            Otherwise, this argument must be specified
-#'                            to give the fixed follow-up days in the study.
-#'                            Can be a single integer value
-#'                            for all tte-outcomes or a vector with one
-#'                            integer value per tte-outcome.
-#'                            Note: If argument is specified and HCE object
-#'                            also contains PADY or TTEfixed column, then
-#'                            fixed_followup_days argument is used.
 #' @param compute_win_odds If TRUE compute the win odds, otherwise (default)
 #'                         don't compute them.
 #' @param step_types The type of each outcome in the step_outcomes vector.

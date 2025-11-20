@@ -88,7 +88,9 @@ animate_plot(mar,
              theme = "color1")
 ```
 
-## Controlling Animation Speed and Duration
+## Animation plot options
+
+### Controlling Animation Speed and Duration
 
 There are additional input parameters to control the speed and
 duration of the animation:
@@ -113,38 +115,31 @@ duration of the animation:
   between them. The user can try to experiment with
   manually setting the number to get the best speed.
 
-These examples show how to modify those parameters.
-
-```{r out.width=700, out.height=500, message=FALSE}
-animate_plot(mar,
-             frames_per_step = 12,
-             gif_duration = 20,
-             end_duration = 40,
-             speed_factor = 8,
-             continuous_grid_spacing_x = 20)
-```
-
-## Sequential Animation of Each Group/Arm
+### Sequential Animation of Each Group/Arm
 
 Another way of adapting the animation is by deciding in which order the
 treatment arms should be displayed. `anim_order` sets which of
 the treatment arms should be animated first - "active", "control" or "both" (at
 the same time, default).
 
-```{r out.width=700, out.height=500, message=FALSE}
-animate_plot(mar,
-             anim_order = "control",
-             continuous_grid_spacing_x = 20)
-```
-
-## Size of animation output
+### Size of animation output
 
 The `anim_width` and `anim_height` parameters can be used to change how
 big the animation should be.
-```{r out.width=600, out.height=400, message=FALSE}
+
+### Example gif
+
+The below example shows how to modify those parameters.
+
+```{r out.width=800, out.height=600, message=FALSE}
 animate_plot(mar,
-             anim_width = 600,
-             anim_height = 400,
+             frames_per_step = 12,
+             gif_duration = 20,
+             end_duration = 40,
+             speed_factor = 8,
+             anim_order = "control",
+             anim_width = 800,
+             anim_height = 600,
              continuous_grid_spacing_x = 20)
 ```
 
@@ -152,17 +147,8 @@ animate_plot(mar,
 
 The animation utility can handle any permutation of maraca plot you would like. 
 
-For instance, we can animate a figure with a scatter instead of a violin plot. 
-
-```{r out.width=700, out.height=500, message=FALSE}
-animate_plot(mar,
-             density_plot_type = "scatter",
-             anim_order = "active",
-             continuous_grid_spacing_x = 20)
-```
-
-Also binary endpoints (either for the final or any step outcomes) can be
-animated.
+For instance, it is possible to animate binary endpoints (either for the final
+or any step outcomes).
 ```{r}
 data("hce_scenario_a")
 # Create data with binary version of 2 step outcomes and
@@ -201,7 +187,7 @@ mar_binary <- maraca(
 ```
 
 ```{r out.width=700, out.height=500, message=FALSE}
-animate_plot(mar_binary)
+animate_plot(mar_binary, anim_order = "control")
 ```
 
 The `animate_plot()` function can also be used directly for a `adhce` object

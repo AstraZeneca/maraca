@@ -31,7 +31,7 @@ LazyData: true
 Depends:
     R (>= 3.5),
     hce (>= 0.8.5),
-    ggplot2 (>= 3.3)
+    ggplot2 (>= 3.4.0)
 Imports:
     dplyr (>= 1.0),
     tidyr (>= 1.2),

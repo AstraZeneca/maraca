@@ -94,9 +94,12 @@
 #'   arm_levels = c(active = "Active", control = "Control"),
 #'   compute_win_odds = TRUE
 #' )
+#'
+#' \dontrun{
 #' animation <- animate_plot(hce_test,
 #'                           anim_order = "control",
 #'                           gif_duration = 20)
+#' }
 #' @export
 animate_plot <- function(obj, ...) {
   UseMethod("animate_plot", obj)
@@ -128,7 +131,8 @@ animate_plot.maraca <- function(
   end_duration = 20,
   speed_factor = NULL,
   anim_width = 700,
-  anim_height = 500
+  anim_height = 500,
+  ...
 ) {
 
   if (!requireNamespace("gganimate", quietly = TRUE)) {
@@ -282,36 +286,32 @@ animate_plot.maraca <- function(
     if (!is.null(boxplot_data$outlier)) {
       if (anim_order == "both") {
         boxplot_data$outlier$time <-
-          max(plotdata_last$time) + 0.3 * max(plotdata_last$time)
+          max(plotdata_last$time) + 0.15 * max(plotdata_last$time)
       } else {
         boxplot_data$outlier$time <- 1
         boxplot_data$outlier[boxplot_data$outlier$arm ==
                                obj$arm_levels["control"], ]$time <-
           max(plotdata_last[plotdata_last$arm ==
-                              obj$arm_levels["control"], ]$time) +
-          0.1 * max(plotdata_last$time)
+                              obj$arm_levels["control"], ]$time) + 20
         boxplot_data$outlier[boxplot_data$outlier$arm ==
                                obj$arm_levels["active"], ]$time <-
           max(plotdata_last[plotdata_last$arm ==
-                              obj$arm_levels["active"], ]$time) +
-          0.1 * max(plotdata_last$time)
+                              obj$arm_levels["active"], ]$time) + 20
       }
     }
     if (anim_order == "both") {
       boxplot_data$stats$time <-
-        max(plotdata_last$time) + 0.15 * max(plotdata_last$time)
+        max(plotdata_last$time) + 0.08 * max(plotdata_last$time)
     } else {
       boxplot_data$stats$time <- 1
       boxplot_data$stats[boxplot_data$stats$arm ==
                            obj$arm_levels["control"], ]$time <-
         max(plotdata_last[plotdata_last$arm ==
-                            obj$arm_levels["control"], ]$time) +
-        0.05 * max(plotdata_last$time)
+                            obj$arm_levels["control"], ]$time) + 10
       boxplot_data$stats[boxplot_data$stats$arm ==
                            obj$arm_levels["active"], ]$time <-
         max(plotdata_last[plotdata_last$arm ==
-                            obj$arm_levels["active"], ]$time) +
-        0.05 * max(plotdata_last$time)
+                            obj$arm_levels["active"], ]$time) + 10
     }
   }
 
@@ -414,7 +414,9 @@ animate_plot.maraca <- function(
                                     fps = frames_per_step,
                                     duration = gif_duration,
                                     height = anim_height, width = anim_width,
-                                    units = "px")
+                                    units = "px",
+                                    device = "png",
+                                    type = "cairo")
     if (!is.null(gif_file_name)) {
       gganimate::anim_save(fn, anmt_plot)
     }
@@ -459,7 +461,7 @@ animate_plot.adhce <- function(obj,
                                ...) {
 
   # Create maraca object
-  maraca_dat <- .maraca_from_hce_data(x, step_outcomes,
+  maraca_dat <- .maraca_from_hce_data(obj, step_outcomes,
                                       last_outcome, arm_levels,
                                       compute_win_odds = compute_win_odds,
                                       step_types = step_types,

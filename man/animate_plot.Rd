@@ -27,7 +27,8 @@ animate_plot(obj, ...)
   end_duration = 20,
   speed_factor = NULL,
   anim_width = 700,
-  anim_height = 500
+  anim_height = 500,
+  ...
 )
 
 \method{animate_plot}{adhce}(
@@ -180,7 +181,10 @@ hce_test <- maraca(
   arm_levels = c(active = "Active", control = "Control"),
   compute_win_odds = TRUE
 )
+
+\dontrun{
 animation <- animate_plot(hce_test,
                           anim_order = "control",
                           gif_duration = 20)
+}
 }

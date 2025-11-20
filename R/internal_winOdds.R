@@ -238,7 +238,7 @@
   if (theme != "none") {
     plot <- plot +
       ggplot2::geom_vline(xintercept =
-                            seq(0.5, length(levels(wins_forest$GROUP)) + 1.5,
+                            seq(0.5, length(levels(wins_forest$GROUP)) + 0.5,
                                 1),
                           linetype = 2, linewidth = 0.3, color = "darkgray") +
       ggplot2::ylab(xlab) +

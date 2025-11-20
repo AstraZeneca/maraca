@@ -56,10 +56,10 @@
                                   active_time_ecdf) {
   if (anim_order == "active") {
     plotdata_ecdf[idx, ]$time <- plotdata_ecdf[idx, ]$time +
-      active_time_ecdf + sum(!idx2) + 1
+      active_time_ecdf + sum(!idx2) + active_time_ecdf * 0.3
   } else if (anim_order == "control") {
     plotdata_ecdf[!idx, ]$time <- plotdata_ecdf[!idx, ]$time +
-      control_time_ecdf + sum(idx2) + 1
+      control_time_ecdf + sum(idx2) + control_time_ecdf * 0.3
   }
   return(plotdata_ecdf)
 }
@@ -69,17 +69,19 @@
                                   active_time_ecdf) {
   if (anim_order == "active") {
     plotdata_last[!idx2, ]$time <- plotdata_last[!idx2, ]$time +
-      active_time_ecdf + 1
+      active_time_ecdf + 30
     plotdata_last[idx2, ]$time <- plotdata_last[idx2, ]$time +
-      active_time_ecdf + control_time_ecdf + sum(!idx2) + 2
+      active_time_ecdf + control_time_ecdf + sum(!idx2) +
+      active_time_ecdf * 0.3 + 30
   } else if (anim_order == "control") {
     plotdata_last[idx2, ]$time <- plotdata_last[idx2, ]$time +
-      control_time_ecdf + 1
+      control_time_ecdf + 30
     plotdata_last[!idx2, ]$time <- plotdata_last[!idx2, ]$time +
-      active_time_ecdf + control_time_ecdf + sum(idx2) + 2
+      active_time_ecdf + control_time_ecdf + sum(idx2) +
+      control_time_ecdf * 0.3 + 30
   } else if (anim_order == "both") {
     plotdata_last$time <- plotdata_last$time +
-      max(active_time_ecdf, control_time_ecdf) + 1
+      max(active_time_ecdf, control_time_ecdf) + 10
   }
 
   return(plotdata_last)

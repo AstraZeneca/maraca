@@ -1809,12 +1809,23 @@ test_that("animation", {
   expect_lt(max(plotdata_last2_c[plotdata_last2_c$arm == ctrl.trt, ]$time),
             min(plotdata_last2_c[plotdata_last2_c$arm == act.trt, ]$time))
 
-  expect_no_error(capture_message(animate_plot(mar, theme = "maraca")))
-  expect_no_error(capture_message(animate_plot(mar,
-                                               continuous_grid_spacing_x = 20,
-                                               density_plot_type = "scatter",
-                                               vline_type = "mean",
-                                               remove_outliers = TRUE,
-                                               theme = "color1")))
+
+  if (requireNamespace("gganimate", quietly = TRUE)) {
+    expect_no_error(capture_message(animate_plot(mar, theme = "maraca")))
+    expect_no_error(capture_message(animate_plot(mar,
+                                                 continuous_grid_spacing_x = 20,
+                                                 density_plot_type = "scatter",
+                                                 vline_type = "mean",
+                                                 remove_outliers = TRUE,
+                                                 theme = "color1")))
+    expect_no_error(capture_message(animate_plot(mar,
+                                                 frames_per_step = 12,
+                                                 gif_duration = 20,
+                                                 end_duration = 40,
+                                                 speed_factor = 8,
+                                                 anim_order = "control",
+                                                 anim_width = 600,
+                                                 anim_height = 400)))
+  }
 
 })

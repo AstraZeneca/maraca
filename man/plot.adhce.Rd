@@ -103,19 +103,6 @@ plot.}
 continuous outcome label.}
 
 \item{\dots}{not used}
-
-\item{fixed_followup_days}{Not needed if HCE object contains information
-on fixed follow-up days in the study
-(column PADY or TTEfixed,
-depending on hce version).
-Otherwise, this argument must be specified
-to give the fixed follow-up days in the study.
-Can be a single integer value
-for all tte-outcomes or a vector with one
-integer value per tte-outcome.
-Note: If argument is specified and HCE object
-also contains PADY or TTEfixed column, then
-fixed_followup_days argument is used.}
 }
 \value{
 Returns ggplot2 plot of the hce object.
