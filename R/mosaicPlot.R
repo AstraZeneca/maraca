@@ -4,12 +4,12 @@
 #' active treatment group and a control group, highlighting areas of "Wins",
 #' "Losses" and "Ties" based on endpoint hierarchy.
 #'
-#' Implemented for objects of type 'maraca' and 'hce'.
+#' Implemented for objects of type 'maraca' and 'adhce'.
 #'
 #' Check the vignette "Maraca Plots - Introduction to the Mosaic plot"
 #' for more details.
 #'
-#' @param x an object of S3 class 'maraca' or 'hce'.
+#' @param x an object of S3 class 'maraca' or 'adhce'.
 #' @param theme Choose theme to style the plot. The default theme is "maraca".
 #'        Options are "maraca", "color1", "color2" and "none".
 #'        For more details, check the vignette called
@@ -42,14 +42,6 @@
 #'                   in this order. Note that this parameter only need to
 #'                   be specified if you have labels different from
 #'                    "active" and "control".
-#' @param fixed_followup_days Not needed if HCE object contains information
-#'                            on fixed follow-up days in the study
-#'                            (column PADY or TTEfixed,
-#'                            depending on hce version).
-#'                            Otherwise, this argument must be specified.
-#'                            Note: If argument is specified and HCE object
-#'                            contains PADY or TTEfixed column, then
-#'                            fixed_followup_days argument is used.
 #' @param lowerBetter Flag for the final outcome variable, indicating if
 #'                    lower values are considered better/advantageous.
 #'                    This flag is need to make sure the win odds are
@@ -95,7 +87,7 @@ mosaic_plot <- function(x, ...) {
 mosaic_plot.default <- function(x,
                                 ...) {
   paste0("mosaic_plot() function can only handle inputs of class ",
-         "'hce' or 'maraca'. Your input has class ", class(x), ".")
+         "'adhce' or 'maraca'. Your input has class ", class(x), ".")
 }
 
 #' @rdname mosaic_plot
@@ -181,7 +173,8 @@ mosaic_plot.maraca <- function(x,
   plot <- ggplot2::ggplot() +
     ggplot2::geom_rect(aes(xmin = 0, xmax = 1, ymin = 0, ymax = 1,
                            fill = "Win")) +
-    ggplot2::geom_area(aes(x = ctrl_line, y = act_line, fill = "Loss")) +
+    ggplot2::geom_area(aes(x = ctrl_line, y = act_line, fill = "Loss"),
+                       stat = "identity",  position = "identity") +
     ggplot2::geom_hline(yintercept = cum_props_act, color = "white") +
     ggplot2::geom_vline(xintercept = cum_props_ctrl, color = "white") +
     ggplot2::geom_line(aes(x = ctrl_line, y = act_line), color = "white",
@@ -240,21 +233,19 @@ mosaic_plot.maraca <- function(x,
 
 #' @rdname mosaic_plot
 #' @export
-mosaic_plot.hce <- function(x, step_outcomes = NULL,
-                            last_outcome = "C",
-                            arm_levels = c(active = "A", control = "P"),
-                            fixed_followup_days = NULL,
-                            theme = "maraca",
-                            highlight_ties = FALSE,
-                            win_prob = FALSE,
-                            diagonal_line = TRUE,
-                            lowerBetter = FALSE,
-                            ...) {
+mosaic_plot.adhce <- function(x, step_outcomes = NULL,
+                              last_outcome = "C",
+                              arm_levels = c(active = "A", control = "P"),
+                              theme = "maraca",
+                              highlight_ties = FALSE,
+                              win_prob = FALSE,
+                              diagonal_line = TRUE,
+                              lowerBetter = FALSE,
+                              ...) {
 
   # Create maraca object
   maraca_dat <- .maraca_from_hce_data(x, step_outcomes,
                                       last_outcome, arm_levels,
-                                      fixed_followup_days,
                                       compute_win_odds = TRUE,
                                       lowerBetter = lowerBetter)
 

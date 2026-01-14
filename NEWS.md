@@ -1,3 +1,40 @@
+# maraca 1.1.0
+
+- Adaption to changes in `hce` package. The standardized output object is now
+  of class `adhce`. This means also that there is a more standardized output
+  that make it easier to work with. As a result, the `maraca` package has now
+  a higher `hce` version dependency (0.8.5). Also, all class dependent functions
+  in the package have been updated to only work on the `adhce` class object
+  (for example `plot.adhce()`).
+
+## New features
+- New parameter `remove_outliers` in `plot.maraca()` and `plot.adhce()`.
+  In some cases, there might be outliers that skew the displayed range for the
+  continuous endpoint. There is now an option to display the continuous
+  endpoint without the outliers by setting the parameter
+  `remove_outliers = TRUE` in the `plot.maraca()` or `plot.adhce()` function.
+  We define outliers here according to the common boxplot calculation
+  definition: any data outside the range 25th percentile - 1.5 * IQR
+  (inter-quartile range) and 75th percentile + 1.5 * IQR.
+  Note that this required some refactoring in how the plot is constructed.
+  Especially the violin plot is now pre-calculated and then plotted using the
+  `ggplot2` function `geom_polygon()` (rather than the `geom_violin()`
+  function).
+- If parameter `density_plot_type = "box"` is selected, the boxplot will now
+  contain vertical segments to indicate where the whiskers end.
+
+## New experimental feature
+- There is a new experimental feature included - the `animate_maraca()`
+  function. This is an animated version of the standard maraca plot to
+  allow to show how the plot is being built up step-by-step. Note that the
+  `gganimate` package needs to be installed to create the animation.
+  Additionally, to save the animation as a gif, the package `gifski` needs
+  to be installed.
+  This is an experimental feature, so despite doing some testing during
+  development there might be some problems or unexpected behavior during
+  usage. Please take a minute to report any wrong behavior to allow us to
+  improve the functionality.
+
 # maraca 1.0.1
 
 Slight change in automatic checks after an update of the `hce` package

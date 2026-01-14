@@ -238,7 +238,7 @@
   if (theme != "none") {
     plot <- plot +
       ggplot2::geom_vline(xintercept =
-                            seq(0.5, length(levels(wins_forest$GROUP)) + 1.5,
+                            seq(0.5, length(levels(wins_forest$GROUP)) + 0.5,
                                 1),
                           linetype = 2, linewidth = 0.3, color = "darkgray") +
       ggplot2::ylab(xlab) +
@@ -294,7 +294,7 @@
 
 }
 
-.add_win_odds_to_plot <- function(p, win_odds, x, y, hjust) {
+.add_win_odds_to_plot <- function(p, win_odds, x, y, hjust, s = 3) {
 
   p <- p +
     ggplot2::annotate(
@@ -308,7 +308,7 @@
         "p-value: ", format.pval(win_odds[[4]], digits = 3, eps = 0.001),
         sep = ""
       ),
-      hjust = hjust, vjust = 1.4, size = 3
+      hjust = hjust, vjust = 1.4, size = s
     )
 
   return(p)

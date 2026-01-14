@@ -127,7 +127,7 @@ mosaic_plot(maraca_dat, diagonal_line = FALSE)
 ```
 
 It is also possible to use the `mosaic_plot()` function directly on
-an `hce` object (created using the
+an `adhce` object (created using the
 [hce package](https://cran.r-project.org/package=hce)).
 
 ```{r fig.width=7, fig.height=6}

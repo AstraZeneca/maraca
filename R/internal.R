@@ -11,6 +11,14 @@
   })
 }
 
+# Range in original units
+.untransform_range <- function(trans, range) {
+  switch(trans,
+         "log" = exp(range),
+         "log10" = 10^(range),
+         "sqrt" = range^2)
+}
+
 # Computes the metainfo from the internal HCE data.
 .compute_metainfo <- function(hce_dat) {
   n <- dplyr::n
@@ -48,8 +56,8 @@
     ) %>%
     dplyr::ungroup()
 
-  meta <- dplyr::left_join(meta1, meta2, "outcome")
-  meta <- dplyr::left_join(meta, meta_missing, "outcome")
+  meta <- dplyr::left_join(meta1, meta2, by = "outcome")
+  meta <- dplyr::left_join(meta, meta_missing, by = "outcome")
 
   return(meta)
 }
@@ -463,10 +471,11 @@
 }
 
 .maraca_from_hce_data <- function(x, step_outcomes, last_outcome, arm_levels,
-                                  fixed_followup_days, compute_win_odds,
+                                  compute_win_odds,
                                   step_types = "tte",
                                   last_type = "continuous",
-                                  lowerBetter = FALSE) {
+                                  lowerBetter = FALSE,
+                                  fixed_followup_days = NULL) {
 
   checkmate::assert_string(last_outcome)
   checkmate::assert_names(names(x),
@@ -496,16 +505,16 @@
 
   # Small bugfix to allow for name change of variable TTEFixed in newer
   # version of HCE package
-  if ("PADY" %in% names(x)) {
-    x$TTEfixed <- x$PADY
+  if ("TTEfixed" %in% names(x)) {
+    x$PADY <- x$TTEfixed
   }
 
   if (is.null(fixed_followup_days)) {
-    checkmate::assertNames(names(x), must.include = "TTEfixed")
-    checkmate::assert_integerish(x$TTEfixed)
+    checkmate::assertNames(names(x), must.include = "PADY")
+    checkmate::assert_integerish(x$PADY)
 
     fixed_followup_days <- unname(sapply(step_outcomes, function(tte) {
-      x[x$GROUP == tte, "TTEfixed"][[1]]
+      x[x$GROUP == tte, "PADY"][[1]]
     }))
   }
 

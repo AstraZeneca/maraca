@@ -361,7 +361,7 @@ test_that("wrongParameters", {
         value = "AVAL0"
       ), fixed_followup_days
     ),
-    regexp = "Can't rename columns that don't exist"
+    regexp = "Assertion on 'column_names' failed:"
   )
 
   expect_error(
@@ -393,7 +393,7 @@ test_that("wrongParameters", {
   # Test plot functions only work with maraca objects
   expect_error(plot_maraca(123), regexp = "Must inherit")
 
-  # Test plot.hce input
+  # Test plot.adhce input
   rates_a <- c(1.72, 1.74, 0.58, 1.5, 1)
   rates_p <- c(2.47, 2.24, 2.9, 4, 6)
   hce_dat <- hce::simHCE(n = 2500, TTE_A = rates_a,
@@ -882,7 +882,7 @@ test_that("winOddsPlot", {
 
   expect_text_equal(component_plot(data),
                     list(paste0("component_plot() function can only handle ",
-                                "inputs of class 'hce' or 'maraca'. ",
+                                "inputs of class 'adhce' or 'maraca'. ",
                                 "Your input has class data.frame.")))
 
   expect_error(cumulative_plot(mar), regexp =
@@ -892,7 +892,7 @@ test_that("winOddsPlot", {
 
   expect_text_equal(cumulative_plot(data),
                     list(paste0("cumulative_plot() function can only handle ",
-                                "inputs of class 'hce' or 'maraca'. ",
+                                "inputs of class 'adhce' or 'maraca'. ",
                                 "Your input has class data.frame.")))
 
   rates_a <- c(1.72, 1.74, 0.58, 1.5, 1)
@@ -1181,10 +1181,10 @@ test_that("validationFunction", {
   expect_named(val_res_box, expected_names, ignore.order = TRUE)
   expect_named(val_res_scatter, expected_names, ignore.order = TRUE)
 
-  expect_equal(val_res_def$plot_type, "GeomViolin+GeomBoxplot")
-  expect_equal(val_res_violin$plot_type, "GeomViolin")
-  expect_equal(val_res_box$plot_type, "GeomBoxplot")
-  expect_equal(val_res_scatter$plot_type, "GeomPoint")
+  expect_equal(val_res_def$plot_type, "default")
+  expect_equal(val_res_violin$plot_type, "violin")
+  expect_equal(val_res_box$plot_type, "box")
+  expect_equal(val_res_scatter$plot_type, "scatter")
 
   expected_names <- c(step_outcomes, last_outcome)
   expect_named(val_res_def$proportions, expected_names, ignore.order = TRUE)
@@ -1274,7 +1274,7 @@ test_that("validationFunction", {
     dplyr::summarize("mean" = mean(x))
   violin_stats_from_plot <- val_res_violin$violin_data %>%
     dplyr::group_by(group) %>%
-    dplyr::summarize("mean" = weighted.mean(x, density))
+    dplyr::summarize("mean" = weighted.mean(x, abs(violinwidth - y)))
   expect_equal(y_values_violin, y_values$y)
   expect_equal(violin_stats_from_plot$mean, violin_stats$mean, tolerance = 0.1)
 
@@ -1337,15 +1337,15 @@ test_that("scaleTransform", {
     3 * 365
   )
 
-  expect_warning(plot(mar, trans = "log10"),
-                 paste("Continuous endpoint has negative values - the log10",
-                       "transformation will result in missing values."))
-  expect_warning(plot(mar, trans = "log"),
-                 paste("Continuous endpoint has negative values - the log",
-                       "transformation will result in missing values."))
-  expect_warning(plot(mar, trans = "sqrt"),
-                 paste("Continuous endpoint has negative values - the sqrt",
-                       "transformation will result in missing values."))
+  expect_error(plot(mar, trans = "log10"),
+               paste("Continuous endpoint has negative values - the log10",
+                     "transformation cannot be accurately calculated."))
+  expect_error(plot(mar, trans = "log"),
+               paste("Continuous endpoint has negative values - the log",
+                     "transformation cannot be accurately calculated."))
+  expect_error(plot(mar, trans = "sqrt"),
+               paste("Continuous endpoint has negative values - the sqrt",
+                     "transformation cannot be accurately calculated."))
 
   dat[dat$GROUP == "Continuous outcome", "AVAL0"] <-
     dat[dat$GROUP == "Continuous outcome", "AVAL0"] + 50
@@ -1551,12 +1551,6 @@ test_that("plotHCE", {
   plot(hce_dat)
   expect_file_exists(output)
 
-  output <- artifacts_path("plotHCE-fixed_follow_up.pdf")
-  expect_file_not_exists(output)
-  set_pdf_output(output)
-  plot(hce_dat, fixed_followup_days = 6 * 365)
-  expect_file_exists(output)
-
   if (!("PADY" %in% names(hce_dat))) {
     hce_dat$PADY <- hce_dat$TTEfixed
   }
@@ -1662,5 +1656,176 @@ test_that("mosaicPlot", {
                stats::ecdf(last_act_lower$x)(x_grid_lower))
   expect_equal(stats::ecdf(last_ctrl$x)(x_grid),
                stats::ecdf(last_ctrl_lower$x)(x_grid_lower))
+
+})
+
+test_that("animation", {
+
+  file <- fixture_path("hce_scenario_c.csv")
+  data <- read.csv(file, stringsAsFactors = FALSE)
+  step_outcomes <- c(
+    "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+  )
+  last_outcome <- "Continuous outcome"
+  arm_levels <- c(active = "Active", control = "Control")
+  column_names <- c(
+    outcome = "GROUP", arm = "TRTP", value = "AVAL0"
+  )
+  mar <- maraca(
+    data, step_outcomes, last_outcome, arm_levels, column_names, 3 * 365,
+    compute_win_odds = TRUE
+  )
+
+  meta <- mar$meta
+  step_outcomes <- mar$step_outcomes
+  step_types <- mar$step_types
+  last_data <- mar$data_last_outcome
+  last_meta <- last_data$meta
+  last_type <- mar$last_type
+
+  start_last_endpoint <-
+    meta[meta$outcome == mar$last_outcome, ]$startx
+
+  plotdata_ecdf <- .prepare_ecdf_plot_data(mar, step_outcomes)
+  plotdata_last <- last_data$data[, c("outcome", "arm", "value", "x", "y")]
+  plotdata_last$type <- last_type
+
+  density_plot_type <- "default"
+  res <- .prepare_continuous_plot_data(plotdata_last, last_meta, "identity",
+                                       density_plot_type,
+                                       TRUE, start_last_endpoint)
+  density_plot_type2 <- "scatter"
+  res2 <- .prepare_continuous_plot_data(plotdata_last, last_meta, "identity",
+                                        density_plot_type2,
+                                        FALSE, start_last_endpoint)
+
+  plotdata_last <- res$plotdata_last
+  last_meta <- res$last_meta
+  plotdata_last2 <- res2$plotdata_last
+  last_meta2 <- res2$last_meta
+
+  speed_factor <- ceiling(nrow(plotdata_last) / nrow(plotdata_ecdf))
+  speed_factor2 <- ceiling(nrow(plotdata_last2) / nrow(plotdata_ecdf))
+
+  plotdata_ecdf <- .step_outcomes_time_animation(plotdata_ecdf, mar,
+                                                 step_outcomes,
+                                                 step_types, speed_factor,
+                                                 "both")
+  plotdata_ecdf_a_c <- .step_outcomes_time_animation(plotdata_ecdf, mar,
+                                                     step_outcomes,
+                                                     step_types, speed_factor,
+                                                     "active")
+
+  expect_true(all(!is.na(plotdata_ecdf$time)))
+  expect_equal(max(plotdata_ecdf[plotdata_ecdf$x ==
+                                   max(plotdata_ecdf$x), ]$time),
+               max(plotdata_ecdf$time))
+  expect_true(all(!is.na(plotdata_ecdf_a_c$time)))
+  expect_equal(max(plotdata_ecdf_a_c[plotdata_ecdf_a_c$x ==
+                                       max(plotdata_ecdf_a_c$x), ]$time),
+               max(plotdata_ecdf_a_c$time))
+
+  ctrl.trt <- unname(mar$arm_levels["control"])
+  act.trt <- unname(mar$arm_levels["active"])
+  idx <- plotdata_ecdf$arm == ctrl.trt
+  idx4 <- plotdata_ecdf_a_c$arm == ctrl.trt
+  idx2 <- plotdata_last$arm == ctrl.trt
+  idx3 <- plotdata_last2$arm == ctrl.trt
+  plotdata_last$time <- 1
+  plotdata_last[idx2, ]$time <- rank(plotdata_last[idx2, ]$x)
+  plotdata_last[!idx2, ]$time <- rank(plotdata_last[!idx2, ]$x)
+  plotdata_last2$time <- 1
+  plotdata_last2[idx3, ]$time <- rank(plotdata_last2[idx3, ]$x)
+  plotdata_last2[!idx3, ]$time <- rank(plotdata_last2[!idx3, ]$x)
+
+
+  active_time_ecdf <- plotdata_ecdf %>%
+    dplyr::filter(arm == act.trt) %>%
+    dplyr::pull(time) %>%
+    max()
+  control_time_ecdf <- plotdata_ecdf %>%
+    dplyr::filter(arm == ctrl.trt) %>%
+    dplyr::pull(time) %>%
+    max()
+  act_time_ecdf <- plotdata_ecdf_a_c %>%
+    dplyr::filter(arm == act.trt) %>%
+    dplyr::pull(time) %>%
+    max()
+  ctrl_time_ecdf <- plotdata_ecdf_a_c %>%
+    dplyr::filter(arm == ctrl.trt) %>%
+    dplyr::pull(time) %>%
+    max()
+
+  plotdata_ecdf <- .animation_order_step("both", plotdata_ecdf, idx, idx2,
+                                         control_time_ecdf, active_time_ecdf)
+  plotdata_last_b <- .animation_order_last("both", plotdata_last, idx, idx2,
+                                           control_time_ecdf, active_time_ecdf)
+  plotdata_last2_b <- .animation_order_last("both", plotdata_last2, idx, idx3,
+                                            control_time_ecdf, active_time_ecdf)
+  plotdata_ecdf_a <- .animation_order_step("active", plotdata_ecdf_a_c, idx4,
+                                           idx2, ctrl_time_ecdf, act_time_ecdf)
+  plotdata_last_a <- .animation_order_last("active", plotdata_last, idx4, idx2,
+                                           ctrl_time_ecdf, act_time_ecdf)
+  plotdata_ecdf2_a <- .animation_order_step("active", plotdata_ecdf_a_c, idx4,
+                                            idx3, ctrl_time_ecdf, act_time_ecdf)
+  plotdata_last2_a <- .animation_order_last("active", plotdata_last2, idx4,
+                                            idx3, ctrl_time_ecdf, act_time_ecdf)
+  plotdata_ecdf_c <- .animation_order_step("control", plotdata_ecdf_a_c, idx4,
+                                           idx2, ctrl_time_ecdf, act_time_ecdf)
+  plotdata_last_c <- .animation_order_last("control", plotdata_last, idx4, idx2,
+                                           ctrl_time_ecdf, act_time_ecdf)
+  plotdata_ecdf2_c <- .animation_order_step("control", plotdata_ecdf_a_c, idx4,
+                                            idx3, ctrl_time_ecdf, act_time_ecdf)
+  plotdata_last2_c <- .animation_order_last("control", plotdata_last2, idx4,
+                                            idx3, ctrl_time_ecdf, act_time_ecdf)
+  expect_lt(max(plotdata_ecdf$time), min(plotdata_last_b$time))
+  expect_lt(max(plotdata_ecdf$time), min(plotdata_last2_b$time))
+  expect_lt(max(plotdata_ecdf_a[plotdata_ecdf_a$arm == act.trt, ]$time),
+            min(plotdata_last_a[plotdata_last_a$arm == act.trt, ]$time))
+  expect_lt(max(plotdata_ecdf2_a[plotdata_ecdf2_a$arm == act.trt, ]$time),
+            min(plotdata_last2_a[plotdata_last2_a$arm == act.trt, ]$time))
+  expect_lt(max(plotdata_ecdf_a[plotdata_ecdf_a$arm == ctrl.trt, ]$time),
+            min(plotdata_last_a[plotdata_last_a$arm == ctrl.trt, ]$time))
+  expect_lt(max(plotdata_ecdf2_a[plotdata_ecdf2_a$arm == ctrl.trt, ]$time),
+            min(plotdata_last2_a[plotdata_last2_a$arm == ctrl.trt, ]$time))
+  expect_lt(max(plotdata_ecdf_c[plotdata_ecdf_c$arm == act.trt, ]$time),
+            min(plotdata_last_c[plotdata_last_c$arm == act.trt, ]$time))
+  expect_lt(max(plotdata_ecdf2_c[plotdata_ecdf2_c$arm == act.trt, ]$time),
+            min(plotdata_last2_c[plotdata_last2_c$arm == act.trt, ]$time))
+  expect_lt(max(plotdata_ecdf_c[plotdata_ecdf_c$arm == ctrl.trt, ]$time),
+            min(plotdata_last_c[plotdata_last_c$arm == ctrl.trt, ]$time))
+  expect_lt(max(plotdata_ecdf2_c[plotdata_ecdf2_c$arm == ctrl.trt, ]$time),
+            min(plotdata_last2_c[plotdata_last2_c$arm == ctrl.trt, ]$time))
+  expect_lt(max(plotdata_ecdf_a[plotdata_ecdf_a$arm == act.trt, ]$time),
+            min(plotdata_ecdf_a[plotdata_ecdf_a$arm == ctrl.trt, ]$time))
+  expect_lt(max(plotdata_last_a[plotdata_last_a$arm == act.trt, ]$time),
+            min(plotdata_last_a[plotdata_last_a$arm == ctrl.trt, ]$time))
+  expect_lt(max(plotdata_last2_a[plotdata_last2_a$arm == act.trt, ]$time),
+            min(plotdata_last2_a[plotdata_last2_a$arm == ctrl.trt, ]$time))
+  expect_lt(max(plotdata_ecdf_c[plotdata_ecdf_c$arm == ctrl.trt, ]$time),
+            min(plotdata_ecdf_c[plotdata_ecdf_c$arm == act.trt, ]$time))
+  expect_lt(max(plotdata_last_c[plotdata_last_c$arm == ctrl.trt, ]$time),
+            min(plotdata_last_c[plotdata_last_c$arm == act.trt, ]$time))
+  expect_lt(max(plotdata_last2_c[plotdata_last2_c$arm == ctrl.trt, ]$time),
+            min(plotdata_last2_c[plotdata_last2_c$arm == act.trt, ]$time))
+
+
+  if (requireNamespace("gganimate", quietly = TRUE)) {
+    expect_no_error(capture_message(animate_plot(mar, theme = "maraca")))
+    expect_no_error(capture_message(animate_plot(mar,
+                                                 continuous_grid_spacing_x = 20,
+                                                 density_plot_type = "scatter",
+                                                 vline_type = "mean",
+                                                 remove_outliers = TRUE,
+                                                 theme = "color1")))
+    expect_no_error(capture_message(animate_plot(mar,
+                                                 frames_per_step = 12,
+                                                 gif_duration = 20,
+                                                 end_duration = 40,
+                                                 speed_factor = 8,
+                                                 anim_order = "control",
+                                                 anim_width = 600,
+                                                 anim_height = 400)))
+  }
 
 })

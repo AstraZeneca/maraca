@@ -4,7 +4,7 @@
 \alias{component_plot}
 \alias{component_plot.default}
 \alias{component_plot.maraca}
-\alias{component_plot.hce}
+\alias{component_plot.adhce}
 \title{Plotting components of win odds}
 \usage{
 component_plot(x, ...)
@@ -13,19 +13,18 @@ component_plot(x, ...)
 
 \method{component_plot}{maraca}(x, theme = "maraca", ...)
 
-\method{component_plot}{hce}(
+\method{component_plot}{adhce}(
   x,
   step_outcomes = NULL,
   last_outcome = "C",
   arm_levels = c(active = "A", control = "P"),
-  fixed_followup_days = NULL,
   theme = "maraca",
   lowerBetter = FALSE,
   ...
 )
 }
 \arguments{
-\item{x}{an object of S3 class 'maraca' or 'hce'.}
+\item{x}{an object of S3 class 'maraca' or 'adhce'.}
 
 \item{\dots}{not used}
 
@@ -52,15 +51,6 @@ used in the data. The names must be "active" and "control"
 in this order. Note that this parameter only need to
 be specified if you have labels different from
  "active" and "control".}
-
-\item{fixed_followup_days}{Not needed if HCE object contains information
-on fixed follow-up days in the study
-(column PADY or TTEfixed,
-depending on hce version).
-Otherwise, this argument must be specified.
-Note: If argument is specified and HCE object
-contains PADY or TTEfixed column, then
-fixed_followup_days argument is used.}
 
 \item{lowerBetter}{Flag for the final outcome variable, indicating if
 lower values are considered better/advantageous.

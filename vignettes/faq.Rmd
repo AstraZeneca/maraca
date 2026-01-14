@@ -68,7 +68,7 @@ plot
 In some cases, for the continuous outcome, lower values might be considered better
 than higher values. By default, the win odds are calculated assuming that higher
 values are better. In order to calculate the correct win odds, the user can set
-the `lowerBetter` parameter in the `maraca()` or `plot.hce()` function to `TRUE`.
+the `lowerBetter` parameter in the `maraca()` or `plot.adhce()` function to `TRUE`.
 
 Additionally, it is possible to display the continuous outcome on a reverse scale
 using the parameter `trans = "reverse"` in the plotting functions.

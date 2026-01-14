@@ -1,5 +1,5 @@
 Package: maraca
-Version: 1.0.1
+Version: 1.1.0
 Type: Package
 Title: The Maraca Plot: Visualizing Hierarchical Composite Endpoints
 License: Apache License (>= 2)
@@ -12,6 +12,9 @@ Authors@R: c(
 	         comment = c(ORCID = "0000-0002-4797-2208")),
     person(given = "Stefano", family = "Borini",
            email = "stefano.borini@astrazeneca.com", role = c("ctb")),
+    person(given = "Kevin", family = "Anderson",
+           email = "kevin.anderson1@astrazeneca.com", role = "aut",
+	         comment = c(ORCID = "0000-0002-9446-7386")),
     person(given = "Monika", family = "Huhn",
            email = "monika.huhn@astrazeneca.com", role = c("aut", "cre"),
 	         comment = c(ORCID = "0009-0000-7865-6008")))
@@ -27,21 +30,23 @@ Encoding: UTF-8
 LazyData: true
 Depends:
     R (>= 3.5),
-    hce (>= 0.5),
-    ggplot2 (>= 3.3)
+    hce (>= 0.8.5),
+    ggplot2 (>= 3.4.0)
 Imports:
     dplyr (>= 1.0),
     tidyr (>= 1.2),
     checkmate (>= 2.1),
     patchwork(>= 1.0.0),
     lifecycle
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Suggests:
     knitr (>= 1.39),
     here (>= 1.0.1),
     lintr (>= 3.0.0),
     withr (>= 2.5.0),
     testthat (>= 3.1),
-    rmarkdown
+    rmarkdown,
+    gganimate,
+    gifski
 NeedsCompilation: no
 VignetteBuilder: knitr

@@ -1,0 +1,236 @@
+---
+title: "Maraca Plots - Animation"
+author: "Kevin Anderson, Monika Huhn"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Maraca Plots - Animation}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
+library(dplyr)
+library(ggplot2)
+library(maraca)
+```
+
+The maraca package now supports built-in plot animations.
+This feature is useful for sprucing up presentations or highlighting the
+temporal nature of step-wise outcomes. 
+
+This is an experimental feature, so despite doing some testing during
+development there might be some problems or unexpected behavior during
+usage. Please take a minute to report any wrong behavior to allow us to
+improve the functionality.
+
+Note that in order to create an animation, the `gganimate` package needs to
+be installed. Furthermore, if the output should be as a gif, the `gifski`
+package is required.
+Alternatively, if either the `av` or `ffmpeg` package is installed, a video
+file is created. As a final alternative, if no dependency is installed, a list
+of image files is returned.
+
+In this vignette, we will show you how to easily animate a figure by
+calling the `animate_plot()` function. 
+
+# Usage
+
+## Basic Static Maraca Plot 
+
+First we have to create a maraca object.
+
+```{r maraca1, eval = TRUE, fig.width = 7, fig.height = 6}
+library(maraca)
+
+data(hce_scenario_a, package = "maraca")
+
+data <- hce_scenario_a
+column_names <- c(
+    outcome = "GROUP",
+    arm = "TRTP",
+    value = "AVAL0"
+)
+
+step_outcomes <- c(
+  "Outcome I", "Outcome II", "Outcome III", "Outcome IV"
+)
+last_outcome <- "Continuous outcome"
+
+arm_levels = c(active = "Active", control = "Control")
+
+mar <- maraca(
+  data, step_outcomes, last_outcome, arm_levels, column_names, 
+  fixed_followup_days = 3*365,
+  compute_win_odds = TRUE
+)
+
+## Static plot
+plot(mar)
+```
+
+## Animate Basic Maraca Plot
+
+We create an animation by simply calling the `animate_plot()` function.
+```{r out.width=700, out.height=500, message=FALSE}
+animate_plot(mar)
+```
+
+The `animate_plot()` function takes the same plotting parameters as the standard
+maraca `plot()` function. 
+```{r out.width=700, out.height=500, message=FALSE}
+animate_plot(mar,
+             continuous_grid_spacing_x = 20,
+             density_plot_type = "scatter",
+             vline_type = "mean",
+             remove_outliers = TRUE,
+             theme = "color1")
+```
+
+## Animation plot options
+
+### Controlling Animation Speed and Duration
+
+There are additional input parameters to control the speed and
+duration of the animation:
+
+- __frames_per_step__: `int`
+  - The frame rate of the animation in frames/sec. By default, the
+  rate is 10 frames/sec.
+
+- __gif_duration__: `int` or `float`
+  - This defines how long the animation should be in seconds. By default, the
+  animation is 10 seconds long.
+
+- __end_duration__: `int` or `float`
+  - This defines how many frames the animation should pause on the last
+  frame before re-starting. By default, it pauses for 20 frames.
+
+- __speed_factor__: `int` or `float`
+  - This factor tries to balance the times that it takes to
+  animate the step outcomes towards the last outcome. If
+  not provided (NULL), the function tries to estimate a
+  number that approximately leads to a similar speed
+  between them. The user can try to experiment with
+  manually setting the number to get the best speed.
+
+### Sequential Animation of Each Group/Arm
+
+Another way of adapting the animation is by deciding in which order the
+treatment arms should be displayed. `anim_order` sets which of
+the treatment arms should be animated first - "active", "control" or "both" (at
+the same time, default).
+
+### Size of animation output
+
+The `anim_width` and `anim_height` parameters can be used to change how
+big the animation should be.
+
+### Example gif
+
+The below example shows how to modify those parameters.
+
+```{r out.width=800, out.height=600, message=FALSE}
+animate_plot(mar,
+             frames_per_step = 12,
+             gif_duration = 20,
+             end_duration = 40,
+             speed_factor = 8,
+             anim_order = "control",
+             anim_width = 800,
+             anim_height = 600,
+             continuous_grid_spacing_x = 20)
+```
+
+## Animating Alternative Maraca Plots
+
+The animation utility can handle any permutation of maraca plot you would like. 
+
+For instance, it is possible to animate binary endpoints (either for the final
+or any step outcomes).
+```{r}
+data("hce_scenario_a")
+# Create data with binary version of 2 step outcomes and
+# continuous final endpoint
+bin_data <- hce_scenario_a
+
+idx_bin <- bin_data$GROUP %in% c("Outcome III", "Outcome IV")
+# Binary version (>= 0/< 0), coded as 1
+bin_data[idx_bin,"AVAL0"] <- bin_data[idx_bin,"AVAL0"] >= 500
+bin_data[idx_bin,"AVAL"] <- bin_data[idx_bin,"AVAL0"] +
+  bin_data[idx_bin,"GROUPN"]
+# Remove 0 rows (only include patients that had the outcome)
+bin_data <- bin_data[bin_data$AVAL0 != 0,]
+
+# Index of all continuous outcome rows
+idx_cont <- bin_data$GROUP == "Continuous outcome"
+# Rename outcome
+bin_data[idx_cont,"GROUP"] <- "Binary outcome"
+# Binary version (>= 0/< 0)
+bin_data[idx_cont,"AVAL0"] <- bin_data[idx_cont,"AVAL0"] >= 0
+bin_data[idx_cont,"AVAL"] <- bin_data[idx_cont,"AVAL0"] +
+  bin_data[idx_cont,"GROUPN"]
+last_outcome_binary <- "Binary outcome"
+
+
+mar_binary <- maraca(
+  bin_data, step_outcomes, last_outcome_binary,
+  arm_levels, column_names,
+  fixed_followup_days = 3*365,
+  compute_win_odds = TRUE,
+  # Important change: Add information that last endpoint is
+  # not continuous (the default)
+  step_types = c("tte","tte","binary","binary"),
+  last_type = "binary"
+)
+```
+
+```{r out.width=700, out.height=500, message=FALSE}
+animate_plot(mar_binary, anim_order = "control")
+```
+
+The `animate_plot()` function can also be used directly for a `adhce` object
+(output from `hce` package).
+```{r fig.width = 7, fig.height = 6}
+Rates_A <- c(1.72, 1.74, 0.58, 1.5, 1)
+Rates_P <- c(2.47, 2.24, 2.9, 4, 6)
+hce_dat <- hce::simHCE(n = 2500, TTE_A = Rates_A, TTE_P = Rates_P,
+              CM_A = -6, CM_P = 3, CSD_A = 15, CSD_P = 16, fixedfy = 3,
+              seed = 31337)
+```
+
+```{r out.width=700, out.height=500, message=FALSE}
+animate_plot(hce_dat, compute_win_odds = TRUE, lowerBetter = TRUE,
+             trans = "reverse")
+```
+
+For boxplots, the animation just displays the entire boxplots at once, rather
+than gradually building them up.
+```{r out.width=700, out.height=500, message=FALSE}
+animate_plot(mar,
+             density_plot_type = "box",
+             anim_order = "control",
+             continuous_grid_spacing_x = 20)
+```
+
+
+## Saving the Animation
+
+If the `gifski` package is used and a gif output is created
+(`gif_output = TRUE`), the animation can be saved directly from the
+`animate_plot()` function.
+By default, the gif gets saved to a tmp folder and displayed in the Viewer
+window. In order to save it to a file for later re-use instead, a file name
+needs to be provided to the `gif_file_name` parameter.
+
+```{r}
+# Example - do not run
+# animate_plot(mar, gif_file_name = "tmp/maraca_anim.gif")
+```
+
+
+
+
+
+

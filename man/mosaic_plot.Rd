@@ -4,7 +4,7 @@
 \alias{mosaic_plot}
 \alias{mosaic_plot.default}
 \alias{mosaic_plot.maraca}
-\alias{mosaic_plot.hce}
+\alias{mosaic_plot.adhce}
 \title{Mosaic plot}
 \usage{
 mosaic_plot(x, ...)
@@ -20,12 +20,11 @@ mosaic_plot(x, ...)
   ...
 )
 
-\method{mosaic_plot}{hce}(
+\method{mosaic_plot}{adhce}(
   x,
   step_outcomes = NULL,
   last_outcome = "C",
   arm_levels = c(active = "A", control = "P"),
-  fixed_followup_days = NULL,
   theme = "maraca",
   highlight_ties = FALSE,
   win_prob = FALSE,
@@ -35,7 +34,7 @@ mosaic_plot(x, ...)
 )
 }
 \arguments{
-\item{x}{an object of S3 class 'maraca' or 'hce'.}
+\item{x}{an object of S3 class 'maraca' or 'adhce'.}
 
 \item{\dots}{not used}
 
@@ -78,15 +77,6 @@ in this order. Note that this parameter only need to
 be specified if you have labels different from
  "active" and "control".}
 
-\item{fixed_followup_days}{Not needed if HCE object contains information
-on fixed follow-up days in the study
-(column PADY or TTEfixed,
-depending on hce version).
-Otherwise, this argument must be specified.
-Note: If argument is specified and HCE object
-contains PADY or TTEfixed column, then
-fixed_followup_days argument is used.}
-
 \item{lowerBetter}{Flag for the final outcome variable, indicating if
 lower values are considered better/advantageous.
 This flag is need to make sure the win odds are
@@ -103,7 +93,7 @@ active treatment group and a control group, highlighting areas of "Wins",
 "Losses" and "Ties" based on endpoint hierarchy.
 }
 \details{
-Implemented for objects of type 'maraca' and 'hce'.
+Implemented for objects of type 'maraca' and 'adhce'.
 
 Check the vignette "Maraca Plots - Introduction to the Mosaic plot"
 for more details.

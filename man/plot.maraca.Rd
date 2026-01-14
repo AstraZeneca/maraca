@@ -10,6 +10,7 @@
   trans = c("identity", "log", "log10", "sqrt", "reverse")[1],
   density_plot_type = c("default", "violin", "box", "scatter")[1],
   vline_type = NULL,
+  remove_outliers = FALSE,
   theme = "maraca",
   ...
 )
@@ -33,6 +34,11 @@ Accepts "default", "violin", "box" and "scatter".}
 NULL (default). By default (vline_type = NULL), vline_type will be
 set to "median" for a continuous last endpoint and to "mean" for
 a binary last endpoint.}
+
+\item{remove_outliers}{Flag indicating for last endpoint if outliers are
+supposed to be displayed. If TRUE, the outliers are removed and
+only the range not including them is displayed. Only implemented
+for continuous endpoints. Default value FALSE.}
 
 \item{theme}{Choose theme to style the plot. The default theme is "maraca".
 Options are "maraca", "maraca_old", "color1", "color2" and none".
